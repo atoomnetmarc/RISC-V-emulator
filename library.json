@@ -1,0 +1,7 @@
+{
+    "name": "RISC-V emulator",
+    "version": "0.1.0",
+    "description": "A library that can emulate a RISC-V cpu.",
+    "keywords": "RISC-V, rv32i",
+    "license": "Apache-2.0"
+  }
