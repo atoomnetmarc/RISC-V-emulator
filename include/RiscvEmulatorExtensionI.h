@@ -5,15 +5,18 @@ SPDX-License-Identifier: Apache-2.0
 
 */
 
-#ifndef RiscvEmulatorRv32I_H_
-#define RiscvEmulatorRv32I_H_
+#ifndef RiscvEmulatorExtensionI_H_
+#define RiscvEmulatorExtensionI_H_
 
 #include <stdint.h>
 
 #include <RiscvEmulatorImplementationSpecific.h>
 
+#include "RiscvEmulatorConfig.h"
 #include "RiscvEmulatorDefine.h"
 #include "RiscvEmulatorType.h"
+
+#include "RiscvEmulatorExtensionZicsr.h"
 
 // Jump and link register.
 inline void RiscvEmulatorJALR(RiscvEmulatorState_t *state, uint32_t *programcounternext)
@@ -441,6 +444,115 @@ inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state, uint32_t *programcount
 
     // Execute jump.
     *programcounternext = state->programcounter + helper.output.imm;
+}
+
+#if (RVE_E_ZICSR == 1)
+// Return from machine mode
+// TODO: complete the functionality of MRET.
+inline void RiscvEmulatorMRET(RiscvEmulatorState_t *state, uint32_t *programcounternext)
+{
+    *programcounternext = state->csr.mepc.mepc;
+}
+#endif
+
+// Make a service request to the execution environment
+inline void RiscvEmulatorECALL(RiscvEmulatorState_t *state)
+{
+    RiscvEmulatorHandleECALL(state);
+}
+
+inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state, uint32_t *programcounternext)
+{
+    uint8_t detectedUnknownSystemInstruction = 1;
+
+    if (detectedUnknownSystemInstruction)
+    {
+        if (state->instruction.itypesystem.rd == 0 &&
+            state->instruction.itypesystem.funct3 == 0 &&
+            state->instruction.itypesystem.rs1 == 0)
+        {
+            detectedUnknownSystemInstruction = 0;
+            switch (state->instruction.itypesystem.funct12)
+            {
+#if (RVE_E_ZICSR == 1)
+                case FUNCT12_MRET:
+                    RiscvEmulatorMRET(state, programcounternext);
+                    break;
+#endif
+                case FUNCT12_ECALL:
+                    RiscvEmulatorECALL(state);
+                    break;
+                default:
+                    detectedUnknownSystemInstruction = 1;
+                    break;
+            }
+        }
+    }
+
+#if (RVE_E_ZICSR == 1)
+    if (detectedUnknownSystemInstruction)
+    {
+        detectedUnknownSystemInstruction = 0;
+        void *rd = &state->registers.array.location[state->instruction.itypecsr.rd];
+        void *rs1 = &state->registers.array.location[state->instruction.itypecsr.rs1];
+        int32_t imm = state->instruction.itypecsrimm.imm;
+        void *csr = RiscvEmulatorGetCSRAddress(state);
+
+        switch (state->instruction.itypecsr.funct3)
+        {
+            case FUNCT3_CSR_CSRRW:
+                RiscvEmulatorCSRRW(state, rd, rs1, csr);
+                break;
+            case FUNCT3_CSR_CSRRWI:
+                RiscvEmulatorCSRRW(state, rd, &imm, csr);
+                break;
+            case FUNCT3_CSR_CSRRS:
+                RiscvEmulatorCSRRS(state, rd, rs1, csr);
+                break;
+            case FUNCT3_CSR_CSRRSI:
+                RiscvEmulatorCSRRS(state, rd, &imm, csr);
+                break;
+            case FUNCT3_CSR_CSRRC:
+                RiscvEmulatorCSRRC(state, rd, rs1, csr);
+                break;
+            case FUNCT3_CSR_CSRRCI:
+                RiscvEmulatorCSRRC(state, rd, &imm, csr);
+                break;
+            default:
+                detectedUnknownSystemInstruction = 1;
+                break;
+        }
+    }
+
+#endif
+
+    if (detectedUnknownSystemInstruction)
+        RiscvEmulatorUnknownInstruction(state);
+}
+
+// Fence
+// TODO: Complete possibly incomplete implementation
+inline void RiscvEmulatorFence(RiscvEmulatorState_t *state)
+{
+}
+
+inline void RiscvEmulatorOpcodeMiscMem(RiscvEmulatorState_t *state)
+{
+    uint8_t detectedUnknownSystemInstruction = 1;
+
+    if (detectedUnknownSystemInstruction)
+    {
+        if (state->instruction.itypemiscmem.rd == 0 &&
+            state->instruction.itypemiscmem.funct3 == FUNCT3_FENCE &&
+            state->instruction.itypemiscmem.rs1 == 0)
+        {
+            detectedUnknownSystemInstruction = 0;
+            RiscvEmulatorFence(state);
+        }
+    }
+
+    if (detectedUnknownSystemInstruction)
+        RiscvEmulatorUnknownInstruction(state);
 }
 
 #endif

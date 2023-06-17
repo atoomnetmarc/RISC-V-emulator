@@ -12,10 +12,10 @@ SPDX-License-Identifier: Apache-2.0
 
 #include <RiscvEmulatorImplementationSpecific.h>
 
+#include "RiscvEmulatorConfig.h"
 #include "RiscvEmulatorDefine.h"
 #include "RiscvEmulatorType.h"
-
-#include "RiscvEmulatorRv32I.h"
+#include "RiscvEmulatorExtension.h"
 
 /**
  * @param ram_length The size in bytes of the RAM available.
@@ -26,10 +26,15 @@ inline void RiscvEmulatorInit(RiscvEmulatorState_t *state, uint32_t ram_length)
     state->registers.symbolic.sp = RAM_ORIGIN + ram_length;
 
     // Initialize program counter.
-    state->programcounter = ROM_ORIGIN;
+    state->programcounter = RAM_ORIGIN;
 
     // Initialize X0.
     state->registers.symbolic.Zero = 0;
+
+#if (RVE_E_ZICSR == 1)
+    // Initialize CSR
+    memset(&state->csr, 0, sizeof(state->csr));
+#endif
 }
 
 /**
@@ -69,6 +74,12 @@ inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state)
             break;
         case OPCODE_JUMPANDLINK:
             RiscvEmulatorJAL(state, &programcounternext);
+            break;
+        case OPCODE_SYSTEM:
+            RiscvEmulatorOpcodeSystem(state, &programcounternext);
+            break;
+        case OPCODE_MISCMEM:
+            RiscvEmulatorOpcodeMiscMem(state);
             break;
         default:
             RiscvEmulatorUnknownInstruction(state);
