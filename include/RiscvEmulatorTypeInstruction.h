@@ -5,18 +5,17 @@ SPDX-License-Identifier: Apache-2.0
 
 */
 
-
 #ifndef RiscvEmulatorTypeInstruction_H_
 #define RiscvEmulatorTypeInstruction_H_
 
 #include <stdint.h>
 
-#include "RiscvEmulatorTypeR.h"
-#include "RiscvEmulatorTypeI.h"
-#include "RiscvEmulatorTypeS.h"
 #include "RiscvEmulatorTypeB.h"
-#include "RiscvEmulatorTypeU.h"
+#include "RiscvEmulatorTypeI.h"
 #include "RiscvEmulatorTypeJ.h"
+#include "RiscvEmulatorTypeR.h"
+#include "RiscvEmulatorTypeS.h"
+#include "RiscvEmulatorTypeU.h"
 
 /**
  * Easy access to the opcode of an instruction when you do not know the instruction type yet.

@@ -8,19 +8,19 @@ SPDX-License-Identifier: Apache-2.0
 #ifndef RiscvEmulatorExtensionZicsr_H_
 #define RiscvEmulatorExtensionZicsr_H_
 
-#include <stdint.h>
-
-#include <RiscvEmulatorImplementationSpecific.h>
-
 #include "RiscvEmulatorConfig.h"
 
 #if (RVE_E_ZICSR == 1)
+
+#include <stdint.h>
+
+#include <RiscvEmulatorImplementationSpecific.h>
 
 #include "RiscvEmulatorDefine.h"
 #include "RiscvEmulatorType.h"
 
 // Get the address of an CSR structure
-inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state)
+static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state)
 {
     void *address = 0;
     switch (state->instruction.itypecsr.csr)
@@ -72,7 +72,7 @@ inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state)
 }
 
 // Atomic read and write CSR
-inline void RiscvEmulatorCSRRW(RiscvEmulatorState_t *state, void *rd, const void *rs1, void *csr)
+static inline void RiscvEmulatorCSRRW(RiscvEmulatorState_t *state, void *rd, const void *rs1, void *csr)
 {
     // Read old value into destination register when requested.
     if (*(uint32_t *)rd != 0)
@@ -82,7 +82,7 @@ inline void RiscvEmulatorCSRRW(RiscvEmulatorState_t *state, void *rd, const void
 }
 
 // Atomic read and set bits in CSR
-inline void RiscvEmulatorCSRRS(RiscvEmulatorState_t *state, void *rd, const void *rs1, void *csr)
+static inline void RiscvEmulatorCSRRS(RiscvEmulatorState_t *state, void *rd, const void *rs1, void *csr)
 {
     *(uint32_t *)rd = *(uint32_t *)csr;
 
@@ -92,7 +92,7 @@ inline void RiscvEmulatorCSRRS(RiscvEmulatorState_t *state, void *rd, const void
 }
 
 // Atomic read and clear bits in CSR
-inline void RiscvEmulatorCSRRC(RiscvEmulatorState_t *state, void *rd, const void *rs1, void *csr)
+static inline void RiscvEmulatorCSRRC(RiscvEmulatorState_t *state, void *rd, const void *rs1, void *csr)
 {
     *(uint32_t *)rd = *(uint32_t *)csr;
 

@@ -10,17 +10,18 @@ SPDX-License-Identifier: Apache-2.0
 
 #include <stdint.h>
 
+#include "RiscvEmulatorConfig.h"
+
 #include <RiscvEmulatorImplementationSpecific.h>
 
-#include "RiscvEmulatorConfig.h"
 #include "RiscvEmulatorDefine.h"
-#include "RiscvEmulatorType.h"
 #include "RiscvEmulatorExtension.h"
+#include "RiscvEmulatorType.h"
 
 /**
  * @param ram_length The size in bytes of the RAM available.
  */
-inline void RiscvEmulatorInit(RiscvEmulatorState_t *state, uint32_t ram_length)
+static inline void RiscvEmulatorInit(RiscvEmulatorState_t *state, uint32_t ram_length)
 {
     // Initialize stack pointer.
     state->registers.symbolic.sp = RAM_ORIGIN + ram_length;
@@ -40,7 +41,7 @@ inline void RiscvEmulatorInit(RiscvEmulatorState_t *state, uint32_t ram_length)
 /**
  * Calling this function frequently executes the emulator.
  */
-inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state)
+static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state)
 {
     uint32_t programcounternext = state->programcounter + 4;
 

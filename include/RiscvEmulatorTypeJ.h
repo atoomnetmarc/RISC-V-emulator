@@ -5,7 +5,6 @@ SPDX-License-Identifier: Apache-2.0
 
 */
 
-
 #ifndef RiscvEmulatorTypeJ_H_
 #define RiscvEmulatorTypeJ_H_
 

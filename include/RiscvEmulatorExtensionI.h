@@ -10,16 +10,18 @@ SPDX-License-Identifier: Apache-2.0
 
 #include <stdint.h>
 
+#include "RiscvEmulatorConfig.h"
+
 #include <RiscvEmulatorImplementationSpecific.h>
 
-#include "RiscvEmulatorConfig.h"
 #include "RiscvEmulatorDefine.h"
 #include "RiscvEmulatorType.h"
 
 #include "RiscvEmulatorExtensionZicsr.h"
+#include "RiscvEmulatorExtensionM.h"
 
 // Jump and link register.
-inline void RiscvEmulatorJALR(RiscvEmulatorState_t *state, uint32_t *programcounternext)
+static inline void RiscvEmulatorJALR(RiscvEmulatorState_t *state, uint32_t *programcounternext)
 {
     uint32_t originalprogramcounternext = *programcounternext;
 
@@ -32,7 +34,7 @@ inline void RiscvEmulatorJALR(RiscvEmulatorState_t *state, uint32_t *programcoun
         state->registers.array.location[state->instruction.itype.rd] = originalprogramcounternext;
 }
 
-inline void RiscvEmulatorOpcodeJumpAndLinkRegister(RiscvEmulatorState_t *state, uint32_t *programcounternext)
+static inline void RiscvEmulatorOpcodeJumpAndLinkRegister(RiscvEmulatorState_t *state, uint32_t *programcounternext)
 {
     if (state->instruction.itype.funct3 == FUNCT3_JUMPANDLINKREGISTER_JALR)
         RiscvEmulatorJALR(state, programcounternext);
@@ -41,66 +43,66 @@ inline void RiscvEmulatorOpcodeJumpAndLinkRegister(RiscvEmulatorState_t *state, 
 }
 
 // Add: rd = rs1 + rs2
-inline void RiscvEmulatorADD(void *rd, const void *rs1, const void *rs2)
+static inline void RiscvEmulatorADD(void *rd, const void *rs1, const void *rs2)
 {
     *(int32_t *)rd = *(int32_t *)rs1 + *(int32_t *)rs2;
 }
 
 // Subtract: rd = rs1 - rs2
-inline void RiscvEmulatorSUB(void *rd, const void *rs1, const void *rs2)
+static inline void RiscvEmulatorSUB(void *rd, const void *rs1, const void *rs2)
 {
     *(int32_t *)rd = *(int32_t *)rs1 - *(int32_t *)rs2;
 }
 
 // Logical shift left: rd = rs1 << (rs2 & 0b11111)
-inline void RiscvEmulatorSLL(void *rd, const void *rs1, const void *rs2)
+static inline void RiscvEmulatorSLL(void *rd, const void *rs1, const void *rs2)
 {
     *(uint32_t *)rd = *(uint32_t *)rs1 << (*(uint32_t *)rs2 & 0b11111);
 }
 
 // Signed compare: rd = (rs1 < rs2)
-inline void RiscvEmulatorSLT(void *rd, const void *rs1, const void *rs2)
+static inline void RiscvEmulatorSLT(void *rd, const void *rs1, const void *rs2)
 {
     *(int32_t *)rd = (*(int32_t *)rs1 < *(int32_t *)rs2);
 }
 
 // Unsigned compare: rd = (rs1 < rs2)
-inline void RiscvEmulatorSLTU(void *rd, const void *rs1, const void *rs2)
+static inline void RiscvEmulatorSLTU(void *rd, const void *rs1, const void *rs2)
 {
     *(uint32_t *)rd = (*(uint32_t *)rs1 < *(int32_t *)rs2);
 }
 
 // Exclusive or: rd = rs1 ^ rs2
-inline void RiscvEmulatorXOR(void *rd, const void *rs1, const void *rs2)
+static inline void RiscvEmulatorXOR(void *rd, const void *rs1, const void *rs2)
 {
     *(uint32_t *)rd = *(uint32_t *)rs1 ^ *(int32_t *)rs2;
 }
 
 // Logical shift right: rd = rs1 >> (rs2 & 0b11111)
-inline void RiscvEmulatorSRL(void *rd, const void *rs1, const void *rs2)
+static inline void RiscvEmulatorSRL(void *rd, const void *rs1, const void *rs2)
 {
     *(uint32_t *)rd = *(uint32_t *)rs1 >> (*(uint32_t *)rs2 & 0b11111);
 }
 
 // Arithmetic shift right: rd = rs1 >> (rs2 & 0b11111)
-inline void RiscvEmulatorSRA(void *rd, const void *rs1, const void *rs2)
+static inline void RiscvEmulatorSRA(void *rd, const void *rs1, const void *rs2)
 {
     *(int32_t *)rd = *(int32_t *)rs1 >> (*(uint32_t *)rs2 & 0b11111);
 }
 
 // Boolean or: rd = rs1 | rs2
-inline void RiscvEmulatorOR(void *rd, const void *rs1, const void *rs2)
+static inline void RiscvEmulatorOR(void *rd, const void *rs1, const void *rs2)
 {
     *(int32_t *)rd = *(int32_t *)rs1 | *(int32_t *)rs2;
 }
 
 // Boolean and: rd = rs1 & rs2
-inline void RiscvEmulatorAND(void *rd, const void *rs1, const void *rs2)
+static inline void RiscvEmulatorAND(void *rd, const void *rs1, const void *rs2)
 {
     *(int32_t *)rd = *(int32_t *)rs1 & *(int32_t *)rs2;
 }
 
-inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state)
+static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state)
 {
     if (state->instruction.rtype.rd == 0)
         return;
@@ -145,13 +147,39 @@ inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state)
         case FUNCT7_3_OPERATION_AND:
             RiscvEmulatorAND(rd, rs1, rs2);
             break;
+#if (RVE_E_M == 1)
+        case FUNCT7_3_OPERATION_MUL:
+            RiscvEmulatorMUL(rd, rs1, rs2);
+            break;
+        case FUNCT7_3_OPERATION_MULH:
+            RiscvEmulatorMULH(rd, rs1, rs2);
+            break;
+        case FUNCT7_3_OPERATION_MULHSU:
+            RiscvEmulatorMULHSU(rd, rs1, rs2);
+            break;
+        case FUNCT7_3_OPERATION_MULHU:
+            RiscvEmulatorMULHU(rd, rs1, rs2);
+            break;
+        case FUNCT7_3_OPERATION_DIV:
+            RiscvEmulatorDIV(rd, rs1, rs2);
+            break;
+        case FUNCT7_3_OPERATION_DIVU:
+            RiscvEmulatorDIVU(rd, rs1, rs2);
+            break;
+        case FUNCT7_3_OPERATION_REM:
+            RiscvEmulatorREM(rd, rs1, rs2);
+            break;
+        case FUNCT7_3_OPERATION_REMU:
+            RiscvEmulatorREMU(rd, rs1, rs2);
+            break;
+#endif
         default:
             RiscvEmulatorUnknownInstruction(state);
             break;
     }
 }
 
-inline void RiscvEmulatorOpcodeImmediateShifts(RiscvEmulatorState_t *state, void *rd, void *rs1)
+static inline void RiscvEmulatorOpcodeImmediateShifts(RiscvEmulatorState_t *state, void *rd, void *rs1)
 {
     uint32_t shamt = state->instruction.itypeshiftbyconstant.shamt;
 
@@ -176,7 +204,7 @@ inline void RiscvEmulatorOpcodeImmediateShifts(RiscvEmulatorState_t *state, void
     }
 }
 
-inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state)
+static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state)
 {
     if (state->instruction.itype.rd == 0)
         return;
@@ -220,7 +248,7 @@ inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state)
 }
 
 // Load byte
-inline void RiscvEmulatorLB(void *rd, uint32_t *memorylocation)
+static inline void RiscvEmulatorLB(void *rd, uint32_t *memorylocation)
 {
     int8_t int8 = 0;
     RiscvEmulatorLoad(*memorylocation, &int8, sizeof(int8_t));
@@ -228,7 +256,7 @@ inline void RiscvEmulatorLB(void *rd, uint32_t *memorylocation)
 }
 
 // Load byte unsigned
-inline void RiscvEmulatorLBU(void *rd, uint32_t *memorylocation)
+static inline void RiscvEmulatorLBU(void *rd, uint32_t *memorylocation)
 {
     uint8_t uint8 = 0;
     RiscvEmulatorLoad(*memorylocation, &uint8, sizeof(uint8_t));
@@ -236,7 +264,7 @@ inline void RiscvEmulatorLBU(void *rd, uint32_t *memorylocation)
 }
 
 // Load half word
-inline void RiscvEmulatorLH(void *rd, uint32_t *memorylocation)
+static inline void RiscvEmulatorLH(void *rd, uint32_t *memorylocation)
 {
     int16_t int16 = 0;
     RiscvEmulatorLoad(*memorylocation, &int16, sizeof(int16_t));
@@ -244,7 +272,7 @@ inline void RiscvEmulatorLH(void *rd, uint32_t *memorylocation)
 }
 
 // Load half word unsigned
-inline void RiscvEmulatorLHU(void *rd, uint32_t *memorylocation)
+static inline void RiscvEmulatorLHU(void *rd, uint32_t *memorylocation)
 {
     uint16_t uint16 = 0;
     RiscvEmulatorLoad(*memorylocation, &uint16, sizeof(uint16_t));
@@ -252,12 +280,12 @@ inline void RiscvEmulatorLHU(void *rd, uint32_t *memorylocation)
 }
 
 // Load word
-inline void RiscvEmulatorLW(void *rd, uint32_t *memorylocation)
+static inline void RiscvEmulatorLW(void *rd, uint32_t *memorylocation)
 {
     RiscvEmulatorLoad(*memorylocation, rd, sizeof(uint32_t));
 }
 
-inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state)
+static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state)
 {
     if (state->instruction.itype.rd == 0)
         return;
@@ -288,7 +316,7 @@ inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state)
     }
 }
 
-inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state)
+static inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state)
 {
     // Untangle the immediate bits.
     RiscvInstructionTypeSDecoderImm_u helper;
@@ -318,7 +346,7 @@ inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state)
     RiscvEmulatorStore(memorylocation, rs2, length);
 }
 
-inline void RiscvEmulatorExecuteBranch(RiscvEmulatorState_t *state, uint32_t *programcounternext)
+static inline void RiscvEmulatorExecuteBranch(RiscvEmulatorState_t *state, uint32_t *programcounternext)
 {
     // Untangle the immediate bits.
     RiscvInstructionTypeBDecoderImm_u helper;
@@ -332,48 +360,48 @@ inline void RiscvEmulatorExecuteBranch(RiscvEmulatorState_t *state, uint32_t *pr
 }
 
 // Branch if equal
-inline void RiscvEmulatorBEQ(const void *rs1, const void *rs2, uint8_t *executebranch)
+static inline void RiscvEmulatorBEQ(const void *rs1, const void *rs2, uint8_t *executebranch)
 {
     if (*(int32_t *)rs1 == *(int32_t *)rs2)
         *executebranch = BRANCH_YES;
 }
 
 // Branch if not equal
-inline void RiscvEmulatorBNE(const void *rs1, const void *rs2, uint8_t *executebranch)
+static inline void RiscvEmulatorBNE(const void *rs1, const void *rs2, uint8_t *executebranch)
 {
     if (*(int32_t *)rs1 != *(int32_t *)rs2)
         *executebranch = BRANCH_YES;
 }
 
 // Branch if greater than or equal
-inline void RiscvEmulatorBGE(const void *rs1, const void *rs2, uint8_t *executebranch)
+static inline void RiscvEmulatorBGE(const void *rs1, const void *rs2, uint8_t *executebranch)
 {
     if (*(int32_t *)rs1 >= *(int32_t *)rs2)
         *executebranch = BRANCH_YES;
 }
 
 // Branch if greater than or equal unsigned
-inline void RiscvEmulatorBGEU(const void *rs1, const void *rs2, uint8_t *executebranch)
+static inline void RiscvEmulatorBGEU(const void *rs1, const void *rs2, uint8_t *executebranch)
 {
     if (*(uint32_t *)rs1 >= *(uint32_t *)rs2)
         *executebranch = BRANCH_YES;
 }
 
 // Branch if less than
-inline void RiscvEmulatorBLT(const void *rs1, const void *rs2, uint8_t *executebranch)
+static inline void RiscvEmulatorBLT(const void *rs1, const void *rs2, uint8_t *executebranch)
 {
     if (*(int32_t *)rs1 < *(int32_t *)rs2)
         *executebranch = BRANCH_YES;
 }
 
 // Branch if less than unsigned
-inline void RiscvEmulatorBLTU(const void *rs1, const void *rs2, uint8_t *executebranch)
+static inline void RiscvEmulatorBLTU(const void *rs1, const void *rs2, uint8_t *executebranch)
 {
     if (*(uint32_t *)rs1 < *(uint32_t *)rs2)
         *executebranch = BRANCH_YES;
 }
 
-inline void RiscvEmulatorOpcodeBranch(RiscvEmulatorState_t *state, uint32_t *programcounternext)
+static inline void RiscvEmulatorOpcodeBranch(RiscvEmulatorState_t *state, uint32_t *programcounternext)
 {
     uint8_t executebranch = BRANCH_NO;
     void *rs1 = &state->registers.array.location[state->instruction.btype.rs1];
@@ -409,7 +437,7 @@ inline void RiscvEmulatorOpcodeBranch(RiscvEmulatorState_t *state, uint32_t *pro
 }
 
 // Add upper immediate to program counter
-inline void RiscvEmulatorAUIPC(RiscvEmulatorState_t *state)
+static inline void RiscvEmulatorAUIPC(RiscvEmulatorState_t *state)
 {
     RiscvInstructionTypeUDecoderImm_u helper;
     helper.input.imm11_0 = 0;
@@ -419,7 +447,7 @@ inline void RiscvEmulatorAUIPC(RiscvEmulatorState_t *state)
 }
 
 // Load upper with immediate
-inline void RiscvEmulatorLUI(RiscvEmulatorState_t *state)
+static inline void RiscvEmulatorLUI(RiscvEmulatorState_t *state)
 {
     RiscvInstructionTypeUDecoderImm_u helper;
     helper.input.imm11_0 = 0;
@@ -429,7 +457,7 @@ inline void RiscvEmulatorLUI(RiscvEmulatorState_t *state)
 }
 
 // Jump and link
-inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state, uint32_t *programcounternext)
+static inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state, uint32_t *programcounternext)
 {
     // Set destination register to current next instruction acting as a return address.
     if (state->instruction.jtype.rd)
@@ -449,19 +477,19 @@ inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state, uint32_t *programcount
 #if (RVE_E_ZICSR == 1)
 // Return from machine mode
 // TODO: complete the functionality of MRET.
-inline void RiscvEmulatorMRET(RiscvEmulatorState_t *state, uint32_t *programcounternext)
+static inline void RiscvEmulatorMRET(RiscvEmulatorState_t *state, uint32_t *programcounternext)
 {
     *programcounternext = state->csr.mepc.mepc;
 }
 #endif
 
 // Make a service request to the execution environment
-inline void RiscvEmulatorECALL(RiscvEmulatorState_t *state)
+static inline void RiscvEmulatorECALL(RiscvEmulatorState_t *state)
 {
     RiscvEmulatorHandleECALL(state);
 }
 
-inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state, uint32_t *programcounternext)
+static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state, uint32_t *programcounternext)
 {
     uint8_t detectedUnknownSystemInstruction = 1;
 
@@ -532,11 +560,11 @@ inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state, uint32_t *pro
 
 // Fence
 // TODO: Complete possibly incomplete implementation
-inline void RiscvEmulatorFence(RiscvEmulatorState_t *state)
+static inline void RiscvEmulatorFence(RiscvEmulatorState_t *state)
 {
 }
 
-inline void RiscvEmulatorOpcodeMiscMem(RiscvEmulatorState_t *state)
+static inline void RiscvEmulatorOpcodeMiscMem(RiscvEmulatorState_t *state)
 {
     uint8_t detectedUnknownSystemInstruction = 1;
 

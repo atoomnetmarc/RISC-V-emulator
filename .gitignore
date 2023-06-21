@@ -9,3 +9,5 @@
 AT*/
 *.cppproj
 *.componentinfo.xml
+RV32I/
+RV32IZincsr/
