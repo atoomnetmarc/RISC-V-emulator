@@ -82,6 +82,11 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state)
         case OPCODE_MISCMEM:
             RiscvEmulatorOpcodeMiscMem(state);
             break;
+#if (RVE_E_A == 1)
+        case OPCODE_ATOMICMEMORYOPERATION:
+            RiscvEmulatorOpcodeAtomicMemoryOperation(state);
+            break;
+#endif
         default:
             RiscvEmulatorUnknownInstruction(state);
             break;

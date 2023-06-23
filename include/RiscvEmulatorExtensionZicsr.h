@@ -19,6 +19,13 @@ SPDX-License-Identifier: Apache-2.0
 #include "RiscvEmulatorDefine.h"
 #include "RiscvEmulatorType.h"
 
+// Return from machine mode
+// TODO: complete the functionality of MRET.
+static inline void RiscvEmulatorMRET(RiscvEmulatorState_t *state, uint32_t *programcounternext)
+{
+    *programcounternext = state->csr.mepc.mepc;
+}
+
 // Get the address of an CSR structure
 static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state)
 {

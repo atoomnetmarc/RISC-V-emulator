@@ -34,9 +34,14 @@ typedef union
     uint32_t value;
     RiscvInstructionOpcode_t opcode;
     RiscvInstructionTypeR_t rtype;
+#if (RVE_E_A == 1)
+    RiscvInstructionTypeRAtomicMemoryOperation_t rtypeatomicmemoryoperation;
+#endif
     RiscvInstructionTypeI_t itype;
+#if (RVE_E_ZICSR == 1)
     RiscvInstructionTypeICSR_t itypecsr;
     RiscvInstructionTypeICSRImm_t itypecsrimm;
+#endif
     RiscvInstructionTypeIMiscMemt_t itypemiscmem;
     RiscvInstructionTypeIShiftByConstant_t itypeshiftbyconstant;
     RiscvInstructionTypeIStystem_t itypesystem;

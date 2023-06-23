@@ -69,13 +69,13 @@ static inline void RiscvEmulatorSLT(void *rd, const void *rs1, const void *rs2)
 // Unsigned compare: rd = (rs1 < rs2)
 static inline void RiscvEmulatorSLTU(void *rd, const void *rs1, const void *rs2)
 {
-    *(uint32_t *)rd = (*(uint32_t *)rs1 < *(int32_t *)rs2);
+    *(uint32_t *)rd = (*(uint32_t *)rs1 < *(uint32_t *)rs2);
 }
 
 // Exclusive or: rd = rs1 ^ rs2
 static inline void RiscvEmulatorXOR(void *rd, const void *rs1, const void *rs2)
 {
-    *(uint32_t *)rd = *(uint32_t *)rs1 ^ *(int32_t *)rs2;
+    *(uint32_t *)rd = *(uint32_t *)rs1 ^ *(uint32_t *)rs2;
 }
 
 // Logical shift right: rd = rs1 >> (rs2 & 0b11111)
@@ -473,15 +473,6 @@ static inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state, uint32_t *progr
     // Execute jump.
     *programcounternext = state->programcounter + helper.output.imm;
 }
-
-#if (RVE_E_ZICSR == 1)
-// Return from machine mode
-// TODO: complete the functionality of MRET.
-static inline void RiscvEmulatorMRET(RiscvEmulatorState_t *state, uint32_t *programcounternext)
-{
-    *programcounternext = state->csr.mepc.mepc;
-}
-#endif
 
 // Make a service request to the execution environment
 static inline void RiscvEmulatorECALL(RiscvEmulatorState_t *state)

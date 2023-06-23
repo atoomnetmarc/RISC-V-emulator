@@ -40,6 +40,7 @@ typedef struct __attribute__((packed))
     uint16_t funct6 : 6;
 } RiscvInstructionTypeIStystemCustom_t;
 
+#if (RVE_E_ZICSR == 1)
 typedef struct __attribute__((packed))
 {
     uint8_t opcode : 7;
@@ -57,6 +58,7 @@ typedef struct __attribute__((packed))
     uint8_t imm : 5;
     uint16_t csr : 12;
 } RiscvInstructionTypeICSRImm_t;
+#endif
 
 typedef struct __attribute__((packed))
 {
