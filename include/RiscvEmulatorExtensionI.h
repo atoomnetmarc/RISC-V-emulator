@@ -17,8 +17,8 @@ SPDX-License-Identifier: Apache-2.0
 #include "RiscvEmulatorDefine.h"
 #include "RiscvEmulatorType.h"
 
-#include "RiscvEmulatorExtensionZicsr.h"
 #include "RiscvEmulatorExtensionM.h"
+#include "RiscvEmulatorExtensionZicsr.h"
 
 // Jump and link register.
 static inline void RiscvEmulatorJALR(RiscvEmulatorState_t *state, uint32_t *programcounternext)
@@ -247,44 +247,6 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state)
     }
 }
 
-// Load byte
-static inline void RiscvEmulatorLB(void *rd, uint32_t *memorylocation)
-{
-    int8_t int8 = 0;
-    RiscvEmulatorLoad(*memorylocation, &int8, sizeof(int8_t));
-    *(int32_t *)rd = int8;
-}
-
-// Load byte unsigned
-static inline void RiscvEmulatorLBU(void *rd, uint32_t *memorylocation)
-{
-    uint8_t uint8 = 0;
-    RiscvEmulatorLoad(*memorylocation, &uint8, sizeof(uint8_t));
-    *(uint32_t *)rd = uint8;
-}
-
-// Load half word
-static inline void RiscvEmulatorLH(void *rd, uint32_t *memorylocation)
-{
-    int16_t int16 = 0;
-    RiscvEmulatorLoad(*memorylocation, &int16, sizeof(int16_t));
-    *(int32_t *)rd = int16;
-}
-
-// Load half word unsigned
-static inline void RiscvEmulatorLHU(void *rd, uint32_t *memorylocation)
-{
-    uint16_t uint16 = 0;
-    RiscvEmulatorLoad(*memorylocation, &uint16, sizeof(uint16_t));
-    *(uint32_t *)rd = uint16;
-}
-
-// Load word
-static inline void RiscvEmulatorLW(void *rd, uint32_t *memorylocation)
-{
-    RiscvEmulatorLoad(*memorylocation, rd, sizeof(uint32_t));
-}
-
 static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state)
 {
     if (state->instruction.itype.rd == 0)
@@ -293,25 +255,44 @@ static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state)
     uint32_t memorylocation = state->instruction.itype.imm + state->registers.array.location[state->instruction.stype.rs1];
     void *rd = &state->registers.array.location[state->instruction.itype.rd];
 
+    uint8_t length = 0;
     switch (state->instruction.itype.funct3)
     {
         case FUNCT3_LOAD_LB:
-            RiscvEmulatorLB(rd, &memorylocation);
-            break;
         case FUNCT3_LOAD_LBU:
-            RiscvEmulatorLBU(rd, &memorylocation);
+            length = sizeof(uint8_t);
             break;
         case FUNCT3_LOAD_LH:
-            RiscvEmulatorLH(rd, &memorylocation);
-            break;
         case FUNCT3_LOAD_LHU:
-            RiscvEmulatorLHU(rd, &memorylocation);
+            length = sizeof(uint16_t);
             break;
         case FUNCT3_LOAD_LW:
-            RiscvEmulatorLW(rd, &memorylocation);
+            length = sizeof(uint32_t);
             break;
         default:
             RiscvEmulatorUnknownInstruction(state);
+            break;
+    }
+
+    uint32_t value = 0;
+    RiscvEmulatorLoad(memorylocation, &value, length);
+
+    switch (state->instruction.itype.funct3)
+    {
+        case FUNCT3_LOAD_LB:
+            *(int32_t *)rd = (int8_t)value;
+            break;
+        case FUNCT3_LOAD_LBU:
+            *(uint32_t *)rd = (uint8_t)value;
+            break;
+        case FUNCT3_LOAD_LH:
+            *(int32_t *)rd = (int16_t)value;
+            break;
+        case FUNCT3_LOAD_LHU:
+            *(uint32_t *)rd = (uint16_t)value;
+            break;
+        case FUNCT3_LOAD_LW:
+            *(uint32_t *)rd = (uint32_t)value;
             break;
     }
 }
