@@ -1,6 +1,6 @@
 /*
 
-Copyright 2023 Marc Ketel
+Copyright 2023-2024 Marc Ketel
 SPDX-License-Identifier: Apache-2.0
 
 */
@@ -18,8 +18,7 @@ SPDX-License-Identifier: Apache-2.0
 /**
  * Collection of control and status registers.
  */
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     RiscvCSRmhartid_t mhartid;
 
     RiscvCSRmstatus_t mstatus;

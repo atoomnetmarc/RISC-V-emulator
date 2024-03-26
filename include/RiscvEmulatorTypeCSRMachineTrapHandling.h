@@ -1,6 +1,6 @@
 /*
 
-Copyright 2023 Marc Ketel
+Copyright 2023-2024 Marc Ketel
 SPDX-License-Identifier: Apache-2.0
 
 */
@@ -13,8 +13,7 @@ SPDX-License-Identifier: Apache-2.0
 /**
  * Machine exception program counter
  */
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint32_t mepc;
 } RiscvCSRmepc_t;
 

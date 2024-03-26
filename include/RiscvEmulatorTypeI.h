@@ -1,6 +1,6 @@
 /*
 
-Copyright 2023 Marc Ketel
+Copyright 2023-2024 Marc Ketel
 SPDX-License-Identifier: Apache-2.0
 
 */
@@ -13,8 +13,7 @@ SPDX-License-Identifier: Apache-2.0
 /**
  * I-type instruction.
  */
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint8_t opcode : 7;
     uint8_t rd : 5;
     uint8_t funct3 : 3;
@@ -22,8 +21,7 @@ typedef struct __attribute__((packed))
     int16_t imm : 12;
 } RiscvInstructionTypeI_t;
 
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint8_t opcode : 7;
     uint8_t rd : 5;
     uint8_t funct3 : 3;
@@ -31,8 +29,7 @@ typedef struct __attribute__((packed))
     uint16_t funct12 : 12;
 } RiscvInstructionTypeIStystem_t;
 
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint8_t opcode : 7;
     uint8_t custom5 : 5;
     uint8_t funct3 : 3;
@@ -41,8 +38,7 @@ typedef struct __attribute__((packed))
 } RiscvInstructionTypeIStystemCustom_t;
 
 #if (RVE_E_ZICSR == 1)
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint8_t opcode : 7;
     uint8_t rd : 5;
     uint8_t funct3 : 3;
@@ -50,8 +46,7 @@ typedef struct __attribute__((packed))
     uint16_t csr : 12;
 } RiscvInstructionTypeICSR_t;
 
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint8_t opcode : 7;
     uint8_t rd : 5;
     uint8_t funct3 : 3;
@@ -60,8 +55,7 @@ typedef struct __attribute__((packed))
 } RiscvInstructionTypeICSRImm_t;
 #endif
 
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint8_t opcode : 7;
     uint8_t rd : 5;
     uint8_t funct3 : 3;
@@ -70,8 +64,7 @@ typedef struct __attribute__((packed))
     uint8_t imm11_5 : 7;
 } RiscvInstructionTypeIShiftByConstant_t;
 
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint8_t opcode : 7;
     uint8_t rd : 5;
     uint8_t funct3 : 3;

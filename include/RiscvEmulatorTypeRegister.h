@@ -1,6 +1,6 @@
 /*
 
-Copyright 2023 Marc Ketel
+Copyright 2023-2024 Marc Ketel
 SPDX-License-Identifier: Apache-2.0
 
 */
@@ -13,8 +13,7 @@ SPDX-License-Identifier: Apache-2.0
 /**
  * Named registers.
  */
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint32_t x0;
     uint32_t x1;
     uint32_t x2;
@@ -53,8 +52,7 @@ typedef struct __attribute__((packed))
 /**
  * Symbolic registers.
  */
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     /**
      * Always zero.
      */
@@ -219,24 +217,21 @@ typedef struct __attribute__((packed))
 /**
  * Unsigned array of registers.
  */
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint32_t location[32];
 } RiscvRegisterArray_t;
 
 /**
  * Signed array of registers.
  */
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     int32_t location[32];
 } RiscvRegisterArraySigned_t;
 
 /**
  * Union of all the ways a register can be accessed.
  */
-typedef union
-{
+typedef union {
     RiscvRegisterName_t name;
     RiscvRegisterSymbolic_t symbolic;
     RiscvRegisterArray_t array;

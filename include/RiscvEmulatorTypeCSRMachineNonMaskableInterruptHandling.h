@@ -1,6 +1,6 @@
 /*
 
-Copyright 2023 Marc Ketel
+Copyright 2023-2024 Marc Ketel
 SPDX-License-Identifier: Apache-2.0
 
 */
@@ -13,8 +13,7 @@ SPDX-License-Identifier: Apache-2.0
 /**
  * Resumable NMI status.
  */
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint8_t : 3;
     uint8_t nmie : 1;
     uint8_t : 3;

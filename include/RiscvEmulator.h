@@ -1,6 +1,6 @@
 /*
 
-Copyright 2023 Marc Ketel
+Copyright 2023-2024 Marc Ketel
 SPDX-License-Identifier: Apache-2.0
 
 */
@@ -19,15 +19,16 @@ SPDX-License-Identifier: Apache-2.0
 #include "RiscvEmulatorType.h"
 
 /**
+ * Initialize the emulator.
+ *
  * @param ram_length The size in bytes of the RAM available.
  */
-static inline void RiscvEmulatorInit(RiscvEmulatorState_t *state, uint32_t ram_length)
-{
+static inline void RiscvEmulatorInit(RiscvEmulatorState_t *state, uint32_t ram_length) {
     // Initialize stack pointer.
     state->registers.symbolic.sp = RAM_ORIGIN + ram_length;
 
     // Initialize program counter.
-    state->programcounter = RAM_ORIGIN;
+    state->programcounter = ROM_ORIGIN;
 
     // Initialize X0.
     state->registers.symbolic.Zero = 0;
@@ -39,16 +40,14 @@ static inline void RiscvEmulatorInit(RiscvEmulatorState_t *state, uint32_t ram_l
 }
 
 /**
- * Calling this function frequently executes the emulator.
+ * Call this function repeatedly to execute the emulator one instruction at a time.
  */
-static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state)
-{
+static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
     uint32_t programcounternext = state->programcounter + 4;
 
     state->instruction.value = RiscvEmulatorLoadInstruction(state->programcounter);
 
-    switch (state->instruction.opcode.opcode)
-    {
+    switch (state->instruction.opcode.opcode) {
         case OPCODE_JUMPANDLINKREGISTER:
             RiscvEmulatorOpcodeJumpAndLinkRegister(state, &programcounternext);
             break;

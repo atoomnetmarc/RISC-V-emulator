@@ -1,6 +1,6 @@
 /*
 
-Copyright 2023 Marc Ketel
+Copyright 2023-2024 Marc Ketel
 SPDX-License-Identifier: Apache-2.0
 
 */
@@ -13,29 +13,25 @@ SPDX-License-Identifier: Apache-2.0
 /**
  * U-type instruction.
  */
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint8_t opcode : 7;
     uint8_t rd : 5;
     uint32_t imm31_12 : 20;
 } RiscvInstructionTypeU_t;
 
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint16_t imm11_0 : 12;
     uint32_t imm31_12 : 20;
 } RiscvInstructionTypeUDecoderImmIn_t;
 
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint32_t imm : 32;
 } RiscvInstructionTypeUDecoderImmOut_t;
 
 /**
- * Union for decoding imm field of J-type instruction.
+ * Union for decoding imm field of a U-type instruction.
  */
-typedef union
-{
+typedef union {
     RiscvInstructionTypeUDecoderImmIn_t input;
     RiscvInstructionTypeUDecoderImmOut_t output;
 } RiscvInstructionTypeUDecoderImm_u;

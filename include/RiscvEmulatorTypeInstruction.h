@@ -1,6 +1,6 @@
 /*
 
-Copyright 2023 Marc Ketel
+Copyright 2023-2024 Marc Ketel
 SPDX-License-Identifier: Apache-2.0
 
 */
@@ -20,8 +20,7 @@ SPDX-License-Identifier: Apache-2.0
 /**
  * Easy access to the opcode of an instruction when you do not know the instruction type yet.
  */
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint8_t opcode : 7;
     uint32_t : 25;
 } RiscvInstructionOpcode_t;
@@ -29,8 +28,7 @@ typedef struct __attribute__((packed))
 /**
  * All the instruction types combined.
  */
-typedef union
-{
+typedef union {
     uint32_t value;
     RiscvInstructionOpcode_t opcode;
     RiscvInstructionTypeR_t rtype;

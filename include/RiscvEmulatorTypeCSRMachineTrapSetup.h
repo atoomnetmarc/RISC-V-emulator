@@ -1,6 +1,6 @@
 /*
 
-Copyright 2023 Marc Ketel
+Copyright 2023-2024 Marc Ketel
 SPDX-License-Identifier: Apache-2.0
 
 */
@@ -13,8 +13,7 @@ SPDX-License-Identifier: Apache-2.0
 /**
  * Machine status register
  */
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint8_t : 1;
     uint8_t sie : 1;
     uint8_t : 1;
@@ -41,8 +40,7 @@ typedef struct __attribute__((packed))
 /**
  * Additional machine-mode status register
  */
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint8_t : 4;
     uint8_t sbe : 1;
     uint8_t mbe : 1;
@@ -54,15 +52,16 @@ typedef struct __attribute__((packed))
 /**
  * Machine ISA Register
  */
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint32_t extensions : 26;
     uint8_t mxlen : 4;
     uint8_t mxl : 2;
 } RiscvCSRmisa_t;
 
-typedef struct __attribute__((packed))
-{
+/**
+ * Machine ISA Register with all the extensions
+ */
+typedef struct __attribute__((packed)) {
     /**
      * Atomic extension
      */
@@ -197,8 +196,10 @@ typedef struct __attribute__((packed))
     uint8_t mxl : 2;
 } RiscvCSRmisaExtensions_t;
 
-typedef union
-{
+/**
+ * Machine ISA Register union
+ */
+typedef union {
     RiscvCSRmisa_t misa;
     RiscvCSRmisaExtensions_t misaExtensions;
 } RiscvCSRmisa_u;
@@ -206,29 +207,25 @@ typedef union
 /**
  * Machine Exception Delegation Register
  */
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint32_t synchronousexceptions;
 } RiscvCSRmedeleg_t;
 
 /**
  * Machine Interrupt Delegation Register
  */
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint32_t interrupts;
 } RiscvCSRmideleg_t;
 
 /**
  * Machine interrupt-enable register
  */
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint32_t interrupts;
 } RiscvCSRmie_t;
 
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint8_t : 1;
     uint8_t ssie : 1;
     uint8_t : 1;
@@ -245,8 +242,7 @@ typedef struct __attribute__((packed))
     uint16_t : 16;
 } RiscvCSRmiebits_t;
 
-typedef union
-{
+typedef union {
     RiscvCSRmie_t mie;
     RiscvCSRmiebits_t bits;
 } RiscvCSRmie_u;
@@ -254,8 +250,7 @@ typedef union
 /**
  * Machine Trap-Vector Base-Address Register
  */
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint8_t mode : 2;
     uint32_t base : 30;
 } RiscvCSRmtvec_t;

@@ -1,6 +1,6 @@
 /*
 
-Copyright 2023 Marc Ketel
+Copyright 2023-2024 Marc Ketel
 SPDX-License-Identifier: Apache-2.0
 
 */
@@ -13,8 +13,7 @@ SPDX-License-Identifier: Apache-2.0
 /**
  * R-type instruction.
  */
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint8_t opcode : 7;
     uint8_t rd : 5;
     uint8_t funct3 : 3;
@@ -26,8 +25,7 @@ typedef struct __attribute__((packed))
 /**
  * Feed funct3 and funct7.
  */
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint8_t funct3 : 3;
     uint8_t funct7 : 7;
 } RiscvInstructionTypeRDecoderFunct7_3In_r;
@@ -35,16 +33,14 @@ typedef struct __attribute__((packed))
 /**
  * Get combined funct7_3.
  */
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint16_t funct7_3 : 10;
 } RiscvInstructionTypeRDecoderFunct7_3Out_r;
 
 /**
  * Union for combining funct3 and funct7 field of R-type instruction.
  */
-typedef union
-{
+typedef union {
     RiscvInstructionTypeRDecoderFunct7_3In_r input;
     RiscvInstructionTypeRDecoderFunct7_3Out_r output;
 } RiscvInstructionTypeRDecoderFunct7_3Funct7_3_u;
@@ -53,8 +49,7 @@ typedef union
 /**
  * Atomic memory instruction.
  */
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint8_t opcode : 7;
     uint8_t rd : 5;
     uint8_t funct3 : 3;
@@ -68,8 +63,7 @@ typedef struct __attribute__((packed))
 /**
  * Feed funct3 and funct5.
  */
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint8_t funct3 : 3;
     uint8_t funct5 : 5;
 } RiscvInstructionTypeRDecoderFunct5_3In_r;
@@ -77,16 +71,14 @@ typedef struct __attribute__((packed))
 /**
  * Get combined funct5_3.
  */
-typedef struct __attribute__((packed))
-{
+typedef struct __attribute__((packed)) {
     uint16_t funct5_3 : 8;
 } RiscvInstructionTypeRDecoderFunct5_3Out_r;
 
 /**
  * Union for combining funct3 and funct5 field of R-type instruction.
  */
-typedef union
-{
+typedef union {
     RiscvInstructionTypeRDecoderFunct5_3In_r input;
     RiscvInstructionTypeRDecoderFunct5_3Out_r output;
 } RiscvInstructionTypeRDecoderFunct5_3Funct5_3_u;
