@@ -75,9 +75,19 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(RiscvEmulatorState_t
     void *rs1 = &state->registers.array.location[state->instruction.rtypeatomicmemoryoperation.rs1];
     void *rs2 = &state->registers.array.location[state->instruction.rtypeatomicmemoryoperation.rs2];
 
-    RiscvEmulatorLoad(*(uint32_t *)rs1, rd, sizeof(uint32_t));
+    // Remember original address stored in rs1.
+    uint32_t originaladdressrs1 = *(uint32_t *)rs1;
 
-    uint32_t temp = *(uint32_t *)rd;
+    // Remember original value stored in rs2.
+    uint32_t originalvaluers2 = *(uint32_t *)rs2;
+
+    uint32_t loadedvalue;
+    RiscvEmulatorLoad(originaladdressrs1, &loadedvalue, sizeof(uint32_t));
+
+    if (state->instruction.rtypeatomicmemoryoperation.rd != 0) {
+        // Place loaded value of original address in rd.
+        *(uint32_t *)rd = loadedvalue;
+    }
 
     RiscvInstructionTypeRDecoderFunct5_3Funct5_3_u instruction_decoderhelper_rtypeatomicmemoryoperation;
     instruction_decoderhelper_rtypeatomicmemoryoperation.input.funct3 = state->instruction.rtypeatomicmemoryoperation.funct3;
@@ -85,38 +95,38 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(RiscvEmulatorState_t
 
     switch (instruction_decoderhelper_rtypeatomicmemoryoperation.output.funct5_3) {
         case FUNCT5_3_OPERATION_AMOADD_W:
-            RiscvEmulatorADD(&temp, &temp, rs2);
+            RiscvEmulatorADD(&loadedvalue, &loadedvalue, &originalvaluers2);
             break;
         case FUNCT5_3_OPERATION_AMOSWAP_W:
-            RiscvEmulatorAMOSWAP_W(&temp, rs2);
+            RiscvEmulatorAMOSWAP_W(&loadedvalue, &originalvaluers2);
             break;
         case FUNCT5_3_OPERATION_AMOXOR_W:
-            RiscvEmulatorXOR(&temp, &temp, rs2);
+            RiscvEmulatorXOR(&loadedvalue, &loadedvalue, &originalvaluers2);
             break;
         case FUNCT5_3_OPERATION_AMOOR_W:
-            RiscvEmulatorOR(&temp, &temp, rs2);
+            RiscvEmulatorOR(&loadedvalue, &loadedvalue, &originalvaluers2);
             break;
         case FUNCT5_3_OPERATION_AMOAND_W:
-            RiscvEmulatorAND(&temp, &temp, rs2);
+            RiscvEmulatorAND(&loadedvalue, &loadedvalue, &originalvaluers2);
             break;
         case FUNCT5_3_OPERATION_AMOMIN_W:
-            RiscvEmulatorAMOMIN_W(&temp, rs2);
+            RiscvEmulatorAMOMIN_W(&loadedvalue, &originalvaluers2);
             break;
         case FUNCT5_3_OPERATION_AMOMAX_W:
-            RiscvEmulatorAMOMAX_W(&temp, rs2);
+            RiscvEmulatorAMOMAX_W(&loadedvalue, &originalvaluers2);
             break;
         case FUNCT5_3_OPERATION_AMOMINU_W:
-            RiscvEmulatorAMOMINU_W(&temp, rs2);
+            RiscvEmulatorAMOMINU_W(&loadedvalue, &originalvaluers2);
             break;
         case FUNCT5_3_OPERATION_AMOMAXU_W:
-            RiscvEmulatorAMOMAXU_W(&temp, rs2);
+            RiscvEmulatorAMOMAXU_W(&loadedvalue, &originalvaluers2);
             break;
         default:
             RiscvEmulatorUnknownInstruction(state);
             break;
     }
 
-    RiscvEmulatorStore(*(uint32_t *)rs1, &temp, sizeof(uint32_t));
+    RiscvEmulatorStore(originaladdressrs1, &loadedvalue, sizeof(uint32_t));
 }
 
 #endif
