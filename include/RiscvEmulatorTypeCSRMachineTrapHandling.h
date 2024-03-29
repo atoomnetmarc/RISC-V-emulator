@@ -11,6 +11,13 @@ SPDX-License-Identifier: Apache-2.0
 #include <stdint.h>
 
 /**
+ * Scratch register for machine trap handlers.
+ */
+typedef struct __attribute__((packed)) {
+    uint32_t mscratch;
+} RiscvCSRmscratch_t;
+
+/**
  * Machine exception program counter
  */
 typedef struct __attribute__((packed)) {

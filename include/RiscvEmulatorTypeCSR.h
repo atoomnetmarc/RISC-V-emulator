@@ -29,6 +29,7 @@ typedef struct __attribute__((packed)) {
     RiscvCSRmie_u mie;
     RiscvCSRmtvec_t mtvec;
 
+    RiscvCSRmscratch_t mscratch;
     RiscvCSRmepc_t mepc;
 
     RiscvCSRpmpcfg0_t pmpcfg0;

@@ -58,6 +58,9 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state) {
         case 0x305:
             address = &state->csr.mtvec;
             break;
+        case 0x340:
+            address = &state->csr.mscratch;
+            break;
         case 0x341:
             address = &state->csr.mepc;
             break;
