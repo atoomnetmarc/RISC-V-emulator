@@ -31,7 +31,7 @@ static inline void RiscvEmulatorJALR(RiscvEmulatorState_t *state, uint32_t *prog
     *programcounternext = *programcounternext & (UINT32_MAX - 1);
 
     // Set destination register to the original next instruction.
-    if (state->instruction.itype.rd) {
+    if (state->instruction.itype.rd != 0) {
         state->registers.array.location[state->instruction.itype.rd] = originalprogramcounternext;
     }
 }
@@ -456,7 +456,9 @@ static inline void RiscvEmulatorAUIPC(RiscvEmulatorState_t *state) {
     helper.input.imm11_0 = 0;
     helper.input.imm31_12 = state->instruction.utype.imm31_12;
 
-    state->registers.array.location[state->instruction.utype.rd] = state->programcounter + helper.output.imm;
+    if (state->instruction.utype.rd != 0) {
+        state->registers.array.location[state->instruction.utype.rd] = state->programcounter + helper.output.imm;
+    }
 }
 
 /**
@@ -467,7 +469,9 @@ static inline void RiscvEmulatorLUI(RiscvEmulatorState_t *state) {
     helper.input.imm11_0 = 0;
     helper.input.imm31_12 = state->instruction.utype.imm31_12;
 
-    state->registers.array.location[state->instruction.utype.rd] = helper.output.imm;
+    if (state->instruction.utype.rd != 0) {
+        state->registers.array.location[state->instruction.utype.rd] = helper.output.imm;
+    }
 }
 
 /**
@@ -475,7 +479,7 @@ static inline void RiscvEmulatorLUI(RiscvEmulatorState_t *state) {
  */
 static inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state, uint32_t *programcounternext) {
     // Set destination register to current next instruction acting as a return address.
-    if (state->instruction.jtype.rd) {
+    if (state->instruction.jtype.rd != 0) {
         state->registers.array.location[state->instruction.jtype.rd] = *programcounternext;
     }
 
