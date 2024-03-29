@@ -24,8 +24,8 @@ SPDX-License-Identifier: Apache-2.0
  *
  * TODO: complete the functionality of MRET.
  */
-static inline void RiscvEmulatorMRET(RiscvEmulatorState_t *state, uint32_t *programcounternext) {
-    *programcounternext = state->csr.mepc.mepc;
+static inline void RiscvEmulatorMRET(RiscvEmulatorState_t *state) {
+    state->programcounternext = state->csr.mepc.mepc;
 }
 
 /**

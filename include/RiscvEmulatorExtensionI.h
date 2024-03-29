@@ -23,12 +23,12 @@ SPDX-License-Identifier: Apache-2.0
 /**
  * Jump and link register.
  */
-static inline void RiscvEmulatorJALR(RiscvEmulatorState_t *state, uint32_t *programcounternext) {
-    uint32_t originalprogramcounternext = *programcounternext;
+static inline void RiscvEmulatorJALR(RiscvEmulatorState_t *state) {
+    uint32_t originalprogramcounternext = state->programcounternext;
 
     // Execute jump.
-    *programcounternext = state->registers.array.location[state->instruction.itype.rs1] + state->instruction.itype.imm;
-    *programcounternext = *programcounternext & (UINT32_MAX - 1);
+    state->programcounternext = state->registers.array.location[state->instruction.itype.rs1] + state->instruction.itype.imm;
+    state->programcounternext = state->programcounternext & (UINT32_MAX - 1);
 
     // Set destination register to the original next instruction.
     if (state->instruction.itype.rd != 0) {
@@ -39,9 +39,9 @@ static inline void RiscvEmulatorJALR(RiscvEmulatorState_t *state, uint32_t *prog
 /**
  * Process JALR opcode.
  */
-static inline void RiscvEmulatorOpcodeJumpAndLinkRegister(RiscvEmulatorState_t *state, uint32_t *programcounternext) {
+static inline void RiscvEmulatorOpcodeJumpAndLinkRegister(RiscvEmulatorState_t *state) {
     if (state->instruction.itype.funct3 == FUNCT3_JUMPANDLINKREGISTER_JALR) {
-        RiscvEmulatorJALR(state, programcounternext);
+        RiscvEmulatorJALR(state);
     } else {
         RiscvEmulatorUnknownInstruction(state);
     }
@@ -345,7 +345,7 @@ static inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state) {
 /**
  * Executes a branch.
  */
-static inline void RiscvEmulatorExecuteBranch(RiscvEmulatorState_t *state, uint32_t *programcounternext) {
+static inline void RiscvEmulatorExecuteBranch(RiscvEmulatorState_t *state) {
     // Untangle the immediate bits.
     RiscvInstructionTypeBDecoderImm_u helper;
     helper.input.imm0 = 0;
@@ -354,7 +354,7 @@ static inline void RiscvEmulatorExecuteBranch(RiscvEmulatorState_t *state, uint3
     helper.input.imm11 = state->instruction.btype.imm11;
     helper.input.imm12 = state->instruction.btype.imm12;
 
-    *programcounternext = state->programcounter + helper.output.imm;
+    state->programcounternext = state->programcounter + helper.output.imm;
 }
 
 /**
@@ -414,7 +414,7 @@ static inline void RiscvEmulatorBLTU(const void *rs1, const void *rs2, uint8_t *
 /**
  * Process branch opcodes.
  */
-static inline void RiscvEmulatorOpcodeBranch(RiscvEmulatorState_t *state, uint32_t *programcounternext) {
+static inline void RiscvEmulatorOpcodeBranch(RiscvEmulatorState_t *state) {
     uint8_t executebranch = BRANCH_NO;
     void *rs1 = &state->registers.array.location[state->instruction.btype.rs1];
     void *rs2 = &state->registers.array.location[state->instruction.btype.rs2];
@@ -444,7 +444,7 @@ static inline void RiscvEmulatorOpcodeBranch(RiscvEmulatorState_t *state, uint32
     }
 
     if (executebranch == BRANCH_YES) {
-        RiscvEmulatorExecuteBranch(state, programcounternext);
+        RiscvEmulatorExecuteBranch(state);
     }
 }
 
@@ -477,10 +477,10 @@ static inline void RiscvEmulatorLUI(RiscvEmulatorState_t *state) {
 /**
  * Jump and link
  */
-static inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state, uint32_t *programcounternext) {
+static inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state) {
     // Set destination register to current next instruction acting as a return address.
     if (state->instruction.jtype.rd != 0) {
-        state->registers.array.location[state->instruction.jtype.rd] = *programcounternext;
+        state->registers.array.location[state->instruction.jtype.rd] = state->programcounternext;
     }
 
     // Untangle the immediate bits.
@@ -491,7 +491,7 @@ static inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state, uint32_t *progr
     helper.input.imm20 = state->instruction.jtype.imm20;
 
     // Execute jump.
-    *programcounternext = state->programcounter + helper.output.imm;
+    state->programcounternext = state->programcounter + helper.output.imm;
 }
 
 /**
@@ -504,7 +504,7 @@ static inline void RiscvEmulatorECALL(RiscvEmulatorState_t *state) {
 /**
  * Process system opcodes.
  */
-static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state, uint32_t *programcounternext) {
+static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state) {
     uint8_t detectedUnknownSystemInstruction = 1;
 
     if (detectedUnknownSystemInstruction) {
@@ -515,7 +515,7 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state, uint32
             switch (state->instruction.itypesystem.funct12) {
 #if (RVE_E_ZICSR == 1)
                 case FUNCT12_MRET:
-                    RiscvEmulatorMRET(state, programcounternext);
+                    RiscvEmulatorMRET(state);
                     break;
 #endif
                 case FUNCT12_ECALL:

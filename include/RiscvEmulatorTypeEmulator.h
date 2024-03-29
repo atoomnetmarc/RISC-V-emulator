@@ -22,6 +22,7 @@ SPDX-License-Identifier: Apache-2.0
 typedef struct
 {
     uint32_t programcounter;
+    uint32_t programcounternext;
     RiscvInstruction_u instruction;
     RiscvRegister_u registers;
 

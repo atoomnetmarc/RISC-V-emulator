@@ -29,6 +29,7 @@ static inline void RiscvEmulatorInit(RiscvEmulatorState_t *state, uint32_t ram_l
 
     // Initialize program counter.
     state->programcounter = ROM_ORIGIN;
+    state->programcounternext = ROM_ORIGIN;
 
     // Initialize X0.
     state->registers.symbolic.Zero = 0;
@@ -43,13 +44,14 @@ static inline void RiscvEmulatorInit(RiscvEmulatorState_t *state, uint32_t ram_l
  * Call this function repeatedly to execute the emulator one instruction at a time.
  */
 static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
-    uint32_t programcounternext = state->programcounter + 4;
+    state->programcounter = state->programcounternext;
+    state->programcounternext = state->programcounter + 4;
 
     state->instruction.value = RiscvEmulatorLoadInstruction(state->programcounter);
 
     switch (state->instruction.opcode.opcode) {
         case OPCODE_JUMPANDLINKREGISTER:
-            RiscvEmulatorOpcodeJumpAndLinkRegister(state, &programcounternext);
+            RiscvEmulatorOpcodeJumpAndLinkRegister(state);
             break;
         case OPCODE_OPERATION:
             RiscvEmulatorOpcodeOperation(state);
@@ -64,7 +66,7 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
             RiscvEmulatorOpcodeStore(state);
             break;
         case OPCODE_BRANCH:
-            RiscvEmulatorOpcodeBranch(state, &programcounternext);
+            RiscvEmulatorOpcodeBranch(state);
             break;
         case OPCODE_ADDUPPERIMMEDIATE2PC:
             RiscvEmulatorAUIPC(state);
@@ -73,10 +75,10 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
             RiscvEmulatorLUI(state);
             break;
         case OPCODE_JUMPANDLINK:
-            RiscvEmulatorJAL(state, &programcounternext);
+            RiscvEmulatorJAL(state);
             break;
         case OPCODE_SYSTEM:
-            RiscvEmulatorOpcodeSystem(state, &programcounternext);
+            RiscvEmulatorOpcodeSystem(state);
             break;
         case OPCODE_MISCMEM:
             RiscvEmulatorOpcodeMiscMem(state);
@@ -90,8 +92,6 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
             RiscvEmulatorUnknownInstruction(state);
             break;
     }
-
-    state->programcounter = programcounternext;
 }
 
 #endif
