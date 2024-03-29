@@ -81,14 +81,27 @@ static inline void RiscvEmulatorDIVU(void *rd, const void *rs1, const void *rs2)
  * Remainder signed
  */
 static inline void RiscvEmulatorREM(void *rd, const void *rs1, const void *rs2) {
-    *(int32_t *)rd = (*(int32_t *)rs1 % *(int32_t *)rs2);
+    if (*(int32_t *)rs2 == 0) {
+        // Division by zero
+        *(int32_t *)rd = *(int32_t *)rs1;
+    } else if (*(int32_t *)rs1 == INT32_MIN && *(int32_t *)rs2 == -1) {
+        // Overflow
+        *(int32_t *)rd = 0;
+    } else {
+        *(int32_t *)rd = (*(int32_t *)rs1 % *(int32_t *)rs2);
+    }
 }
 
 /**
  * Remainder unsigned
  */
 static inline void RiscvEmulatorREMU(void *rd, const void *rs1, const void *rs2) {
-    *(uint32_t *)rd = (*(uint32_t *)rs1 % *(uint32_t *)rs2);
+    if (*(uint32_t *)rs2 == 0) {
+        // Division by zero
+        *(uint32_t *)rd = *(uint32_t *)rs1;
+    } else {
+        *(uint32_t *)rd = (*(uint32_t *)rs1 % *(uint32_t *)rs2);
+    }
 }
 
 #endif
