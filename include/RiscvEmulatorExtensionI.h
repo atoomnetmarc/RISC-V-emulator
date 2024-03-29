@@ -505,12 +505,13 @@ static inline void RiscvEmulatorECALL(RiscvEmulatorState_t *state) {
  * Process system opcodes.
  */
 static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state) {
-    uint8_t detectedUnknownSystemInstruction = 0;
+    int8_t detectedUnknownSystemInstruction = 0;
 
     if (detectedUnknownSystemInstruction == 0) {
         if (state->instruction.itypesystem.rd == 0 &&
             state->instruction.itypesystem.funct3 == 0 &&
             state->instruction.itypesystem.rs1 == 0) {
+            detectedUnknownSystemInstruction = -1;
             switch (state->instruction.itypesystem.funct12) {
 #if (RVE_E_ZICSR == 1)
                 case FUNCT12_MRET:
@@ -529,6 +530,7 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state) {
 
 #if (RVE_E_ZICSR == 1)
     if (detectedUnknownSystemInstruction == 0) {
+        detectedUnknownSystemInstruction = -1;
         void *rd = &state->registers.array.location[state->instruction.itypecsr.rd];
         void *rs1 = &state->registers.array.location[state->instruction.itypecsr.rs1];
         int32_t imm = state->instruction.itypecsrimm.imm;
@@ -561,7 +563,7 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state) {
 
 #endif
 
-    if (detectedUnknownSystemInstruction) {
+    if (detectedUnknownSystemInstruction == 1) {
         RiscvEmulatorUnknownInstruction(state);
     }
 }
