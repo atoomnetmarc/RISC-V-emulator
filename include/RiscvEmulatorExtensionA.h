@@ -81,7 +81,7 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(RiscvEmulatorState_t
     // Remember original value stored in rs2.
     uint32_t originalvaluers2 = *(uint32_t *)rs2;
 
-    uint32_t loadedvalue;
+    uint32_t loadedvalue = 0;
     RiscvEmulatorLoad(originaladdressrs1, &loadedvalue, sizeof(uint32_t));
 
     if (state->instruction.rtypeatomicmemoryoperation.rd != 0) {
