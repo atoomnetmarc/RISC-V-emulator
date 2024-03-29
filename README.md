@@ -10,13 +10,12 @@ Overview of all the RV32 contained in this emulator. Some are work-in-progressâ„
 
 Extensions are confirmed working when all instructions of that extension pass [riscv-arch-test](https://github.com/riscv-non-isa/riscv-arch-test) made by the RISC-V Foundation Architecture Test SIG.
 
-| Base/Extension  | Description                         | Working?                |
-| --              | --                                  | --                      |
-| RV32I           | Base Integer Instruction Set        | :ballot_box_with_check: |
-| M               | Integer Multiplication and Division | :ballot_box_with_check: |
-| A               | Atomic Instructions                 | :x:                     |
-| Zicsr           | Control and Status Register         | :x:                     |
-
+| Subset                              | Name  | Working?                |
+| --                                  | --    | --                      |
+| Integer                             | I     | :ballot_box_with_check: |
+| Integer Multiplication and Division | M     | :ballot_box_with_check: |
+| Atomics                             | A     | :x:                     |
+| Control and Status Register Access  | Zicsr | :x:                     |
 
 The emulator can be configured the enable an extension. The list of defines and their default values are located in [include/RiscvEmulatorConfig.h](include/RiscvEmulatorConfig.h).
 
