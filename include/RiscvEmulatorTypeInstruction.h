@@ -32,6 +32,9 @@ typedef union {
     uint32_t value;
     RiscvInstructionOpcode_t opcode;
     RiscvInstructionTypeR_t rtype;
+#if (RVE_E_ZBA)
+    RiscvInstructionTypeRShift_t rtypeshift;
+#endif
 #if (RVE_E_A == 1)
     RiscvInstructionTypeRAtomicMemoryOperation_t rtypeatomicmemoryoperation;
 #endif

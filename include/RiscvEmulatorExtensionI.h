@@ -18,6 +18,7 @@ SPDX-License-Identifier: Apache-2.0
 #include "RiscvEmulatorType.h"
 
 #include "RiscvEmulatorExtensionM.h"
+#include "RiscvEmulatorExtensionZba.h"
 #include "RiscvEmulatorExtensionZicsr.h"
 
 /**
@@ -188,6 +189,13 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state) {
             break;
         case FUNCT7_3_OPERATION_REMU:
             RiscvEmulatorREMU(rd, rs1, rs2);
+            break;
+#endif
+#if (RVE_E_ZBA == 1)
+        case FUNCT7_3_OPERATION_SH1ADD:
+        case FUNCT7_3_OPERATION_SH2ADD:
+        case FUNCT7_3_OPERATION_SH3ADD:
+            RiscvEmulatorSHADD(state, rd, rs1, rs2);
             break;
 #endif
         default:

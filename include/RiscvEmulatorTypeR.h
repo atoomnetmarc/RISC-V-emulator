@@ -22,6 +22,21 @@ typedef struct __attribute__((packed)) {
     uint8_t funct7 : 7;
 } RiscvInstructionTypeR_t;
 
+#if (RVE_E_ZBA == 1)
+/**
+ * R-type instruction, but with helper field on funct3 for number if left shifts for shadd function.
+ */
+typedef struct __attribute__((packed)) {
+    uint8_t opcode : 7;
+    uint8_t rd : 5;
+    uint8_t funct3_1 : 1;
+    uint8_t funct3_shifts : 2;
+    uint8_t rs1 : 5;
+    uint8_t rs2 : 5;
+    uint8_t funct7 : 7;
+} RiscvInstructionTypeRShift_t;
+#endif
+
 /**
  * Feed funct3 and funct7.
  */

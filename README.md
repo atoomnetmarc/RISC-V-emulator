@@ -16,6 +16,10 @@ Extensions are confirmed working when all instructions of that extension pass [r
 | Integer Multiplication and Division | M     | :ballot_box_with_check: |
 | Atomics                             | A     | :ballot_box_with_check: |
 | Control and Status Register Access  | Zicsr | :x:                     |
+| Address calculation                 | Zba   | :ballot_box_with_check: |
+| Basic bit manipulation              | Zbb   | :x:                     |
+| Carry-less multiplication           | Zbc   | :x:                     |
+| Single-bit operation                | Zbs   | :x:                     |
 
 The emulator can be configured the enable an extension. The list of defines and their default values are located in [include/RiscvEmulatorConfig.h](include/RiscvEmulatorConfig.h).
 
