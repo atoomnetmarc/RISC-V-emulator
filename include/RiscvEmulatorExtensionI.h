@@ -19,6 +19,7 @@ SPDX-License-Identifier: Apache-2.0
 
 #include "RiscvEmulatorExtensionM.h"
 #include "RiscvEmulatorExtensionZba.h"
+#include "RiscvEmulatorExtensionZbb.h"
 #include "RiscvEmulatorExtensionZicsr.h"
 
 /**
@@ -126,100 +127,139 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state) {
         return;
     }
 
+    int8_t detectedUnknownInstruction = 1;
+
     void *rd = &state->registers.array.location[state->instruction.rtype.rd];
     void *rs1 = &state->registers.array.location[state->instruction.rtype.rs1];
-    void *rs2 = &state->registers.array.location[state->instruction.rtype.rs2];
 
-    RiscvInstructionTypeRDecoderFunct7_3Funct7_3_u instruction_decoderhelper_rtype;
-    instruction_decoderhelper_rtype.input.funct3 = state->instruction.rtype.funct3;
-    instruction_decoderhelper_rtype.input.funct7 = state->instruction.rtype.funct7;
+    if (detectedUnknownInstruction == 1) {
+        void *rs2 = &state->registers.array.location[state->instruction.rtype.rs2];
 
-    switch (instruction_decoderhelper_rtype.output.funct7_3) {
-        case FUNCT7_3_OPERATION_ADD:
-            RiscvEmulatorADD(rd, rs1, rs2);
-            break;
-        case FUNCT7_3_OPERATION_SUB:
-            RiscvEmulatorSUB(rd, rs1, rs2);
-            break;
-        case FUNCT7_3_OPERATION_SLL:
-            RiscvEmulatorSLL(rd, rs1, rs2);
-            break;
-        case FUNCT7_3_OPERATION_SLT:
-            RiscvEmulatorSLT(rd, rs1, rs2);
-            break;
-        case FUNCT7_3_OPERATION_SLTU:
-            RiscvEmulatorSLTU(rd, rs1, rs2);
-            break;
-        case FUNCT7_3_OPERATION_XOR:
-            RiscvEmulatorXOR(rd, rs1, rs2);
-            break;
-        case FUNCT7_3_OPERATION_SRL:
-            RiscvEmulatorSRL(rd, rs1, rs2);
-            break;
-        case FUNCT7_3_OPERATION_SRA:
-            RiscvEmulatorSRA(rd, rs1, rs2);
-            break;
-        case FUNCT7_3_OPERATION_OR:
-            RiscvEmulatorOR(rd, rs1, rs2);
-            break;
-        case FUNCT7_3_OPERATION_AND:
-            RiscvEmulatorAND(rd, rs1, rs2);
-            break;
+        RiscvInstructionTypeRDecoderFunct7Funct3_u instruction_decoderhelper_rtype;
+        instruction_decoderhelper_rtype.input.funct3 = state->instruction.rtype.funct3;
+        instruction_decoderhelper_rtype.input.funct7 = state->instruction.rtype.funct7;
+
+        detectedUnknownInstruction = -1;
+        switch (instruction_decoderhelper_rtype.output.funct7_3) {
+            case FUNCT7_FUNCT3_OPERATION_ADD:
+                RiscvEmulatorADD(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_SUB:
+                RiscvEmulatorSUB(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_SLL:
+                RiscvEmulatorSLL(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_SLT:
+                RiscvEmulatorSLT(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_SLTU:
+                RiscvEmulatorSLTU(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_XOR:
+                RiscvEmulatorXOR(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_SRL:
+                RiscvEmulatorSRL(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_SRA:
+                RiscvEmulatorSRA(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_OR:
+                RiscvEmulatorOR(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_AND:
+                RiscvEmulatorAND(rd, rs1, rs2);
+                break;
 #if (RVE_E_M == 1)
-        case FUNCT7_3_OPERATION_MUL:
-            RiscvEmulatorMUL(rd, rs1, rs2);
-            break;
-        case FUNCT7_3_OPERATION_MULH:
-            RiscvEmulatorMULH(rd, rs1, rs2);
-            break;
-        case FUNCT7_3_OPERATION_MULHSU:
-            RiscvEmulatorMULHSU(rd, rs1, rs2);
-            break;
-        case FUNCT7_3_OPERATION_MULHU:
-            RiscvEmulatorMULHU(rd, rs1, rs2);
-            break;
-        case FUNCT7_3_OPERATION_DIV:
-            RiscvEmulatorDIV(rd, rs1, rs2);
-            break;
-        case FUNCT7_3_OPERATION_DIVU:
-            RiscvEmulatorDIVU(rd, rs1, rs2);
-            break;
-        case FUNCT7_3_OPERATION_REM:
-            RiscvEmulatorREM(rd, rs1, rs2);
-            break;
-        case FUNCT7_3_OPERATION_REMU:
-            RiscvEmulatorREMU(rd, rs1, rs2);
-            break;
+            case FUNCT7_FUNCT3_OPERATION_MUL:
+                RiscvEmulatorMUL(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_MULH:
+                RiscvEmulatorMULH(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_MULHSU:
+                RiscvEmulatorMULHSU(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_MULHU:
+                RiscvEmulatorMULHU(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_DIV:
+                RiscvEmulatorDIV(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_DIVU:
+                RiscvEmulatorDIVU(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_REM:
+                RiscvEmulatorREM(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_REMU:
+                RiscvEmulatorREMU(rd, rs1, rs2);
+                break;
 #endif
 #if (RVE_E_ZBA == 1)
-        case FUNCT7_3_OPERATION_SH1ADD:
-        case FUNCT7_3_OPERATION_SH2ADD:
-        case FUNCT7_3_OPERATION_SH3ADD:
-            RiscvEmulatorSHADD(state, rd, rs1, rs2);
-            break;
+            case FUNCT7_FUNCT3_OPERATION_SH1ADD:
+            case FUNCT7_FUNCT3_OPERATION_SH2ADD:
+            case FUNCT7_FUNCT3_OPERATION_SH3ADD:
+                RiscvEmulatorSHADD(state, rd, rs1, rs2);
+                break;
 #endif
-        default:
-            RiscvEmulatorUnknownInstruction(state);
-            break;
+#if (RVE_E_ZBB == 1)
+            case FUNCT7_FUNCT3_OPERATION_ANDN:
+                RiscvEmulatorANDN(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_ORN:
+                RiscvEmulatorORN(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_XNOR:
+                RiscvEmulatorXNOR(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_MAX:
+                RiscvEmulatorMAX(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_MAXU:
+                RiscvEmulatorMAXU(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_MIN:
+                RiscvEmulatorMIN(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_MINU:
+                RiscvEmulatorMINU(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_ROL:
+                RiscvEmulatorROL(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_ROR:
+                RiscvEmulatorROR(rd, rs1, rs2);
+                break;
+#endif
+            default:
+                detectedUnknownInstruction = 1;
+                break;
+        }
     }
-}
 
-/**
- * Process immediate shifts opcodes.
- */
-static inline void RiscvEmulatorOpcodeImmediateShifts(RiscvEmulatorState_t *state, void *rd, void *rs1) {
-    uint32_t shamt = state->instruction.itypeshiftbyconstant.shamt;
+#if (RVE_E_ZBB == 1)
+    if (detectedUnknownInstruction == 1) {
+        RiscvInstructionTypeRDecoderFunct3Rs2Funct7_u instruction_decoderhelper_rtype_Funct3Rs2Funct7;
+        instruction_decoderhelper_rtype_Funct3Rs2Funct7.input.funct3 = state->instruction.rtype.funct3;
+        instruction_decoderhelper_rtype_Funct3Rs2Funct7.input.rs2 = state->instruction.rtype.rs2;
+        instruction_decoderhelper_rtype_Funct3Rs2Funct7.input.funct7 = state->instruction.rtype.funct7;
 
-    if (state->instruction.itype.funct3 == FUNCT3_IMMEDIATE_SLLI &&
-        state->instruction.itypeshiftbyconstant.imm11_5 == IMM11_7_IMMEDIATE_SLLI) {
-        RiscvEmulatorSLL(rd, rs1, &shamt);
-    } else if (state->instruction.itype.funct3 == FUNCT3_IMMEDIATE_SR_I &&
-               state->instruction.itypeshiftbyconstant.imm11_5 == IMM11_7_IMMEDIATE_SRLI) {
-        RiscvEmulatorSRL(rd, rs1, &shamt);
-    } else if (state->instruction.itype.funct3 == FUNCT3_IMMEDIATE_SR_I &&
-               state->instruction.itypeshiftbyconstant.imm11_5 == IMM11_7_IMMEDIATE_SRAI) {
-        RiscvEmulatorSRA(rd, rs1, &shamt);
-    } else {
+        detectedUnknownInstruction = -1;
+        switch (instruction_decoderhelper_rtype_Funct3Rs2Funct7.output.funct3_rs2_funct7) {
+            case FUNCT7_RS2_FUNCT3_OPERATION_ZEXTH:
+                RiscvEmulatorZEXTH(rd, rs1);
+                break;
+
+            default:
+                detectedUnknownInstruction = 1;
+                break;
+        }
+    }
+#endif
+
+    if (detectedUnknownInstruction == 1) {
         RiscvEmulatorUnknownInstruction(state);
     }
 }
@@ -232,39 +272,116 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state) {
         return;
     }
 
+    int8_t detectedUnknownInstruction = 1;
+
     void *rd = &state->registers.array.location[state->instruction.itype.rd];
     void *rs1 = &state->registers.array.location[state->instruction.itype.rs1];
 
-    if (state->instruction.itype.funct3 == FUNCT3_IMMEDIATE_SLLI ||
-        state->instruction.itype.funct3 == FUNCT3_IMMEDIATE_SR_I) {
-        RiscvEmulatorOpcodeImmediateShifts(state, rd, rs1);
-        return;
+#if (RVE_E_ZBB == 1)
+    if (detectedUnknownInstruction == 1) {
+        // If funct3 == 0b001 or 0b101 then a whole set of functions are encoded in imm.
+        if (state->instruction.itype.funct3 == FUNCT3_IMMEDIATE_FUNCTIONS_1 ||
+            state->instruction.itype.funct3 == FUNCT3_IMMEDIATE_FUNCTIONS_5) {
+            RiscvInstructionTypeIDecoderImmFunct3ImmFunct3_u instruction_decoderhelper_itype_functiongroup;
+            instruction_decoderhelper_itype_functiongroup.input.funct3 = state->instruction.itype.funct3;
+            instruction_decoderhelper_itype_functiongroup.input.imm = state->instruction.itype.imm;
+
+            detectedUnknownInstruction = -1;
+            switch (instruction_decoderhelper_itype_functiongroup.output.immfunct3) {
+                case IMM11_0_FUNCT3_IMMEDIATE_CLZ:
+                    RiscvEmulatorCLZ(rd, rs1);
+                    break;
+                case IMM11_0_FUNCT3_IMMEDIATE_CTZ:
+                    RiscvEmulatorCTZ(rd, rs1);
+                    break;
+                case IMM11_0_FUNCT3_IMMEDIATE_CPOP:
+                    RiscvEmulatorCPOP(rd, rs1);
+                    break;
+                case IMM11_0_FUNCT3_IMMEDIATE_SEXTB:
+                    RiscvEmulatorSEXTB(rd, rs1);
+                    break;
+                case IMM11_0_FUNCT3_IMMEDIATE_SEXTH:
+                    RiscvEmulatorSEXTH(rd, rs1);
+                    break;
+                case IMM11_0_FUNCT3_IMMEDIATE_ORCB:
+                    RiscvEmulatorORCB(rd, rs1);
+                    break;
+                case IMM11_0_FUNCT3_IMMEDIATE_REV8:
+                    RiscvEmulatorREV8(rd, rs1);
+                    break;
+                default:
+                    detectedUnknownInstruction = 1;
+                    break;
+            }
+        }
+    }
+#endif
+
+    if (detectedUnknownInstruction == 1) {
+        // If funct3 == 0b001 or 0b101 then a whole set of functions are encoded in parts of imm.
+        if (state->instruction.itype.funct3 == FUNCT3_IMMEDIATE_FUNCTIONS_1 ||
+            state->instruction.itype.funct3 == FUNCT3_IMMEDIATE_FUNCTIONS_5) {
+
+            uint32_t shamt = state->instruction.itypeshiftbyconstant.shamt;
+
+            RiscvInstructionTypeIDecoderImm11_7Funct3Imm11_7Funct3_u instruction_decoderhelper_itype_functions_shamt;
+
+            instruction_decoderhelper_itype_functions_shamt.input.funct3 = state->instruction.itype.funct3;
+            instruction_decoderhelper_itype_functions_shamt.input.imm11_5 = state->instruction.itypeshiftbyconstant.imm11_5;
+
+            detectedUnknownInstruction = -1;
+            switch (instruction_decoderhelper_itype_functions_shamt.output.imm11_5funct3) {
+                case IMM11_5_FUNCT3_IMMEDIATE_SLLI:
+                    RiscvEmulatorSLL(rd, rs1, &shamt);
+                    break;
+                case IMM11_5_FUNCT3_IMMEDIATE_SRLI:
+                    RiscvEmulatorSRL(rd, rs1, &shamt);
+                    break;
+                case IMM11_5_FUNCT3_IMMEDIATE_SRAI:
+                    RiscvEmulatorSRA(rd, rs1, &shamt);
+                    break;
+#if (RVE_E_ZBB == 1)
+                case IMM11_5_FUNCT3_IMMEDIATE_RORI:
+                    RiscvEmulatorROR(rd, rs1, &shamt);
+                    break;
+#endif
+                default:
+                    detectedUnknownInstruction = 1;
+                    break;
+            }
+        }
     }
 
-    int32_t imm = state->instruction.itype.imm;
+    if (detectedUnknownInstruction == 1) {
+        detectedUnknownInstruction = -1;
+        int32_t imm = state->instruction.itype.imm;
+        switch (state->instruction.itype.funct3) {
+            case FUNCT3_IMMEDIATE_ADDI:
+                RiscvEmulatorADD(rd, rs1, &imm);
+                break;
+            case FUNCT3_IMMEDIATE_SLTI:
+                RiscvEmulatorSLT(rd, rs1, &imm);
+                break;
+            case FUNCT3_IMMEDIATE_SLTIU:
+                RiscvEmulatorSLTU(rd, rs1, &imm);
+                break;
+            case FUNCT3_IMMEDIATE_XORI:
+                RiscvEmulatorXOR(rd, rs1, &imm);
+                break;
+            case FUNCT3_IMMEDIATE_ORI:
+                RiscvEmulatorOR(rd, rs1, &imm);
+                break;
+            case FUNCT3_IMMEDIATE_ANDI:
+                RiscvEmulatorAND(rd, rs1, &imm);
+                break;
+            default:
+                detectedUnknownInstruction = 1;
+                break;
+        }
+    }
 
-    switch (state->instruction.itype.funct3) {
-        case FUNCT3_IMMEDIATE_ADDI:
-            RiscvEmulatorADD(rd, rs1, &imm);
-            break;
-        case FUNCT3_IMMEDIATE_SLTI:
-            RiscvEmulatorSLT(rd, rs1, &imm);
-            break;
-        case FUNCT3_IMMEDIATE_SLTIU:
-            RiscvEmulatorSLTU(rd, rs1, &imm);
-            break;
-        case FUNCT3_IMMEDIATE_XORI:
-            RiscvEmulatorXOR(rd, rs1, &imm);
-            break;
-        case FUNCT3_IMMEDIATE_ORI:
-            RiscvEmulatorOR(rd, rs1, &imm);
-            break;
-        case FUNCT3_IMMEDIATE_ANDI:
-            RiscvEmulatorAND(rd, rs1, &imm);
-            break;
-        default:
-            RiscvEmulatorUnknownInstruction(state);
-            break;
+    if (detectedUnknownInstruction == 1) {
+        RiscvEmulatorUnknownInstruction(state);
     }
 }
 
@@ -513,13 +630,13 @@ static inline void RiscvEmulatorECALL(RiscvEmulatorState_t *state) {
  * Process system opcodes.
  */
 static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state) {
-    int8_t detectedUnknownSystemInstruction = 0;
+    int8_t detectedUnknownInstruction = 1;
 
-    if (detectedUnknownSystemInstruction == 0) {
+    if (detectedUnknownInstruction == 1) {
         if (state->instruction.itypesystem.rd == 0 &&
             state->instruction.itypesystem.funct3 == 0 &&
             state->instruction.itypesystem.rs1 == 0) {
-            detectedUnknownSystemInstruction = -1;
+            detectedUnknownInstruction = -1;
             switch (state->instruction.itypesystem.funct12) {
 #if (RVE_E_ZICSR == 1)
                 case FUNCT12_MRET:
@@ -530,15 +647,15 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state) {
                     RiscvEmulatorECALL(state);
                     break;
                 default:
-                    detectedUnknownSystemInstruction = 1;
+                    detectedUnknownInstruction = 1;
                     break;
             }
         }
     }
 
 #if (RVE_E_ZICSR == 1)
-    if (detectedUnknownSystemInstruction == 0) {
-        detectedUnknownSystemInstruction = -1;
+    if (detectedUnknownInstruction == 1) {
+        detectedUnknownInstruction = -1;
         void *rd = &state->registers.array.location[state->instruction.itypecsr.rd];
         void *rs1 = &state->registers.array.location[state->instruction.itypecsr.rs1];
         int32_t imm = state->instruction.itypecsrimm.imm;
@@ -564,14 +681,14 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state) {
                 RiscvEmulatorCSRRC(state, rd, &imm, csr);
                 break;
             default:
-                detectedUnknownSystemInstruction = 1;
+                detectedUnknownInstruction = 1;
                 break;
         }
     }
 
 #endif
 
-    if (detectedUnknownSystemInstruction == 1) {
+    if (detectedUnknownInstruction == 1) {
         RiscvEmulatorUnknownInstruction(state);
     }
 }
@@ -588,18 +705,18 @@ static inline void RiscvEmulatorFence(RiscvEmulatorState_t *state) {
  * Process miscellaneous memory opcodes.
  */
 static inline void RiscvEmulatorOpcodeMiscMem(RiscvEmulatorState_t *state) {
-    uint8_t detectedUnknownSystemInstruction = 1;
+    uint8_t detectedUnknownInstruction = 1;
 
-    if (detectedUnknownSystemInstruction) {
+    if (detectedUnknownInstruction) {
         if (state->instruction.itypemiscmem.rd == 0 &&
             state->instruction.itypemiscmem.funct3 == FUNCT3_FENCE &&
             state->instruction.itypemiscmem.rs1 == 0) {
-            detectedUnknownSystemInstruction = 0;
+            detectedUnknownInstruction = -1;
             RiscvEmulatorFence(state);
         }
     }
 
-    if (detectedUnknownSystemInstruction) {
+    if (detectedUnknownInstruction == 1) {
         RiscvEmulatorUnknownInstruction(state);
     }
 }

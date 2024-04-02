@@ -89,36 +89,36 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(RiscvEmulatorState_t
         *(uint32_t *)rd = loadedvalue;
     }
 
-    RiscvInstructionTypeRDecoderFunct5_3Funct5_3_u instruction_decoderhelper_rtypeatomicmemoryoperation;
+    RiscvInstructionTypeRDecoderFunct5Funct3_u instruction_decoderhelper_rtypeatomicmemoryoperation;
     instruction_decoderhelper_rtypeatomicmemoryoperation.input.funct3 = state->instruction.rtypeatomicmemoryoperation.funct3;
     instruction_decoderhelper_rtypeatomicmemoryoperation.input.funct5 = state->instruction.rtypeatomicmemoryoperation.funct5;
 
     switch (instruction_decoderhelper_rtypeatomicmemoryoperation.output.funct5_3) {
-        case FUNCT5_3_OPERATION_AMOADD_W:
+        case FUNCT5_FUNCT3_OPERATION_AMOADD_W:
             RiscvEmulatorADD(&loadedvalue, &loadedvalue, &originalvaluers2);
             break;
-        case FUNCT5_3_OPERATION_AMOSWAP_W:
+        case FUNCT5_FUNCT3_OPERATION_AMOSWAP_W:
             RiscvEmulatorAMOSWAP_W(&loadedvalue, &originalvaluers2);
             break;
-        case FUNCT5_3_OPERATION_AMOXOR_W:
+        case FUNCT5_FUNCT3_OPERATION_AMOXOR_W:
             RiscvEmulatorXOR(&loadedvalue, &loadedvalue, &originalvaluers2);
             break;
-        case FUNCT5_3_OPERATION_AMOOR_W:
+        case FUNCT5_FUNCT3_OPERATION_AMOOR_W:
             RiscvEmulatorOR(&loadedvalue, &loadedvalue, &originalvaluers2);
             break;
-        case FUNCT5_3_OPERATION_AMOAND_W:
+        case FUNCT5_FUNCT3_OPERATION_AMOAND_W:
             RiscvEmulatorAND(&loadedvalue, &loadedvalue, &originalvaluers2);
             break;
-        case FUNCT5_3_OPERATION_AMOMIN_W:
+        case FUNCT5_FUNCT3_OPERATION_AMOMIN_W:
             RiscvEmulatorAMOMIN_W(&loadedvalue, &originalvaluers2);
             break;
-        case FUNCT5_3_OPERATION_AMOMAX_W:
+        case FUNCT5_FUNCT3_OPERATION_AMOMAX_W:
             RiscvEmulatorAMOMAX_W(&loadedvalue, &originalvaluers2);
             break;
-        case FUNCT5_3_OPERATION_AMOMINU_W:
+        case FUNCT5_FUNCT3_OPERATION_AMOMINU_W:
             RiscvEmulatorAMOMINU_W(&loadedvalue, &originalvaluers2);
             break;
-        case FUNCT5_3_OPERATION_AMOMAXU_W:
+        case FUNCT5_FUNCT3_OPERATION_AMOMAXU_W:
             RiscvEmulatorAMOMAXU_W(&loadedvalue, &originalvaluers2);
             break;
         default:

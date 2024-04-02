@@ -17,7 +17,7 @@ Extensions are confirmed working when all instructions of that extension pass [r
 | Atomics                             | A     | :ballot_box_with_check: |
 | Control and Status Register Access  | Zicsr | :x:                     |
 | Address calculation                 | Zba   | :ballot_box_with_check: |
-| Basic bit manipulation              | Zbb   | :x:                     |
+| Basic bit manipulation              | Zbb   | :ballot_box_with_check: |
 | Carry-less multiplication           | Zbc   | :x:                     |
 | Single-bit operation                | Zbs   | :x:                     |
 
