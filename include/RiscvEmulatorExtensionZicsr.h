@@ -86,7 +86,7 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state) {
 /**
  * Atomic read and write CSR
  */
-static inline void RiscvEmulatorCSRRW(RiscvEmulatorState_t *state, void *rd, const void *rs1, void *csr) {
+static inline void RiscvEmulatorCSRRW(void *rd, const void *rs1, void *csr) {
     // Read old value into destination register when requested.
     if (*(uint32_t *)rd != 0) {
         *(uint32_t *)rd = *(uint32_t *)csr;
@@ -98,7 +98,7 @@ static inline void RiscvEmulatorCSRRW(RiscvEmulatorState_t *state, void *rd, con
 /**
  * Atomic read and set bits in CSR
  */
-static inline void RiscvEmulatorCSRRS(RiscvEmulatorState_t *state, void *rd, const void *rs1, void *csr) {
+static inline void RiscvEmulatorCSRRS(void *rd, const void *rs1, void *csr) {
     *(uint32_t *)rd = *(uint32_t *)csr;
 
     // Set bits when requested
@@ -110,7 +110,7 @@ static inline void RiscvEmulatorCSRRS(RiscvEmulatorState_t *state, void *rd, con
 /**
  * Atomic read and clear bits in CSR
  */
-static inline void RiscvEmulatorCSRRC(RiscvEmulatorState_t *state, void *rd, const void *rs1, void *csr) {
+static inline void RiscvEmulatorCSRRC(void *rd, const void *rs1, void *csr) {
     *(uint32_t *)rd = *(uint32_t *)csr;
 
     // Clear bits when requested

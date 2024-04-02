@@ -78,12 +78,13 @@ inline void RiscvEmulatorUnknownInstruction(RiscvEmulatorState_t *state)
 {
 }
 
+#if (RVE_E_ZICSR == 1)
 /**
  * Handles a fault where the CSR is not recognized.
-*/
-inline void RiscvEmulatorUnknownCSR(RiscvEmulatorState_t *state)
-{
+ */
+inline void RiscvEmulatorUnknownCSR(RiscvEmulatorState_t *state) {
 }
+#endif
 
 /**
  * Handles an ECALL.

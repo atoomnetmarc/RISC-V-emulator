@@ -663,22 +663,22 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state) {
 
         switch (state->instruction.itypecsr.funct3) {
             case FUNCT3_CSR_CSRRW:
-                RiscvEmulatorCSRRW(state, rd, rs1, csr);
+                RiscvEmulatorCSRRW(rd, rs1, csr);
                 break;
             case FUNCT3_CSR_CSRRWI:
-                RiscvEmulatorCSRRW(state, rd, &imm, csr);
+                RiscvEmulatorCSRRW(rd, &imm, csr);
                 break;
             case FUNCT3_CSR_CSRRS:
-                RiscvEmulatorCSRRS(state, rd, rs1, csr);
+                RiscvEmulatorCSRRS(rd, rs1, csr);
                 break;
             case FUNCT3_CSR_CSRRSI:
-                RiscvEmulatorCSRRS(state, rd, &imm, csr);
+                RiscvEmulatorCSRRS(rd, &imm, csr);
                 break;
             case FUNCT3_CSR_CSRRC:
-                RiscvEmulatorCSRRC(state, rd, rs1, csr);
+                RiscvEmulatorCSRRC(rd, rs1, csr);
                 break;
             case FUNCT3_CSR_CSRRCI:
-                RiscvEmulatorCSRRC(state, rd, &imm, csr);
+                RiscvEmulatorCSRRC(rd, &imm, csr);
                 break;
             default:
                 detectedUnknownInstruction = 1;
@@ -698,7 +698,7 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state) {
  *
  * This does nothing in this emulator because all memory access is always completely processed.
  */
-static inline void RiscvEmulatorFence(RiscvEmulatorState_t *state) {
+static inline void RiscvEmulatorFence() {
 }
 
 /**
@@ -712,7 +712,7 @@ static inline void RiscvEmulatorOpcodeMiscMem(RiscvEmulatorState_t *state) {
             state->instruction.itypemiscmem.funct3 == FUNCT3_FENCE &&
             state->instruction.itypemiscmem.rs1 == 0) {
             detectedUnknownInstruction = -1;
-            RiscvEmulatorFence(state);
+            RiscvEmulatorFence();
         }
     }
 
