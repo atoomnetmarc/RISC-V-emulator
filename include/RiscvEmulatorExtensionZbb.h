@@ -175,10 +175,10 @@ static inline void RiscvEmulatorROR(void *rd, const void *rs1, const void *rs2) 
  */
 static inline void RiscvEmulatorORCB(void *rd, const void *rs1) {
     for (uint8_t i = 0; i <= 3; i++) {
-        if (*(uint8_t *)(rs1 + i) == 0) {
-            *(uint8_t *)(rd + i) = 0;
+        if (((uint8_t *)rs1)[i] == 0) {
+            ((uint8_t *)rd)[i] = 0;
         } else {
-            *(uint8_t *)(rd + i) = UINT8_MAX;
+            ((uint8_t *)rd)[i] = UINT8_MAX;
         }
     }
 }
@@ -190,7 +190,7 @@ static inline void RiscvEmulatorREV8(void *rd, const void *rs1) {
     uint32_t temp = 0;
 
     for (uint8_t i = 0; i <= 3; i++) {
-        *((uint8_t *)&temp + i) = *(uint8_t *)(rs1 + 3 - i);
+        ((uint8_t *)&temp)[i] = ((uint8_t *)rs1)[3 - i];
     }
 
     *(uint32_t *)rd = temp;

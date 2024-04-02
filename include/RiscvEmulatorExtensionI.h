@@ -609,7 +609,7 @@ static inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state) {
     }
 
     // Untangle the immediate bits.
-    RiscvInstructionTypeJDecoderImm_u helper = {};
+    RiscvInstructionTypeJDecoderImm_u helper = {0};
     helper.input.imm10_1 = state->instruction.jtype.imm10_1;
     helper.input.imm11 = state->instruction.jtype.imm11;
     helper.input.imm19_12 = state->instruction.jtype.imm19_12;
