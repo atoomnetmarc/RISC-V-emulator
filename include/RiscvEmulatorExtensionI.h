@@ -20,6 +20,8 @@ SPDX-License-Identifier: Apache-2.0
 #include "RiscvEmulatorExtensionM.h"
 #include "RiscvEmulatorExtensionZba.h"
 #include "RiscvEmulatorExtensionZbb.h"
+#include "RiscvEmulatorExtensionZbc.h"
+#include "RiscvEmulatorExtensionZbs.h"
 #include "RiscvEmulatorExtensionZicsr.h"
 
 /**
@@ -233,6 +235,31 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state) {
                 RiscvEmulatorROR(rd, rs1, rs2);
                 break;
 #endif
+#if (RVE_E_ZBS == 1)
+            case FUNCT7_FUNCT3_OPERATION_CMUL:
+                RiscvEmulatorCMUL(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_CMULH:
+                RiscvEmulatorCMULH(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_CMULR:
+                RiscvEmulatorCMULR(rd, rs1, rs2);
+                break;
+#endif
+#if (RVE_E_ZBS == 1)
+            case FUNCT7_FUNCT3_OPERATION_BCLR:
+                RiscvEmulatorBCLR(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_BEXT:
+                RiscvEmulatorBEXT(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_BINV:
+                RiscvEmulatorBINV(rd, rs1, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_BSET:
+                RiscvEmulatorBSET(rd, rs1, rs2);
+                break;
+#endif
             default:
                 detectedUnknownInstruction = 1;
                 break;
@@ -343,6 +370,20 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state) {
 #if (RVE_E_ZBB == 1)
                 case IMM11_5_FUNCT3_IMMEDIATE_RORI:
                     RiscvEmulatorROR(rd, rs1, &shamt);
+                    break;
+#endif
+#if (RVE_E_ZBS == 1)
+                case IMM11_5_FUNCT3_IMMEDIATE_BCLRI:
+                    RiscvEmulatorBCLR(rd, rs1, &shamt);
+                    break;
+                case IMM11_5_FUNCT3_IMMEDIATE_BEXTI:
+                    RiscvEmulatorBEXT(rd, rs1, &shamt);
+                    break;
+                case IMM11_5_FUNCT3_IMMEDIATE_BINVI:
+                    RiscvEmulatorBINV(rd, rs1, &shamt);
+                    break;
+                case IMM11_5_FUNCT3_IMMEDIATE_BSETI:
+                    RiscvEmulatorBSET(rd, rs1, &shamt);
                     break;
 #endif
                 default:
