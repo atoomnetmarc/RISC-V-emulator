@@ -69,5 +69,8 @@ SPDX-License-Identifier: Apache-2.0
 #define FUNCT12_WFI    0b000100000101
 
 #define FUNCT3_FENCE 0b000
+#endif
 
+#if (RVE_E_ZIFENCEI == 1)
+#define FUNCT3_FENCEI 0b001
 #endif

@@ -10,16 +10,17 @@ Overview of all the RV32 contained in this emulator. Some are work-in-progressâ„
 
 Extensions are confirmed working when all instructions of that extension pass [riscv-arch-test](https://github.com/riscv-non-isa/riscv-arch-test) made by the RISC-V Foundation Architecture Test SIG.
 
-| Subset                              | Name  | Working?                |
-| --                                  | --    | --                      |
-| Integer                             | I     | :ballot_box_with_check: |
-| Integer Multiplication and Division | M     | :ballot_box_with_check: |
-| Atomics                             | A     | :ballot_box_with_check: |
-| Control and Status Register Access  | Zicsr | :x:                     |
-| Address calculation                 | Zba   | :ballot_box_with_check: |
-| Basic bit manipulation              | Zbb   | :ballot_box_with_check: |
-| Carry-less multiplication           | Zbc   | :ballot_box_with_check: |
-| Single-bit operation                | Zbs   | :ballot_box_with_check: |
+| Subset                              | Name      | Working?                |
+| --                                  | --        | --                      |
+| Integer                             | I         | :ballot_box_with_check: |
+| Integer Multiplication and Division | M         | :ballot_box_with_check: |
+| Atomics                             | A         | :ballot_box_with_check: |
+| Control and Status Register Access  | Zicsr     | :x:                     |
+| Instruction-Fetch Fence             | Zifencei  | :ballot_box_with_check: |
+| Address calculation                 | Zba       | :ballot_box_with_check: |
+| Basic bit manipulation              | Zbb       | :ballot_box_with_check: |
+| Carry-less multiplication           | Zbc       | :ballot_box_with_check: |
+| Single-bit operation                | Zbs       | :ballot_box_with_check: |
 
 The emulator can be configured the enable an extension. The list of defines and their default values are located in [include/RiscvEmulatorConfig.h](include/RiscvEmulatorConfig.h).
 

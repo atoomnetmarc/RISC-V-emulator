@@ -23,6 +23,11 @@ SPDX-License-Identifier: Apache-2.0
 #define RVE_E_ZICSR 0
 #endif
 
+// Instruction-Fetch Fence
+#ifndef RVE_E_ZIFENCEI
+#define RVE_E_ZIFENCEI 0
+#endif
+
 // Address calculation.
 #ifndef RVE_E_ZBA
 #define RVE_E_ZBA 0

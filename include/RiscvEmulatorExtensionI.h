@@ -752,6 +752,16 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state) {
 static inline void RiscvEmulatorFence() {
 }
 
+#if (RVE_E_ZIFENCEI == 1)
+/**
+ * Excutes the fencei instuction.
+ *
+ * This does nothing in this emulator because all memory access is always completely processed.
+ */
+static inline void RiscvEmulatorFencei() {
+}
+#endif
+
 /**
  * Process miscellaneous memory opcodes.
  */
@@ -766,6 +776,17 @@ static inline void RiscvEmulatorOpcodeMiscMem(RiscvEmulatorState_t *state) {
             RiscvEmulatorFence();
         }
     }
+
+#if (RVE_E_ZIFENCEI == 1)
+    if (detectedUnknownInstruction) {
+        if (state->instruction.itypemiscmem.rd == 0 &&
+            state->instruction.itypemiscmem.funct3 == FUNCT3_FENCEI &&
+            state->instruction.itypemiscmem.rs1 == 0) {
+            detectedUnknownInstruction = -1;
+            RiscvEmulatorFencei();
+        }
+    }
+#endif
 
     if (detectedUnknownInstruction == 1) {
         RiscvEmulatorUnknownInstruction(state);
