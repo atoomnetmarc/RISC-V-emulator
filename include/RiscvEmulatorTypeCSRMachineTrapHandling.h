@@ -18,7 +18,7 @@ typedef struct __attribute__((packed)) {
 } RiscvCSRmscratch_t;
 
 /**
- * Machine exception program counter
+ * Machine exception program counter.
  */
 typedef struct __attribute__((packed)) {
     uint32_t mepc;

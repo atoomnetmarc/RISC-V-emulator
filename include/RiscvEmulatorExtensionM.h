@@ -20,14 +20,14 @@ SPDX-License-Identifier: Apache-2.0
 #include "RiscvEmulatorType.h"
 
 /**
- * Multiply signed or unsigned
+ * Multiply signed or unsigned.
  */
 static inline void RiscvEmulatorMUL(void *rd, const void *rs1, const void *rs2) {
     *(uint32_t *)rd = (*(uint32_t *)rs1 * *(uint32_t *)rs2);
 }
 
 /**
- * Multiply signed, return 32 bit MSB of resulting 64-bit value
+ * Multiply signed, return 32 bit MSB of resulting 64-bit value.
  */
 static inline void RiscvEmulatorMULH(void *rd, const void *rs1, const void *rs2) {
     int64_t result = (int64_t)(*(int32_t *)rs1 * (int64_t) * (int32_t *)rs2);
@@ -35,7 +35,7 @@ static inline void RiscvEmulatorMULH(void *rd, const void *rs1, const void *rs2)
 }
 
 /**
- * Multiply signed rs1 and unsigned rs2, return 32 bit MSB of resulting unsigned 64-bit value
+ * Multiply signed rs1 and unsigned rs2, return 32 bit MSB of resulting unsigned 64-bit value.
  */
 static inline void RiscvEmulatorMULHSU(void *rd, const void *rs1, const void *rs2) {
     int64_t result = (int64_t)(*(int32_t *)rs1 * (uint64_t) * (uint32_t *)rs2);
@@ -43,7 +43,7 @@ static inline void RiscvEmulatorMULHSU(void *rd, const void *rs1, const void *rs
 }
 
 /**
- * Multiply unsigned, return 32 bit MSB of resulting unsigned 64-bit value
+ * Multiply unsigned, return 32 bit MSB of resulting unsigned 64-bit value.
  */
 static inline void RiscvEmulatorMULHU(void *rd, const void *rs1, const void *rs2) {
     uint64_t result = (uint64_t)(*(uint32_t *)rs1 * (uint64_t) * (uint32_t *)rs2);
@@ -51,14 +51,14 @@ static inline void RiscvEmulatorMULHU(void *rd, const void *rs1, const void *rs2
 }
 
 /**
- * Divide signed
+ * Divide signed.
  */
 static inline void RiscvEmulatorDIV(void *rd, const void *rs1, const void *rs2) {
     if (*(int32_t *)rs2 == 0) {
-        // Division by zero
+        // Division by zero.
         *(int32_t *)rd = -1;
     } else if (*(int32_t *)rs1 == INT32_MIN && *(int32_t *)rs2 == -1) {
-        // Overflow
+        // Overflow.
         *(int32_t *)rd = INT32_MIN;
     } else {
         *(int32_t *)rd = (*(int32_t *)rs1 / *(int32_t *)rs2);
@@ -66,11 +66,11 @@ static inline void RiscvEmulatorDIV(void *rd, const void *rs1, const void *rs2) 
 }
 
 /**
- * Divide unsigned
+ * Divide unsigned.
  */
 static inline void RiscvEmulatorDIVU(void *rd, const void *rs1, const void *rs2) {
     if (*(uint32_t *)rs2 == 0) {
-        // Division by zero
+        // Division by zero.
         *(uint32_t *)rd = UINT32_MAX;
     } else {
         *(uint32_t *)rd = (*(uint32_t *)rs1 / *(uint32_t *)rs2);
@@ -78,14 +78,14 @@ static inline void RiscvEmulatorDIVU(void *rd, const void *rs1, const void *rs2)
 }
 
 /**
- * Remainder signed
+ * Remainder signed.
  */
 static inline void RiscvEmulatorREM(void *rd, const void *rs1, const void *rs2) {
     if (*(int32_t *)rs2 == 0) {
-        // Division by zero
+        // Division by zero.
         *(int32_t *)rd = *(int32_t *)rs1;
     } else if (*(int32_t *)rs1 == INT32_MIN && *(int32_t *)rs2 == -1) {
-        // Overflow
+        // Overflow.
         *(int32_t *)rd = 0;
     } else {
         *(int32_t *)rd = (*(int32_t *)rs1 % *(int32_t *)rs2);
@@ -93,11 +93,11 @@ static inline void RiscvEmulatorREM(void *rd, const void *rs1, const void *rs2) 
 }
 
 /**
- * Remainder unsigned
+ * Remainder unsigned.
  */
 static inline void RiscvEmulatorREMU(void *rd, const void *rs1, const void *rs2) {
     if (*(uint32_t *)rs2 == 0) {
-        // Division by zero
+        // Division by zero.
         *(uint32_t *)rd = *(uint32_t *)rs1;
     } else {
         *(uint32_t *)rd = (*(uint32_t *)rs1 % *(uint32_t *)rs2);

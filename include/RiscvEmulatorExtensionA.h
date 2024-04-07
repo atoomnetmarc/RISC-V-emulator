@@ -22,7 +22,7 @@ SPDX-License-Identifier: Apache-2.0
 #include "RiscvEmulatorExtensionI.h"
 
 /**
- * Swap rd and rs2
+ * Swap rd and rs2.
  */
 static inline void RiscvEmulatorAMOSWAP_W(void *rd, const void *rs2) {
     int32_t temp = *(int32_t *)rd;
@@ -32,7 +32,7 @@ static inline void RiscvEmulatorAMOSWAP_W(void *rd, const void *rs2) {
 }
 
 /**
- * If rs2 < rd, set rd to rs2
+ * If rs2 < rd, set rd to rs2.
  */
 static inline void RiscvEmulatorAMOMIN_W(void *rd, const void *rs2) {
     if (*(int32_t *)rs2 < *(int32_t *)rd) {
@@ -41,7 +41,7 @@ static inline void RiscvEmulatorAMOMIN_W(void *rd, const void *rs2) {
 }
 
 /**
- * If rs2 > rd, set rd to rs2
+ * If rs2 > rd, set rd to rs2.
  */
 static inline void RiscvEmulatorAMOMAX_W(void *rd, const void *rs2) {
     if (*(int32_t *)rs2 > *(int32_t *)rd) {
@@ -50,7 +50,7 @@ static inline void RiscvEmulatorAMOMAX_W(void *rd, const void *rs2) {
 }
 
 /**
- * If rs2 < rd, set rd to rs2
+ * If rs2 < rd, set rd to rs2.
  */
 static inline void RiscvEmulatorAMOMINU_W(void *rd, const void *rs2) {
     if (*(uint32_t *)rs2 < *(uint32_t *)rd) {
@@ -59,7 +59,7 @@ static inline void RiscvEmulatorAMOMINU_W(void *rd, const void *rs2) {
 }
 
 /**
- * If rs2 > rd, set rd to rs2
+ * If rs2 > rd, set rd to rs2.
  */
 static inline void RiscvEmulatorAMOMAXU_W(void *rd, const void *rs2) {
     if (*(uint32_t *)rs2 > *(uint32_t *)rd) {

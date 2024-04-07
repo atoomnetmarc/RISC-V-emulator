@@ -20,28 +20,28 @@ SPDX-License-Identifier: Apache-2.0
 #include "RiscvEmulatorType.h"
 
 /**
- * AND with inverted operand
+ * AND with inverted operand.
  */
 static inline void RiscvEmulatorANDN(void *rd, const void *rs1, const void *rs2) {
     *(uint32_t *)rd = *(uint32_t *)rs1 & ~*(uint32_t *)rs2;
 }
 
 /**
- * OR with inverted operand
+ * OR with inverted operand.
  */
 static inline void RiscvEmulatorORN(void *rd, const void *rs1, const void *rs2) {
     *(uint32_t *)rd = *(uint32_t *)rs1 | ~*(uint32_t *)rs2;
 }
 
 /**
- * Exclusive NOR
+ * Exclusive NOR.
  */
 static inline void RiscvEmulatorXNOR(void *rd, const void *rs1, const void *rs2) {
     *(uint32_t *)rd = ~(*(uint32_t *)rs1 ^ *(uint32_t *)rs2);
 }
 
 /**
- * Count leading zero bits
+ * Count leading zero bits.
  */
 static inline void RiscvEmulatorCLZ(void *rd, const void *rs1) {
     uint8_t leadingZeros = 32;
@@ -57,7 +57,7 @@ static inline void RiscvEmulatorCLZ(void *rd, const void *rs1) {
 }
 
 /**
- * Count trailing zero bits
+ * Count trailing zero bits.
  */
 static inline void RiscvEmulatorCTZ(void *rd, const void *rs1) {
     uint8_t trailingZeros = 32;
@@ -73,7 +73,7 @@ static inline void RiscvEmulatorCTZ(void *rd, const void *rs1) {
 }
 
 /**
- * Count set bits
+ * Count set bits.
  */
 static inline void RiscvEmulatorCPOP(void *rd, const void *rs1) {
     uint8_t setBits = 0;
@@ -88,7 +88,7 @@ static inline void RiscvEmulatorCPOP(void *rd, const void *rs1) {
 }
 
 /**
- * Maximum
+ * Maximum.
  */
 static inline void RiscvEmulatorMAX(void *rd, const void *rs1, const void *rs2) {
     if (*(int32_t *)rs1 > *(int32_t *)rs2) {
@@ -99,7 +99,7 @@ static inline void RiscvEmulatorMAX(void *rd, const void *rs1, const void *rs2) 
 }
 
 /**
- * Unsigned maximum
+ * Unsigned maximum.
  */
 static inline void RiscvEmulatorMAXU(void *rd, const void *rs1, const void *rs2) {
     if (*(uint32_t *)rs1 > *(uint32_t *)rs2) {
@@ -110,7 +110,7 @@ static inline void RiscvEmulatorMAXU(void *rd, const void *rs1, const void *rs2)
 }
 
 /**
- * Minimum
+ * Minimum.
  */
 static inline void RiscvEmulatorMIN(void *rd, const void *rs1, const void *rs2) {
     if (*(int32_t *)rs1 < *(int32_t *)rs2) {
@@ -121,7 +121,7 @@ static inline void RiscvEmulatorMIN(void *rd, const void *rs1, const void *rs2) 
 }
 
 /**
- * Unsigned minimum
+ * Unsigned minimum.
  */
 static inline void RiscvEmulatorMINU(void *rd, const void *rs1, const void *rs2) {
     if (*(uint32_t *)rs1 < *(uint32_t *)rs2) {
@@ -132,28 +132,28 @@ static inline void RiscvEmulatorMINU(void *rd, const void *rs1, const void *rs2)
 }
 
 /**
- * Sign-extend byte
+ * Sign-extend byte.
  */
 static inline void RiscvEmulatorSEXTB(void *rd, const void *rs1) {
     *(int32_t *)rd = *(int8_t *)rs1;
 }
 
 /**
- * Sign-extend halfword
+ * Sign-extend halfword.
  */
 static inline void RiscvEmulatorSEXTH(void *rd, const void *rs1) {
     *(int32_t *)rd = *(int16_t *)rs1;
 }
 
 /**
- * Zero-extend halfword
+ * Zero-extend halfword.
  */
 static inline void RiscvEmulatorZEXTH(void *rd, const void *rs1) {
     *(uint32_t *)rd = *(uint16_t *)rs1;
 }
 
 /**
- * Rotate left
+ * Rotate left.
  */
 static inline void RiscvEmulatorROL(void *rd, const void *rs1, const void *rs2) {
     *(uint32_t *)rd =
@@ -162,7 +162,7 @@ static inline void RiscvEmulatorROL(void *rd, const void *rs1, const void *rs2) 
 }
 
 /**
- * Rotate right
+ * Rotate right.
  */
 static inline void RiscvEmulatorROR(void *rd, const void *rs1, const void *rs2) {
     *(uint32_t *)rd =
@@ -171,7 +171,7 @@ static inline void RiscvEmulatorROR(void *rd, const void *rs1, const void *rs2) 
 }
 
 /**
- * Bitwise OR-Combine, byte granule
+ * Bitwise OR-Combine, byte granule.
  */
 static inline void RiscvEmulatorORCB(void *rd, const void *rs1) {
     for (uint8_t i = 0; i <= 3; i++) {
@@ -184,7 +184,7 @@ static inline void RiscvEmulatorORCB(void *rd, const void *rs1) {
 }
 
 /**
- * Byte-reverse register
+ * Byte-reverse register.
  */
 static inline void RiscvEmulatorREV8(void *rd, const void *rs1) {
     uint32_t temp = 0;

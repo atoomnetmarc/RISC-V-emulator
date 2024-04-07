@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 #ifndef RiscvEmulatorDefineOpcode_H_
 #define RiscvEmulatorDefineOpcode_H_
 
-// 32-bit opcodes
+// 32-bit opcodes.
 #define OPCODE_LOAD                  0b0000011
 #define OPCODE_LOADFP                0b0000111
 #define OPCODE_CUSTOM0               0b0001011

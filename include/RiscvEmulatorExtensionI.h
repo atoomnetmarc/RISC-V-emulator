@@ -524,7 +524,7 @@ static inline void RiscvEmulatorExecuteBranch(RiscvEmulatorState_t *state) {
 }
 
 /**
- * Branch if equal
+ * Branch if equal.
  */
 static inline void RiscvEmulatorBEQ(const void *rs1, const void *rs2, uint8_t *executebranch) {
     if (*(int32_t *)rs1 == *(int32_t *)rs2) {
@@ -533,7 +533,7 @@ static inline void RiscvEmulatorBEQ(const void *rs1, const void *rs2, uint8_t *e
 }
 
 /**
- * Branch if not equal
+ * Branch if not equal.
  */
 static inline void RiscvEmulatorBNE(const void *rs1, const void *rs2, uint8_t *executebranch) {
     if (*(int32_t *)rs1 != *(int32_t *)rs2) {
@@ -542,7 +542,7 @@ static inline void RiscvEmulatorBNE(const void *rs1, const void *rs2, uint8_t *e
 }
 
 /**
- * Branch if greater than or equal
+ * Branch if greater than or equal.
  */
 static inline void RiscvEmulatorBGE(const void *rs1, const void *rs2, uint8_t *executebranch) {
     if (*(int32_t *)rs1 >= *(int32_t *)rs2) {
@@ -551,7 +551,7 @@ static inline void RiscvEmulatorBGE(const void *rs1, const void *rs2, uint8_t *e
 }
 
 /**
- * Branch if greater than or equal unsigned
+ * Branch if greater than or equal unsigned.
  */
 static inline void RiscvEmulatorBGEU(const void *rs1, const void *rs2, uint8_t *executebranch) {
     if (*(uint32_t *)rs1 >= *(uint32_t *)rs2) {
@@ -560,7 +560,7 @@ static inline void RiscvEmulatorBGEU(const void *rs1, const void *rs2, uint8_t *
 }
 
 /**
- * Branch if less than
+ * Branch if less than.
  */
 static inline void RiscvEmulatorBLT(const void *rs1, const void *rs2, uint8_t *executebranch) {
     if (*(int32_t *)rs1 < *(int32_t *)rs2) {
@@ -569,7 +569,7 @@ static inline void RiscvEmulatorBLT(const void *rs1, const void *rs2, uint8_t *e
 }
 
 /**
- * Branch if less than unsigned
+ * Branch if less than unsigned.
  */
 static inline void RiscvEmulatorBLTU(const void *rs1, const void *rs2, uint8_t *executebranch) {
     if (*(uint32_t *)rs1 < *(uint32_t *)rs2) {
@@ -615,7 +615,7 @@ static inline void RiscvEmulatorOpcodeBranch(RiscvEmulatorState_t *state) {
 }
 
 /**
- * Add upper immediate to program counter
+ * Add upper immediate to program counter.
  */
 static inline void RiscvEmulatorAUIPC(RiscvEmulatorState_t *state) {
     RiscvInstructionTypeUDecoderImm_u helper;
@@ -628,7 +628,7 @@ static inline void RiscvEmulatorAUIPC(RiscvEmulatorState_t *state) {
 }
 
 /**
- * Load upper with immediate
+ * Load upper with immediate.
  */
 static inline void RiscvEmulatorLUI(RiscvEmulatorState_t *state) {
     RiscvInstructionTypeUDecoderImm_u helper;
@@ -641,7 +641,7 @@ static inline void RiscvEmulatorLUI(RiscvEmulatorState_t *state) {
 }
 
 /**
- * Jump and link
+ * Jump and link.
  */
 static inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state) {
     // Set destination register to current next instruction acting as a return address.
@@ -661,10 +661,17 @@ static inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state) {
 }
 
 /**
- * Make a service request to the execution environment
+ * Make a service request to the execution environment.
  */
 static inline void RiscvEmulatorECALL(RiscvEmulatorState_t *state) {
     RiscvEmulatorHandleECALL(state);
+}
+
+/**
+ * Cause control to be transferred back to a debugging environment.
+ */
+static inline void RiscvEmulatorEBREAK(RiscvEmulatorState_t *state) {
+    RiscvEmulatorHandleEBREAK(state);
 }
 
 /**
@@ -686,6 +693,9 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state) {
 #endif
                 case FUNCT12_ECALL:
                     RiscvEmulatorECALL(state);
+                    break;
+                case FUNCT12_EBREAK:
+                    RiscvEmulatorEBREAK(state);
                     break;
                 default:
                     detectedUnknownInstruction = 1;

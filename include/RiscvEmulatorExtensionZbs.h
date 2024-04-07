@@ -20,7 +20,7 @@ SPDX-License-Identifier: Apache-2.0
 #include "RiscvEmulatorType.h"
 
 /**
- * Single-Bit Clear
+ * Single-Bit Clear.
  */
 static inline void RiscvEmulatorBCLR(void *rd, const void *rs1, const void *rs2) {
     uint8_t index = *(uint32_t *)rs2 & 31;
@@ -28,7 +28,7 @@ static inline void RiscvEmulatorBCLR(void *rd, const void *rs1, const void *rs2)
 }
 
 /**
- * Single-Bit Extract
+ * Single-Bit Extract.
  */
 static inline void RiscvEmulatorBEXT(void *rd, const void *rs1, const void *rs2) {
     uint8_t index = *(uint32_t *)rs2 & 31;
@@ -36,7 +36,7 @@ static inline void RiscvEmulatorBEXT(void *rd, const void *rs1, const void *rs2)
 }
 
 /**
- * Single-Bit Invert
+ * Single-Bit Invert.
  */
 static inline void RiscvEmulatorBINV(void *rd, const void *rs1, const void *rs2) {
     uint8_t index = *(uint32_t *)rs2 & 31;
@@ -44,7 +44,7 @@ static inline void RiscvEmulatorBINV(void *rd, const void *rs1, const void *rs2)
 }
 
 /**
- * Single-Bit Set
+ * Single-Bit Set.
  */
 static inline void RiscvEmulatorBSET(void *rd, const void *rs1, const void *rs2) {
     uint8_t index = *(uint32_t *)rs2 & 31;

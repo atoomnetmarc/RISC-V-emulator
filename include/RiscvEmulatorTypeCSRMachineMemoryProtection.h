@@ -11,7 +11,7 @@ SPDX-License-Identifier: Apache-2.0
 #include <stdint.h>
 
 /**
- * Physical memory protection configuration
+ * Physical memory protection configuration.
  */
 typedef struct __attribute__((packed)) {
     uint8_t pmp0cfg;
@@ -21,7 +21,7 @@ typedef struct __attribute__((packed)) {
 } RiscvCSRpmpcfg0_t;
 
 /**
- * Physical memory protection address register
+ * Physical memory protection address register.
  */
 typedef struct __attribute__((packed)) {
     uint32_t address;

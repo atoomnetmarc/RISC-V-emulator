@@ -20,7 +20,7 @@ SPDX-License-Identifier: Apache-2.0
 #include "RiscvEmulatorType.h"
 
 /**
- * Return from machine mode
+ * Return from machine mode.
  *
  * TODO: complete the functionality of MRET.
  */
@@ -29,7 +29,7 @@ static inline void RiscvEmulatorMRET(RiscvEmulatorState_t *state) {
 }
 
 /**
- * Get the address of an CSR structure
+ * Get the address of an CSR structure.
  */
 static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state) {
     void *address = 0;
@@ -84,7 +84,7 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state) {
 }
 
 /**
- * Atomic read and write CSR
+ * Atomic read and write CSR.
  */
 static inline void RiscvEmulatorCSRRW(void *rd, const void *rs1, void *csr) {
     // Read old value into destination register when requested.
@@ -96,24 +96,24 @@ static inline void RiscvEmulatorCSRRW(void *rd, const void *rs1, void *csr) {
 }
 
 /**
- * Atomic read and set bits in CSR
+ * Atomic read and set bits in CSR.
  */
 static inline void RiscvEmulatorCSRRS(void *rd, const void *rs1, void *csr) {
     *(uint32_t *)rd = *(uint32_t *)csr;
 
-    // Set bits when requested
+    // Set bits when requested.
     if (*(uint32_t *)rs1 != 0) {
         *(uint32_t *)csr |= *(uint32_t *)rs1;
     }
 }
 
 /**
- * Atomic read and clear bits in CSR
+ * Atomic read and clear bits in CSR.
  */
 static inline void RiscvEmulatorCSRRC(void *rd, const void *rs1, void *csr) {
     *(uint32_t *)rd = *(uint32_t *)csr;
 
-    // Clear bits when requested
+    // Clear bits when requested.
     if (*(uint32_t *)rs1 != 0) {
         *(uint32_t *)csr &= ~*(uint32_t *)rs1;
     }

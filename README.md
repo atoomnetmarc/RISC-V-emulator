@@ -92,6 +92,12 @@ inline void RiscvEmulatorUnknownCSR(RiscvEmulatorState_t *state) {
 inline void RiscvEmulatorHandleECALL(RiscvEmulatorState_t *state)
 {
 }
+
+/**
+ * Handles an EBREAK.
+ */
+inline void RiscvEmulatorHandleEBREAK(RiscvEmulatorState_t *state) {
+}
 ```
 
 Your own program should provide some RAM and should initialize the emulator. Then keep calling `RiscvEmulatorLoop()`. For inspiration:

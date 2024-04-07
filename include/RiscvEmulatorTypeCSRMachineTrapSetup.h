@@ -11,7 +11,7 @@ SPDX-License-Identifier: Apache-2.0
 #include <stdint.h>
 
 /**
- * Machine status register
+ * Machine status register.
  */
 typedef struct __attribute__((packed)) {
     uint8_t : 1;
@@ -38,7 +38,7 @@ typedef struct __attribute__((packed)) {
 } RiscvCSRmstatus_t;
 
 /**
- * Additional machine-mode status register
+ * Additional machine-mode status register.
  */
 typedef struct __attribute__((packed)) {
     uint8_t : 4;
@@ -50,7 +50,7 @@ typedef struct __attribute__((packed)) {
 } RiscvCSRmstatush_t;
 
 /**
- * Machine ISA Register
+ * Machine ISA Register.
  */
 typedef struct __attribute__((packed)) {
     uint32_t extensions : 26;
@@ -59,136 +59,136 @@ typedef struct __attribute__((packed)) {
 } RiscvCSRmisa_t;
 
 /**
- * Machine ISA Register with all the extensions
+ * Machine ISA Register with all the extensions.
  */
 typedef struct __attribute__((packed)) {
     /**
-     * Atomic extension
+     * Atomic extension.
      */
     uint8_t a : 1;
 
     /**
-     * Reserved
+     * B extension.
      */
     uint8_t b : 1;
 
     /**
-     * Compressed extension
+     * Compressed extension.
      */
     uint8_t c : 1;
 
     /**
-     * Double-precision floating-point extension
+     * Double-precision floating-point extension.
      */
     uint8_t d : 1;
 
     /**
-     * RV32E base ISA
+     * RV32E base ISA.
      */
     uint8_t e : 1;
 
     /**
-     * Single-precision floating-point extension
+     * Single-precision floating-point extension.
      */
     uint8_t f : 1;
 
     /**
-     * Reserved
+     * Reserved.
      */
     uint8_t g : 1;
 
     /**
-     * Hypervisor extension
+     * Hypervisor extension.
      */
     uint8_t h : 1;
 
     /**
-     * RV32I/64I/128I base ISA
+     * RV32I/64I/128I base ISA.
      */
     uint8_t i : 1;
 
     /**
-     * Reserved
+     * Reserved.
      */
     uint8_t j : 1;
 
     /**
-     * Reserved
+     * Reserved.
      */
     uint8_t k : 1;
 
     /**
-     * Reserved
+     * Reserved.
      */
     uint8_t l : 1;
 
     /**
-     * Integer Multiply/Divide extension
+     * Integer Multiply/Divide extension.
      */
     uint8_t m : 1;
 
     /**
-     * Tentatively reserved for User-Level Interrupts extension
+     * Tentatively reserved for User-Level Interrupts extension.
      */
     uint8_t n : 1;
 
     /**
-     * Reserved
+     * Reserved.
      */
     uint8_t o : 1;
 
     /**
-     * Tentatively reserved for Packed-SIMD extension
+     * Tentatively reserved for Packed-SIMD extension.
      */
     uint8_t p : 1;
 
     /**
-     * Quad-precision floating-point extension
+     * Quad-precision floating-point extension.
      */
     uint8_t q : 1;
 
     /**
-     * Reserved
+     * Reserved.
      */
     uint8_t r : 1;
 
     /**
-     * Supervisor mode implemented
+     * Supervisor mode implemented.
      */
     uint8_t s : 1;
 
     /**
-     * Reserved
+     * Reserved.
      */
     uint8_t t : 1;
 
     /**
-     * User mode implemented
+     * User mode implemented.
      */
     uint8_t u : 1;
 
     /**
-     * "V" Vector extension implemented
+     *  Vector extension.
      */
     uint8_t v : 1;
 
     /**
-     * Reserved
+     * Reserved.
      */
     uint8_t w : 1;
 
     /**
-     * Non-standard extensions present
+     * Non-standard extensions present.
      */
     uint8_t x : 1;
 
     /**
-     * Reserved
+     * Reserved.
      */
     uint8_t y : 1;
 
     /**
-     * Reserved
+     * Reserved.
      */
     uint8_t z : 1;
 
@@ -197,7 +197,7 @@ typedef struct __attribute__((packed)) {
 } RiscvCSRmisaExtensions_t;
 
 /**
- * Machine ISA Register union
+ * Machine ISA Register union.
  */
 typedef union {
     RiscvCSRmisa_t misa;
@@ -205,21 +205,21 @@ typedef union {
 } RiscvCSRmisa_u;
 
 /**
- * Machine Exception Delegation Register
+ * Machine Exception Delegation Register.
  */
 typedef struct __attribute__((packed)) {
     uint32_t synchronousexceptions;
 } RiscvCSRmedeleg_t;
 
 /**
- * Machine Interrupt Delegation Register
+ * Machine Interrupt Delegation Register.
  */
 typedef struct __attribute__((packed)) {
     uint32_t interrupts;
 } RiscvCSRmideleg_t;
 
 /**
- * Machine interrupt-enable register
+ * Machine interrupt-enable register.
  */
 typedef struct __attribute__((packed)) {
     uint32_t interrupts;
@@ -248,7 +248,7 @@ typedef union {
 } RiscvCSRmie_u;
 
 /**
- * Machine Trap-Vector Base-Address Register
+ * Machine Trap-Vector Base-Address Register.
  */
 typedef struct __attribute__((packed)) {
     uint8_t mode : 2;

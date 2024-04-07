@@ -11,7 +11,7 @@ SPDX-License-Identifier: Apache-2.0
 #include <stdint.h>
 
 /**
- * Hart ID Register
+ * Hart ID Register.
  */
 typedef struct __attribute__((packed)) {
     uint32_t hartid : 32;
