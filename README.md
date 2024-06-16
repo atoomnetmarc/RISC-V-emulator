@@ -6,7 +6,7 @@ In progress.
 
 This my try at a RV32 RISC-V cpu emulator. I wrote it to better understand RISC-V instructions.
 
-The emulator has been written to be primarily run on 8-bit AVR microcontrollers and be as small and somewhat fast as possible. It contains no dependencies on any architecture. To prove independence I also got it to run on a 32-bit ATSAMD21G18A and [x86-64 Linux](https://github.com/atoomnetmarc/RISC-V-emulator-Native).
+The emulator has been written to be primarily run on 8-bit AVR microcontrollers and compiles with GCC (GNU Compiler Collection) and be as small and somewhat fast as possible. It contains no dependencies on any CPU architecture. To prove independence I also got the emulator to run on a 32-bit ATSAMD21G18A and [x86-64 Linux and Windows](https://github.com/atoomnetmarc/RISC-V-emulator-Native).
 
 # Goal
 
