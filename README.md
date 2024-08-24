@@ -72,7 +72,7 @@ inline void RiscvEmulatorLoad(uint32_t address, void *destination, uint8_t lengt
  * Stores bytes from RISC-V to emulator.
  *
  * @param address The byte address in memory.
- * @param destination The destination address to copy the data to.
+ * @param source The source address to copy the data from.
  * @param length The length in bytes of the data.
  */
 inline void RiscvEmulatorStore(uint32_t address, const void *source, uint8_t length)
