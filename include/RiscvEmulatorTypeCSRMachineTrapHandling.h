@@ -18,10 +18,25 @@ typedef struct __attribute__((packed)) {
 } RiscvCSRmscratch_t;
 
 /**
- * Machine exception program counter.
+ *  Machine trap cause.
  */
 typedef struct __attribute__((packed)) {
-    uint32_t mepc;
-} RiscvCSRmepc_t;
+    uint32_t exceptioncode : 31;
+    uint8_t interrupt : 1;
+} RiscvCSRmcause_t;
+
+/**
+ *  Machine bad address or instruction.
+ */
+typedef struct __attribute__((packed)) {
+    uint32_t mtval;
+} RiscvCSRmtval_t;
+
+/**
+ *   Machine interrupt pending.
+ */
+typedef struct __attribute__((packed)) {
+    uint32_t mip;
+} RiscvCSRmip_t;
 
 #endif

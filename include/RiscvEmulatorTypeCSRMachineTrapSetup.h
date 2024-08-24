@@ -15,25 +15,98 @@ SPDX-License-Identifier: Apache-2.0
  */
 typedef struct __attribute__((packed)) {
     uint8_t : 1;
+
+    /**
+     * S-mode Interrupt Enable.
+     */
     uint8_t sie : 1;
+
     uint8_t : 1;
+
+    /**
+     * M-mode Interrupt Enable.
+     */
     uint8_t mie : 1;
+
     uint8_t : 1;
+
+    /**
+     * S-mode Previous Interrupt Enable.
+     *
+     * The SPIE bit indicates whether supervisor interrupts were enabled prior to trapping into supervisor mode.
+     */
     uint8_t spie : 1;
+
+    /**
+     * U-mode Big-Endian Enable.
+     */
     uint8_t ube : 1;
+
+    /**
+     * M-mode Previous Interrupt Enable.
+     */
     uint8_t mpie : 1;
+
+    /**
+     * S-mode Previous Privilege.
+     */
     uint8_t spp : 1;
+
+    /**
+     * Status of the vector extension.
+     */
     uint8_t vs : 2;
+
+    /**
+     * M-mode Previous Privilege.
+     */
     uint8_t mpp : 2;
+
+    /**
+     * Status of the floating-point unit.
+     */
     uint8_t fs : 2;
+
+    /**
+     * Status of additional user-mode extensions and associated state.
+     */
     uint8_t xs : 2;
+
+    /**
+     * Modify PRiVilege.
+     */
     uint8_t mprv : 1;
+
+    /**
+     * Permit Supervisor User Memory access.
+     */
     uint8_t sum : 1;
+
+    /**
+     * Make eXecutable Readable.
+     */
     uint8_t mxr : 1;
+
+    /**
+     * Trap Virtual Memory.
+     */
     uint8_t tvm : 1;
+
+    /**
+     * Timeout Wait.
+     */
     uint8_t tw : 1;
+
+    /**
+     * Trap SRET.
+     */
     uint8_t tsr : 1;
+
     uint8_t : 8;
+
+    /**
+     * FS, VS, or XS bits encode a Dirty state.
+     */
     uint8_t sd : 1;
 } RiscvCSRmstatus_t;
 
@@ -42,10 +115,27 @@ typedef struct __attribute__((packed)) {
  */
 typedef struct __attribute__((packed)) {
     uint8_t : 4;
+
+    /**
+     * S-mode Big-Endian Enable.
+     */
     uint8_t sbe : 1;
+
+    /**
+     * M-mode Big-Endian Enable.
+     */
     uint8_t mbe : 1;
+
+    /**
+     * Guest Virtual Address.
+     */
     uint8_t gva : 1;
+
+    /**
+     * Machine Previous Virtualization Mode.
+     */
     uint8_t mpv : 1;
+
     uint32_t : 24;
 } RiscvCSRmstatush_t;
 
@@ -201,7 +291,7 @@ typedef struct __attribute__((packed)) {
  */
 typedef union {
     RiscvCSRmisa_t misa;
-    RiscvCSRmisaExtensions_t misaExtensions;
+    RiscvCSRmisaExtensions_t misaextensions;
 } RiscvCSRmisa_u;
 
 /**

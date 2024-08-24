@@ -47,7 +47,7 @@ static inline void RiscvEmulatorOpcodeJumpAndLinkRegister(RiscvEmulatorState_t *
     if (state->instruction.itype.funct3 == FUNCT3_JUMPANDLINKREGISTER_JALR) {
         RiscvEmulatorJALR(state);
     } else {
-        RiscvEmulatorUnknownInstruction(state);
+        state->trapflags.bits.illegalinstruction = 1;
     }
 }
 
@@ -287,7 +287,7 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state) {
 #endif
 
     if (detectedUnknownInstruction == 1) {
-        RiscvEmulatorUnknownInstruction(state);
+        state->trapflags.bits.illegalinstruction = 1;
     }
 }
 
@@ -422,7 +422,7 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state) {
     }
 
     if (detectedUnknownInstruction == 1) {
-        RiscvEmulatorUnknownInstruction(state);
+        state->trapflags.bits.illegalinstruction = 1;
     }
 }
 
@@ -451,9 +451,21 @@ static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state) {
             length = sizeof(uint32_t);
             break;
         default:
-            RiscvEmulatorUnknownInstruction(state);
-            break;
+            state->trapflags.bits.illegalinstruction = 1;
+            return;
     }
+
+#if (RVE_E_ZICSR == 1)
+    // Check if the load is aligned.
+    if (length > 1) {
+        // Only the last few bits need to be checked.
+        uint8_t memorylocation8 = memorylocation & 0xFF;
+        if ((memorylocation8 % length) != 0) {
+            state->trapflags.bits.loadaddressmisaligned = 1;
+            return;
+        }
+    }
+#endif
 
     uint32_t value = 0;
     RiscvEmulatorLoad(memorylocation, &value, length);
@@ -501,9 +513,21 @@ static inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state) {
             length = sizeof(uint8_t);
             break;
         default:
-            RiscvEmulatorUnknownInstruction(state);
-            break;
+            state->trapflags.bits.illegalinstruction = 1;
+            return;
     }
+
+#if (RVE_E_ZICSR == 1)
+    // Check if the store is aligned.
+    if (length > 1) {
+        // Only the last few bits need to be checked.
+        uint8_t memorylocation8 = memorylocation & 0xFF;
+        if ((memorylocation8 % length) != 0) {
+            state->trapflags.bits.storeaddressmisaligned = 1;
+            return;
+        }
+    }
+#endif
 
     RiscvEmulatorStore(memorylocation, rs2, length);
 }
@@ -605,8 +629,8 @@ static inline void RiscvEmulatorOpcodeBranch(RiscvEmulatorState_t *state) {
             RiscvEmulatorBLTU(rs1, rs2, &executebranch);
             break;
         default:
-            RiscvEmulatorUnknownInstruction(state);
-            break;
+            state->trapflags.bits.illegalinstruction = 1;
+            return;
     }
 
     if (executebranch == BRANCH_YES) {
@@ -740,7 +764,7 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state) {
 #endif
 
     if (detectedUnknownInstruction == 1) {
-        RiscvEmulatorUnknownInstruction(state);
+        state->trapflags.bits.illegalinstruction = 1;
     }
 }
 
@@ -789,7 +813,7 @@ static inline void RiscvEmulatorOpcodeMiscMem(RiscvEmulatorState_t *state) {
 #endif
 
     if (detectedUnknownInstruction == 1) {
-        RiscvEmulatorUnknownInstruction(state);
+        state->trapflags.bits.illegalinstruction = 1;
     }
 }
 

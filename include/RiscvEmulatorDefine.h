@@ -13,6 +13,7 @@ SPDX-License-Identifier: Apache-2.0
 #define RAM_ORIGIN 0x80000000
 
 #include "RiscvEmulatorDefineBType.h"
+#include "RiscvEmulatorDefineCSRMachineTrapHandling.h"
 #include "RiscvEmulatorDefineIType.h"
 #include "RiscvEmulatorDefineOpcode.h"
 #include "RiscvEmulatorDefineRType.h"

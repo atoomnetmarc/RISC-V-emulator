@@ -5,8 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 
 */
 
-#ifndef RiscvEmulator_H
-#define RiscvEmulator_H
+#ifndef RiscvEmulator_H_
+#define RiscvEmulator_H_
 
 #include <stdint.h>
 
@@ -16,6 +16,7 @@ SPDX-License-Identifier: Apache-2.0
 
 #include "RiscvEmulatorDefine.h"
 #include "RiscvEmulatorExtension.h"
+#include "RiscvEmulatorTrap.h"
 #include "RiscvEmulatorType.h"
 
 /**
@@ -35,9 +36,12 @@ static inline void RiscvEmulatorInit(RiscvEmulatorState_t *state, uint32_t ram_l
     state->registers.symbolic.Zero = 0;
 
 #if (RVE_E_ZICSR == 1)
-    // Initialize CSR
+    // Initialize CSR.
     memset(&state->csr, 0, sizeof(state->csr));
 #endif
+
+    // Initialize trap flags.
+    state->trapflags.value = 0;
 }
 
 /**
@@ -89,8 +93,12 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
             break;
 #endif
         default:
-            RiscvEmulatorUnknownInstruction(state);
+            state->trapflags.bits.illegalinstruction = 1;
             break;
+    }
+
+    if (state->trapflags.value > 0) {
+        RiscvEmulatorTrap(state);
     }
 }
 

@@ -86,7 +86,7 @@ inline void RiscvEmulatorStore(uint32_t address, const void *source, uint8_t len
  * Use a listing file of the risc-v program to better understand the wrong.
  * The failed machine instruction is found in state.instruction.value.
  */
-inline void RiscvEmulatorUnknownInstruction(RiscvEmulatorState_t *state)
+inline void RiscvEmulatorIllegalInstruction(RiscvEmulatorState_t *state)
 {
 }
 

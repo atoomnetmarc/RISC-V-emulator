@@ -17,10 +17,30 @@ SPDX-License-Identifier: Apache-2.0
 #include "RiscvEmulatorTypeRegister.h"
 
 /**
+ * Riscv emulator state flags.
+ */
+typedef struct
+{
+    uint8_t illegalinstruction : 1;
+
+#if (RVE_E_ZICSR == 1)
+    uint8_t loadaddressmisaligned : 1;
+    uint8_t storeaddressmisaligned : 1;
+#endif
+
+} RiscvEmulatorTrapFlagBits_t;
+
+typedef union {
+    uint8_t value;
+    RiscvEmulatorTrapFlagBits_t bits;
+} RiscvEmulatorTrapFlags_u;
+
+/**
  * Riscv emulator state.
  */
 typedef struct
 {
+    RiscvEmulatorTrapFlags_u trapflags;
     uint32_t programcounter;
     uint32_t programcounternext;
     RiscvInstruction_u instruction;

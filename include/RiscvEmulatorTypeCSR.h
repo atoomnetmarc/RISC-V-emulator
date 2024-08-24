@@ -19,24 +19,33 @@ SPDX-License-Identifier: Apache-2.0
  * Collection of control and status registers.
  */
 typedef struct __attribute__((packed)) {
+    // Machine Information Registers
     RiscvCSRmhartid_t mhartid;
 
+    // Machine Trap Setup
     RiscvCSRmstatus_t mstatus;
-    RiscvCSRmstatush_t mstatush;
     RiscvCSRmisa_u misa;
     RiscvCSRmedeleg_t medeleg;
     RiscvCSRmideleg_t mideleg;
     RiscvCSRmie_u mie;
     RiscvCSRmtvec_t mtvec;
+    RiscvCSRmstatush_t mstatush;
 
+    // Machine Trap Handling
     RiscvCSRmscratch_t mscratch;
-    RiscvCSRmepc_t mepc;
+    uint32_t mepc; // Machine exception program counter.
+    RiscvCSRmcause_t mcause;
+    RiscvCSRmtval_t mtval;
+    RiscvCSRmip_t mip;
 
+    // Machine Memory Protection
     RiscvCSRpmpcfg0_t pmpcfg0;
     RiscvCSRpmpaddr0_t pmpaddr0;
 
+    // Machine Non-Maskable Interrupt Handling
     RiscvCSRmnstatus_t mnstatus;
 
+    // Supervisor Protection and Translation
     RiscvCSRsatp_t satp;
 } RiscvCSR_t;
 

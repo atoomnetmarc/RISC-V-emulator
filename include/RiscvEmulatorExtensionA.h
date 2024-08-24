@@ -122,8 +122,8 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(RiscvEmulatorState_t
             RiscvEmulatorAMOMAXU_W(&loadedvalue, &originalvaluers2);
             break;
         default:
-            RiscvEmulatorUnknownInstruction(state);
-            break;
+            state->trapflags.bits.illegalinstruction = 1;
+            return;
     }
 
     RiscvEmulatorStore(originaladdressrs1, &loadedvalue, sizeof(uint32_t));
