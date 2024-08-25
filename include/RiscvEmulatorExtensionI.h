@@ -731,29 +731,36 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state) {
 #if (RVE_E_ZICSR == 1)
     if (detectedUnknownInstruction == 1) {
         detectedUnknownInstruction = -1;
-        void *rd = &state->registers.array.location[state->instruction.itypecsr.rd];
-        void *rs1 = &state->registers.array.location[state->instruction.itypecsr.rs1];
-        int32_t imm = state->instruction.itypecsrimm.imm;
-        void *csr = RiscvEmulatorGetCSRAddress(state);
+
+        uint8_t rdnum = state->instruction.itypecsr.rd;
+        void *rd = &state->registers.array.location[rdnum];
+
+        uint8_t rs1num = state->instruction.itypecsr.rs1;
+        void *rs1 = &state->registers.array.location[rs1num];
+
+        uint8_t imm = state->instruction.itypecsrimm.imm;
+
+        uint16_t csrnum = state->instruction.itypecsr.csr;
+        void *csr = RiscvEmulatorGetCSRAddress(state, csrnum);
 
         switch (state->instruction.itypecsr.funct3) {
             case FUNCT3_CSR_CSRRW:
-                RiscvEmulatorCSRRW(rd, rs1, csr);
+                RiscvEmulatorCSRRW(state, rdnum, rd, rs1num, rs1, csrnum, csr);
                 break;
             case FUNCT3_CSR_CSRRWI:
-                RiscvEmulatorCSRRW(rd, &imm, csr);
+                RiscvEmulatorCSRRWI(state, rdnum, rd, imm, csrnum, csr);
                 break;
             case FUNCT3_CSR_CSRRS:
-                RiscvEmulatorCSRRS(rd, rs1, csr);
+                RiscvEmulatorCSRRS(state, rdnum, rd, rs1num, rs1, csrnum, csr);
                 break;
             case FUNCT3_CSR_CSRRSI:
-                RiscvEmulatorCSRRS(rd, &imm, csr);
+                RiscvEmulatorCSRRSI(state, rdnum, rd, imm, csrnum, csr);
                 break;
             case FUNCT3_CSR_CSRRC:
-                RiscvEmulatorCSRRC(rd, rs1, csr);
+                RiscvEmulatorCSRRC(state, rdnum, rd, rs1num, rs1, csrnum, csr);
                 break;
             case FUNCT3_CSR_CSRRCI:
-                RiscvEmulatorCSRRC(rd, &imm, csr);
+                RiscvEmulatorCSRRCI(state, rdnum, rd, imm, csrnum, csr);
                 break;
             default:
                 detectedUnknownInstruction = 1;

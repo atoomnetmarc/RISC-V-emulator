@@ -23,7 +23,7 @@ SPDX-License-Identifier: Apache-2.0
 #define RVE_E_ZICSR 0
 #endif
 
-// Instruction-Fetch Fence
+// Instruction-Fetch Fence.
 #ifndef RVE_E_ZIFENCEI
 #define RVE_E_ZIFENCEI 0
 #endif
@@ -46,6 +46,11 @@ SPDX-License-Identifier: Apache-2.0
 // Single-bit operation.
 #ifndef RVE_E_ZBS
 #define RVE_E_ZBS 0
+#endif
+
+// Enable weak function hooks.
+#ifndef RVE_E_HOOK
+#define RVE_E_HOOK 0
 #endif
 
 #endif
