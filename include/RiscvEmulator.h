@@ -48,6 +48,12 @@ static inline void RiscvEmulatorInit(RiscvEmulatorState_t *state, uint32_t ram_l
  * Call this function repeatedly to execute the emulator one instruction at a time.
  */
 static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
+
+#if (RVE_E_HOOK == 1)
+    // Detect if hook exists for the instruction executed. Will be set to 1 when executing a hook.
+    state->hookexists = 0;
+#endif
+
     state->programcounter = state->programcounternext;
     state->programcounternext = state->programcounter + 4;
 

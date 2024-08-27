@@ -22,7 +22,19 @@ SPDX-License-Identifier: Apache-2.0
 /**
  * Carry-less multiply low-part.
  */
-static inline void RiscvEmulatorCMUL(void *rd, const void *rs1, const void *rs2) {
+static inline void RiscvEmulatorCMUL(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint8_t rs2num __attribute__((unused)),
+    const void *rs2) {
+
+    if (rdnum == 0) {
+        return;
+    }
+
     uint32_t output = 0;
 
     for (uint8_t i = 0; i < 32; i++) {
@@ -37,7 +49,19 @@ static inline void RiscvEmulatorCMUL(void *rd, const void *rs1, const void *rs2)
 /**
  * Carry-less multiply high-part.
  */
-static inline void RiscvEmulatorCMULH(void *rd, const void *rs1, const void *rs2) {
+static inline void RiscvEmulatorCMULH(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint8_t rs2num __attribute__((unused)),
+    const void *rs2) {
+
+    if (rdnum == 0) {
+        return;
+    }
+
     uint32_t output = 0;
 
     for (uint8_t i = 1; i < 32; i++) {
@@ -52,7 +76,19 @@ static inline void RiscvEmulatorCMULH(void *rd, const void *rs1, const void *rs2
 /**
  * Carry-less multiply reversed.
  */
-static inline void RiscvEmulatorCMULR(void *rd, const void *rs1, const void *rs2) {
+static inline void RiscvEmulatorCMULR(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint8_t rs2num __attribute__((unused)),
+    const void *rs2) {
+
+    if (rdnum == 0) {
+        return;
+    }
+
     uint32_t output = 0;
 
     for (uint8_t i = 0; i < 32; i++) {

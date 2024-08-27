@@ -150,7 +150,7 @@ Enabling hooks `-D RVE_E_HOOK=1` creates the possibility to tap into the inner w
 In `RiscvEmulatorHook.h` you can find a list of all the supported hooks in the form of weak functions. Implement your own non-weak function to start using the hooks you are interested in. For example:
 
 ```c
-void RiscvEmulatorCSRRWHookBegin(RiscvEmulatorState_t *state, void *rd, const void *rs1, void *csr) {
+void RiscvEmulatorCSRR_HookBegin(RiscvEmulatorState_t *state, void *rd, const void *rs1, void *csr) {
 
     printf("%08x: %08x          csrrw rd: %u, rs1: %u, csr: %u\n",
            state->programcounter,

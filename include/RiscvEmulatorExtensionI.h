@@ -54,89 +54,559 @@ static inline void RiscvEmulatorOpcodeJumpAndLinkRegister(RiscvEmulatorState_t *
 /**
  * Add: rd = rs1 + rs2
  */
-static inline void RiscvEmulatorADD(void *rd, const void *rs1, const void *rs2) {
+static inline void RiscvEmulatorADD(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint8_t rs2num __attribute__((unused)),
+    const void *rs2) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegRegHookBegin("add", state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
     *(int32_t *)rd = *(int32_t *)rs1 + *(int32_t *)rs2;
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegRegHookEnd("add", state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+#endif
+}
+
+/**
+ * Add: rd = rs1 + imm
+ */
+static inline void RiscvEmulatorADDI(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum __attribute__((unused)),
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const int32_t imm) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegImmHookBegin("addi", state, rdnum, rd, rs1num, rs1, imm);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
+    *(int32_t *)rd = *(int32_t *)rs1 + imm;
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegImmHookEnd("addi", state, rdnum, rd, rs1num, rs1, imm);
+#endif
 }
 
 /**
  * Subtract: rd = rs1 - rs2
  */
-static inline void RiscvEmulatorSUB(void *rd, const void *rs1, const void *rs2) {
+static inline void RiscvEmulatorSUB(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint8_t rs2num __attribute__((unused)),
+    const void *rs2) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegRegHookBegin("sub", state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
     *(int32_t *)rd = *(int32_t *)rs1 - *(int32_t *)rs2;
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegRegHookEnd("sub", state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+#endif
 }
 
 /**
  * Logical shift left: rd = rs1 << (rs2 & 0b11111)
  */
-static inline void RiscvEmulatorSLL(void *rd, const void *rs1, const void *rs2) {
+static inline void RiscvEmulatorSLL(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint8_t rs2num __attribute__((unused)),
+    const void *rs2) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegRegHookBegin("sll", state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
     *(uint32_t *)rd = *(uint32_t *)rs1 << (*(uint32_t *)rs2 & 0b11111);
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegRegHookEnd("sll", state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+#endif
+}
+
+/**
+ * Logical shift left: rd = rs1 << (shamt & 0b11111)
+ */
+static inline void RiscvEmulatorSLLI(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint32_t shamt) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegImmHookBegin("slli", state, rdnum, rd, rs1num, rs1, shamt);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
+    *(uint32_t *)rd = *(uint32_t *)rs1 << (shamt & 0b11111);
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegImmHookEnd("slli", state, rdnum, rd, rs1num, rs1, shamt);
+#endif
 }
 
 /**
  * Signed compare: rd = (rs1 < rs2)
  */
-static inline void RiscvEmulatorSLT(void *rd, const void *rs1, const void *rs2) {
+static inline void RiscvEmulatorSLT(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint8_t rs2num __attribute__((unused)),
+    const void *rs2) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegRegHookBegin("slt", state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
     *(int32_t *)rd = (*(int32_t *)rs1 < *(int32_t *)rs2);
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegRegHookEnd("slt", state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+#endif
+}
+
+/**
+ * Signed compare: rd = (rs1 < imm)
+ */
+static inline void RiscvEmulatorSLTI(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum __attribute__((unused)),
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const int32_t imm) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegImmHookBegin("slti", state, rdnum, rd, rs1num, rs1, imm);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
+    *(int32_t *)rd = (*(int32_t *)rs1 < imm);
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegImmHookEnd("slti", state, rdnum, rd, rs1num, rs1, imm);
+#endif
 }
 
 /**
  * Unsigned compare: rd = (rs1 < rs2)
  */
-static inline void RiscvEmulatorSLTU(void *rd, const void *rs1, const void *rs2) {
+static inline void RiscvEmulatorSLTU(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint8_t rs2num __attribute__((unused)),
+    const void *rs2) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegRegHookBegin("sltu", state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
     *(uint32_t *)rd = (*(uint32_t *)rs1 < *(uint32_t *)rs2);
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegRegHookEnd("sltu", state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+#endif
+}
+
+/**
+ * Unsigned compare: rd = (rs1 < imm)
+ */
+static inline void RiscvEmulatorSLTIU(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum __attribute__((unused)),
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint32_t imm) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegImmHookBegin("sltiu", state, rdnum, rd, rs1num, rs1, imm);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
+    *(uint32_t *)rd = (*(uint32_t *)rs1 < imm);
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegImmHookEnd("sltiu", state, rdnum, rd, rs1num, rs1, imm);
+#endif
 }
 
 /**
  * Exclusive or: rd = rs1 ^ rs2
  */
-static inline void RiscvEmulatorXOR(void *rd, const void *rs1, const void *rs2) {
+static inline void RiscvEmulatorXOR(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint8_t rs2num __attribute__((unused)),
+    const void *rs2) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegRegHookBegin("xor", state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
     *(uint32_t *)rd = *(uint32_t *)rs1 ^ *(uint32_t *)rs2;
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegRegHookEnd("xor", state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+#endif
+}
+
+/**
+ * Exclusive or: rd = rs1 ^ imm
+ */
+static inline void RiscvEmulatorXORI(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum __attribute__((unused)),
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint32_t imm) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegImmHookBegin("xori", state, rdnum, rd, rs1num, rs1, imm);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
+    *(uint32_t *)rd = *(uint32_t *)rs1 ^ imm;
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegImmHookEnd("xori", state, rdnum, rd, rs1num, rs1, imm);
+#endif
 }
 
 /**
  * Logical shift right: rd = rs1 >> (rs2 & 0b11111)
  */
-static inline void RiscvEmulatorSRL(void *rd, const void *rs1, const void *rs2) {
+static inline void RiscvEmulatorSRL(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint8_t rs2num __attribute__((unused)),
+    const void *rs2) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegRegHookBegin("srl", state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
     *(uint32_t *)rd = *(uint32_t *)rs1 >> (*(uint32_t *)rs2 & 0b11111);
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegRegHookEnd("srl", state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+#endif
+}
+
+/**
+ * Logical shift right: rd = rs1 >> (shamt & 0b11111)
+ */
+static inline void RiscvEmulatorSRLI(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint32_t shamt) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegImmHookBegin("srli", state, rdnum, rd, rs1num, rs1, shamt);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
+    *(uint32_t *)rd = *(uint32_t *)rs1 >> (shamt & 0b11111);
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegImmHookEnd("srli", state, rdnum, rd, rs1num, rs1, shamt);
+#endif
 }
 
 /**
  * Arithmetic shift right: rd = rs1 >> (rs2 & 0b11111)
  */
-static inline void RiscvEmulatorSRA(void *rd, const void *rs1, const void *rs2) {
+static inline void RiscvEmulatorSRA(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint8_t rs2num __attribute__((unused)),
+    const void *rs2) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegRegHookBegin("sra", state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
     *(int32_t *)rd = *(int32_t *)rs1 >> (*(uint32_t *)rs2 & 0b11111);
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegRegHookEnd("sra", state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+#endif
+}
+
+/**
+ * Arithmetic shift right: rd = rs1 >> (shamt & 0b11111)
+ */
+static inline void RiscvEmulatorSRAI(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint32_t shamt) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegImmHookBegin("srai", state, rdnum, rd, rs1num, rs1, shamt);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
+    *(int32_t *)rd = *(int32_t *)rs1 >> (shamt & 0b11111);
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegImmHookEnd("srai", state, rdnum, rd, rs1num, rs1, shamt);
+#endif
 }
 
 /**
  * Boolean or: rd = rs1 | rs2
  */
-static inline void RiscvEmulatorOR(void *rd, const void *rs1, const void *rs2) {
+static inline void RiscvEmulatorOR(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint8_t rs2num __attribute__((unused)),
+    const void *rs2) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegRegHookBegin("or", state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
     *(int32_t *)rd = *(int32_t *)rs1 | *(int32_t *)rs2;
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegRegHookEnd("or", state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+#endif
+}
+
+/**
+ * Boolean or: rd = rs1 | imm
+ */
+static inline void RiscvEmulatorORI(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum __attribute__((unused)),
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const int32_t imm) {
+
+    if (rdnum == 0) {
+        return;
+    }
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegImmHookBegin("ori", state, rdnum, rd, rs1num, rs1, imm);
+#endif
+
+    *(int32_t *)rd = *(int32_t *)rs1 | imm;
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegImmHookEnd("ori", state, rdnum, rd, rs1num, rs1, imm);
+#endif
 }
 
 /**
  * Boolean and: rd = rs1 & rs2
  */
-static inline void RiscvEmulatorAND(void *rd, const void *rs1, const void *rs2) {
+static inline void RiscvEmulatorAND(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint8_t rs2num __attribute__((unused)),
+    const void *rs2) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegRegHookBegin("and", state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
     *(int32_t *)rd = *(int32_t *)rs1 & *(int32_t *)rs2;
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegRegHookEnd("and", state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+#endif
+}
+
+/**
+ * Boolean and: rd = rs1 & imm
+ */
+static inline void RiscvEmulatorANDI(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum __attribute__((unused)),
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const int32_t imm) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegImmHookBegin("andi", state, rdnum, rd, rs1num, rs1, imm);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
+    *(int32_t *)rd = *(int32_t *)rs1 & imm;
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorIntRegImmHookEnd("andi", state, rdnum, rd, rs1num, rs1, imm);
+#endif
 }
 
 /**
  * Process operation opcodes.
  */
 static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state) {
-    if (state->instruction.rtype.rd == 0) {
-        return;
-    }
-
     int8_t detectedUnknownInstruction = 1;
 
-    void *rd = &state->registers.array.location[state->instruction.rtype.rd];
-    void *rs1 = &state->registers.array.location[state->instruction.rtype.rs1];
+    uint8_t rdnum = state->instruction.rtype.rd;
+    void *rd = &state->registers.array.location[rdnum];
+    uint8_t rs1num = state->instruction.rtype.rs1;
+    void *rs1 = &state->registers.array.location[rs1num];
+    uint8_t rs2num = state->instruction.rtype.rs2;
+    void *rs2 = &state->registers.array.location[rs2num];
 
     if (detectedUnknownInstruction == 1) {
-        void *rs2 = &state->registers.array.location[state->instruction.rtype.rs2];
-
         RiscvInstructionTypeRDecoderFunct7Funct3_u instruction_decoderhelper_rtype;
         instruction_decoderhelper_rtype.input.funct3 = state->instruction.rtype.funct3;
         instruction_decoderhelper_rtype.input.funct7 = state->instruction.rtype.funct7;
@@ -144,120 +614,120 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state) {
         detectedUnknownInstruction = -1;
         switch (instruction_decoderhelper_rtype.output.funct7_3) {
             case FUNCT7_FUNCT3_OPERATION_ADD:
-                RiscvEmulatorADD(rd, rs1, rs2);
+                RiscvEmulatorADD(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_SUB:
-                RiscvEmulatorSUB(rd, rs1, rs2);
+                RiscvEmulatorSUB(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_SLL:
-                RiscvEmulatorSLL(rd, rs1, rs2);
+                RiscvEmulatorSLL(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_SLT:
-                RiscvEmulatorSLT(rd, rs1, rs2);
+                RiscvEmulatorSLT(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_SLTU:
-                RiscvEmulatorSLTU(rd, rs1, rs2);
+                RiscvEmulatorSLTU(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_XOR:
-                RiscvEmulatorXOR(rd, rs1, rs2);
+                RiscvEmulatorXOR(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_SRL:
-                RiscvEmulatorSRL(rd, rs1, rs2);
+                RiscvEmulatorSRL(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_SRA:
-                RiscvEmulatorSRA(rd, rs1, rs2);
+                RiscvEmulatorSRA(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_OR:
-                RiscvEmulatorOR(rd, rs1, rs2);
+                RiscvEmulatorOR(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_AND:
-                RiscvEmulatorAND(rd, rs1, rs2);
+                RiscvEmulatorAND(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
 #if (RVE_E_M == 1)
             case FUNCT7_FUNCT3_OPERATION_MUL:
-                RiscvEmulatorMUL(rd, rs1, rs2);
+                RiscvEmulatorMUL(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_MULH:
-                RiscvEmulatorMULH(rd, rs1, rs2);
+                RiscvEmulatorMULH(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_MULHSU:
-                RiscvEmulatorMULHSU(rd, rs1, rs2);
+                RiscvEmulatorMULHSU(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_MULHU:
-                RiscvEmulatorMULHU(rd, rs1, rs2);
+                RiscvEmulatorMULHU(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_DIV:
-                RiscvEmulatorDIV(rd, rs1, rs2);
+                RiscvEmulatorDIV(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_DIVU:
-                RiscvEmulatorDIVU(rd, rs1, rs2);
+                RiscvEmulatorDIVU(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_REM:
-                RiscvEmulatorREM(rd, rs1, rs2);
+                RiscvEmulatorREM(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_REMU:
-                RiscvEmulatorREMU(rd, rs1, rs2);
+                RiscvEmulatorREMU(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
 #endif
 #if (RVE_E_ZBA == 1)
             case FUNCT7_FUNCT3_OPERATION_SH1ADD:
             case FUNCT7_FUNCT3_OPERATION_SH2ADD:
             case FUNCT7_FUNCT3_OPERATION_SH3ADD:
-                RiscvEmulatorSHADD(state, rd, rs1, rs2);
+                RiscvEmulatorSHADD(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
 #endif
 #if (RVE_E_ZBB == 1)
             case FUNCT7_FUNCT3_OPERATION_ANDN:
-                RiscvEmulatorANDN(rd, rs1, rs2);
+                RiscvEmulatorANDN(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_ORN:
-                RiscvEmulatorORN(rd, rs1, rs2);
+                RiscvEmulatorORN(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_XNOR:
-                RiscvEmulatorXNOR(rd, rs1, rs2);
+                RiscvEmulatorXNOR(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_MAX:
-                RiscvEmulatorMAX(rd, rs1, rs2);
+                RiscvEmulatorMAX(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_MAXU:
-                RiscvEmulatorMAXU(rd, rs1, rs2);
+                RiscvEmulatorMAXU(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_MIN:
-                RiscvEmulatorMIN(rd, rs1, rs2);
+                RiscvEmulatorMIN(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_MINU:
-                RiscvEmulatorMINU(rd, rs1, rs2);
+                RiscvEmulatorMINU(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_ROL:
-                RiscvEmulatorROL(rd, rs1, rs2);
+                RiscvEmulatorROL(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_ROR:
-                RiscvEmulatorROR(rd, rs1, rs2);
+                RiscvEmulatorROR(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
 #endif
 #if (RVE_E_ZBS == 1)
             case FUNCT7_FUNCT3_OPERATION_CMUL:
-                RiscvEmulatorCMUL(rd, rs1, rs2);
+                RiscvEmulatorCMUL(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_CMULH:
-                RiscvEmulatorCMULH(rd, rs1, rs2);
+                RiscvEmulatorCMULH(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_CMULR:
-                RiscvEmulatorCMULR(rd, rs1, rs2);
+                RiscvEmulatorCMULR(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
 #endif
 #if (RVE_E_ZBS == 1)
             case FUNCT7_FUNCT3_OPERATION_BCLR:
-                RiscvEmulatorBCLR(rd, rs1, rs2);
+                RiscvEmulatorBCLR(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_BEXT:
-                RiscvEmulatorBEXT(rd, rs1, rs2);
+                RiscvEmulatorBEXT(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_BINV:
-                RiscvEmulatorBINV(rd, rs1, rs2);
+                RiscvEmulatorBINV(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_BSET:
-                RiscvEmulatorBSET(rd, rs1, rs2);
+                RiscvEmulatorBSET(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
 #endif
             default:
@@ -276,7 +746,7 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state) {
         detectedUnknownInstruction = -1;
         switch (instruction_decoderhelper_rtype_Funct3Rs2Funct7.output.funct3_rs2_funct7) {
             case FUNCT7_RS2_FUNCT3_OPERATION_ZEXTH:
-                RiscvEmulatorZEXTH(rd, rs1);
+                RiscvEmulatorZEXTH(state, rdnum, rd, rs1num, rs1);
                 break;
 
             default:
@@ -295,14 +765,12 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state) {
  * Process immediate opcodes.
  */
 static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state) {
-    if (state->instruction.itype.rd == 0) {
-        return;
-    }
-
     int8_t detectedUnknownInstruction = 1;
 
-    void *rd = &state->registers.array.location[state->instruction.itype.rd];
-    void *rs1 = &state->registers.array.location[state->instruction.itype.rs1];
+    uint8_t rdnum = state->instruction.itype.rd;
+    void *rd = &state->registers.array.location[rdnum];
+    uint8_t rs1num = state->instruction.itype.rs1;
+    void *rs1 = &state->registers.array.location[rs1num];
 
 #if (RVE_E_ZBB == 1)
     if (detectedUnknownInstruction == 1) {
@@ -316,25 +784,25 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state) {
             detectedUnknownInstruction = -1;
             switch (instruction_decoderhelper_itype_functiongroup.output.immfunct3) {
                 case IMM11_0_FUNCT3_IMMEDIATE_CLZ:
-                    RiscvEmulatorCLZ(rd, rs1);
+                    RiscvEmulatorCLZ(state, rdnum, rd, rs1num, rs1);
                     break;
                 case IMM11_0_FUNCT3_IMMEDIATE_CTZ:
-                    RiscvEmulatorCTZ(rd, rs1);
+                    RiscvEmulatorCTZ(state, rdnum, rd, rs1num, rs1);
                     break;
                 case IMM11_0_FUNCT3_IMMEDIATE_CPOP:
-                    RiscvEmulatorCPOP(rd, rs1);
+                    RiscvEmulatorCPOP(state, rdnum, rd, rs1num, rs1);
                     break;
                 case IMM11_0_FUNCT3_IMMEDIATE_SEXTB:
-                    RiscvEmulatorSEXTB(rd, rs1);
+                    RiscvEmulatorSEXTB(state, rdnum, rd, rs1num, rs1);
                     break;
                 case IMM11_0_FUNCT3_IMMEDIATE_SEXTH:
-                    RiscvEmulatorSEXTH(rd, rs1);
+                    RiscvEmulatorSEXTH(state, rdnum, rd, rs1num, rs1);
                     break;
                 case IMM11_0_FUNCT3_IMMEDIATE_ORCB:
-                    RiscvEmulatorORCB(rd, rs1);
+                    RiscvEmulatorORCB(state, rdnum, rd, rs1num, rs1);
                     break;
                 case IMM11_0_FUNCT3_IMMEDIATE_REV8:
-                    RiscvEmulatorREV8(rd, rs1);
+                    RiscvEmulatorREV8(state, rdnum, rd, rs1num, rs1);
                     break;
                 default:
                     detectedUnknownInstruction = 1;
@@ -359,31 +827,31 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state) {
             detectedUnknownInstruction = -1;
             switch (instruction_decoderhelper_itype_functions_shamt.output.imm11_5funct3) {
                 case IMM11_5_FUNCT3_IMMEDIATE_SLLI:
-                    RiscvEmulatorSLL(rd, rs1, &shamt);
+                    RiscvEmulatorSLLI(state, rdnum, rd, rs1num, rs1, shamt);
                     break;
                 case IMM11_5_FUNCT3_IMMEDIATE_SRLI:
-                    RiscvEmulatorSRL(rd, rs1, &shamt);
+                    RiscvEmulatorSRLI(state, rdnum, rd, rs1num, rs1, shamt);
                     break;
                 case IMM11_5_FUNCT3_IMMEDIATE_SRAI:
-                    RiscvEmulatorSRA(rd, rs1, &shamt);
+                    RiscvEmulatorSRAI(state, rdnum, rd, rs1num, rs1, shamt);
                     break;
 #if (RVE_E_ZBB == 1)
                 case IMM11_5_FUNCT3_IMMEDIATE_RORI:
-                    RiscvEmulatorROR(rd, rs1, &shamt);
+                    RiscvEmulatorRORI(state, rdnum, rd, rs1num, rs1, shamt);
                     break;
 #endif
 #if (RVE_E_ZBS == 1)
                 case IMM11_5_FUNCT3_IMMEDIATE_BCLRI:
-                    RiscvEmulatorBCLR(rd, rs1, &shamt);
+                    RiscvEmulatorBCLRI(state, rdnum, rd, rs1num, rs1, shamt);
                     break;
                 case IMM11_5_FUNCT3_IMMEDIATE_BEXTI:
-                    RiscvEmulatorBEXT(rd, rs1, &shamt);
+                    RiscvEmulatorBEXTI(state, rdnum, rd, rs1num, rs1, shamt);
                     break;
                 case IMM11_5_FUNCT3_IMMEDIATE_BINVI:
-                    RiscvEmulatorBINV(rd, rs1, &shamt);
+                    RiscvEmulatorBINVI(state, rdnum, rd, rs1num, rs1, shamt);
                     break;
                 case IMM11_5_FUNCT3_IMMEDIATE_BSETI:
-                    RiscvEmulatorBSET(rd, rs1, &shamt);
+                    RiscvEmulatorBSETI(state, rdnum, rd, rs1num, rs1, shamt);
                     break;
 #endif
                 default:
@@ -398,22 +866,22 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state) {
         int32_t imm = state->instruction.itype.imm;
         switch (state->instruction.itype.funct3) {
             case FUNCT3_IMMEDIATE_ADDI:
-                RiscvEmulatorADD(rd, rs1, &imm);
+                RiscvEmulatorADDI(state, rdnum, rd, rs1num, rs1, imm);
                 break;
             case FUNCT3_IMMEDIATE_SLTI:
-                RiscvEmulatorSLT(rd, rs1, &imm);
+                RiscvEmulatorSLTI(state, rdnum, rd, rs1num, rs1, imm);
                 break;
             case FUNCT3_IMMEDIATE_SLTIU:
-                RiscvEmulatorSLTU(rd, rs1, &imm);
+                RiscvEmulatorSLTIU(state, rdnum, rd, rs1num, rs1, imm);
                 break;
             case FUNCT3_IMMEDIATE_XORI:
-                RiscvEmulatorXOR(rd, rs1, &imm);
+                RiscvEmulatorXORI(state, rdnum, rd, rs1num, rs1, imm);
                 break;
             case FUNCT3_IMMEDIATE_ORI:
-                RiscvEmulatorOR(rd, rs1, &imm);
+                RiscvEmulatorORI(state, rdnum, rd, rs1num, rs1, imm);
                 break;
             case FUNCT3_IMMEDIATE_ANDI:
-                RiscvEmulatorAND(rd, rs1, &imm);
+                RiscvEmulatorANDI(state, rdnum, rd, rs1num, rs1, imm);
                 break;
             default:
                 detectedUnknownInstruction = 1;
@@ -642,13 +1110,28 @@ static inline void RiscvEmulatorOpcodeBranch(RiscvEmulatorState_t *state) {
  * Add upper immediate to program counter.
  */
 static inline void RiscvEmulatorAUIPC(RiscvEmulatorState_t *state) {
+    uint32_t upperimmediate = state->instruction.utype.imm31_12;
+
     RiscvInstructionTypeUDecoderImm_u helper;
     helper.input.imm11_0 = 0;
-    helper.input.imm31_12 = state->instruction.utype.imm31_12;
+    helper.input.imm31_12 = upperimmediate;
 
-    if (state->instruction.utype.rd != 0) {
-        state->registers.array.location[state->instruction.utype.rd] = state->programcounter + helper.output.imm;
+    uint8_t rdnum = state->instruction.utype.rd;
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    void *rd = &state->registers.array.location[rdnum];
+    RiscvEmulatorAUIPCHookBegin(state, rdnum, rd, upperimmediate, helper.output.imm);
+#endif
+
+    if (rdnum != 0) {
+        state->registers.array.location[rdnum] = state->programcounter + helper.output.imm;
     }
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorAUIPCHookEnd(state, rdnum, rd, upperimmediate, helper.output.imm);
+#endif
 }
 
 /**

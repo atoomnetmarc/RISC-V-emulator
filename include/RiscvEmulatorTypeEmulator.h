@@ -46,6 +46,10 @@ typedef struct
     RiscvInstruction_u instruction;
     RiscvRegister_u registers;
 
+#if (RVE_E_HOOK == 1)
+    uint8_t hookexists;
+#endif
+
 #if (RVE_E_ZICSR == 1)
     RiscvCSR_t csr;
 #endif

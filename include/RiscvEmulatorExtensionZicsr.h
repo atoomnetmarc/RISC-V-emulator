@@ -120,7 +120,7 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
  * Atomic read and write CSR.
  */
 static inline void RiscvEmulatorCSRRW(
-    const RiscvEmulatorState_t *state __attribute__((unused)),
+    RiscvEmulatorState_t *state __attribute__((unused)),
     const uint8_t rdnum,
     const void *rd,
     const uint8_t rs1num __attribute__((unused)),
@@ -129,7 +129,8 @@ static inline void RiscvEmulatorCSRRW(
     const void *csr) {
 
 #if (RVE_E_HOOK == 1)
-    RiscvEmulatorCSRRWHookBegin(state, rdnum, rd, rs1num, rs1, csrnum, csr);
+    state->hookexists = 1;
+    RiscvEmulatorCSRR_HookBegin("csrrw", state, rdnum, rd, rs1num, rs1, csrnum, csr);
 #endif
 
     uint32_t originalvaluers1 = *(uint32_t *)rs1;
@@ -142,7 +143,8 @@ static inline void RiscvEmulatorCSRRW(
     *(uint32_t *)csr = originalvaluers1;
 
 #if (RVE_E_HOOK == 1)
-    RiscvEmulatorCSRRWHookEnd(state, rdnum, rd, rs1num, rs1, csrnum, csr);
+    state->hookexists = 1;
+    RiscvEmulatorCSRR_HookEnd("csrrw", state, rdnum, rd, rs1num, rs1, csrnum, csr);
 #endif
 }
 
@@ -150,7 +152,7 @@ static inline void RiscvEmulatorCSRRW(
  * Atomic read and write CSR, immediate.
  */
 static inline void RiscvEmulatorCSRRWI(
-    const RiscvEmulatorState_t *state __attribute__((unused)),
+    RiscvEmulatorState_t *state __attribute__((unused)),
     const uint8_t rdnum,
     const void *rd,
     const uint8_t imm,
@@ -169,7 +171,7 @@ static inline void RiscvEmulatorCSRRWI(
  * Atomic read and set bits in CSR.
  */
 static inline void RiscvEmulatorCSRRS(
-    const RiscvEmulatorState_t *state __attribute__((unused)),
+    RiscvEmulatorState_t *state __attribute__((unused)),
     const uint8_t rdnum,
     const void *rd,
     const uint8_t rs1num __attribute__((unused)),
@@ -179,6 +181,11 @@ static inline void RiscvEmulatorCSRRS(
 
     int32_t initialrs1value = *(uint32_t *)rs1;
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorCSRR_HookBegin("csrrs", state, rdnum, rd, rs1num, rs1, csrnum, csr);
+#endif
+
     if (rdnum != 0) {
         *(uint32_t *)rd = *(uint32_t *)csr;
     }
@@ -187,13 +194,18 @@ static inline void RiscvEmulatorCSRRS(
     if (initialrs1value != 0) {
         *(uint32_t *)csr |= initialrs1value;
     }
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorCSRR_HookEnd("csrrs", state, rdnum, rd, rs1num, rs1, csrnum, csr);
+#endif
 }
 
 /**
  * Atomic read and set bits in CSR, immediate.
  */
 static inline void RiscvEmulatorCSRRSI(
-    const RiscvEmulatorState_t *state __attribute__((unused)),
+    RiscvEmulatorState_t *state __attribute__((unused)),
     const uint8_t rdnum,
     const void *rd,
     const uint8_t imm,
@@ -214,7 +226,7 @@ static inline void RiscvEmulatorCSRRSI(
  * Atomic read and clear bits in CSR.
  */
 static inline void RiscvEmulatorCSRRC(
-    const RiscvEmulatorState_t *state __attribute__((unused)),
+    RiscvEmulatorState_t *state __attribute__((unused)),
     const uint8_t rdnum,
     const void *rd,
     const uint8_t rs1num __attribute__((unused)),
@@ -224,6 +236,11 @@ static inline void RiscvEmulatorCSRRC(
 
     int32_t initialrs1value = *(uint32_t *)rs1;
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorCSRR_HookBegin("csrrc", state, rdnum, rd, rs1num, rs1, csrnum, csr);
+#endif
+
     if (rdnum != 0) {
         *(uint32_t *)rd = *(uint32_t *)csr;
     }
@@ -232,13 +249,18 @@ static inline void RiscvEmulatorCSRRC(
     if (initialrs1value != 0) {
         *(uint32_t *)csr &= ~initialrs1value;
     }
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorCSRR_HookEnd("csrrc", state, rdnum, rd, rs1num, rs1, csrnum, csr);
+#endif
 }
 
 /**
  * Atomic read and clear bits in CSR, immediate.
  */
 static inline void RiscvEmulatorCSRRCI(
-    const RiscvEmulatorState_t *state __attribute__((unused)),
+    RiscvEmulatorState_t *state __attribute__((unused)),
     const uint8_t rdnum,
     const void *rd,
     const uint8_t imm,

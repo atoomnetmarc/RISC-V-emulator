@@ -22,7 +22,19 @@ SPDX-License-Identifier: Apache-2.0
 /**
  * Shift left by x and add.
  */
-static inline void RiscvEmulatorSHADD(RiscvEmulatorState_t *state, void *rd, const void *rs1, const void *rs2) {
+static inline void RiscvEmulatorSHADD(
+    const RiscvEmulatorState_t *state,
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint8_t rs2num __attribute__((unused)),
+    const void *rs2) {
+
+    if (rdnum == 0) {
+        return;
+    }
+
     *(uint32_t *)rd = *(uint32_t *)rs2 + (*(uint32_t *)rs1 << state->instruction.rtypeshift.funct3_shifts);
 }
 

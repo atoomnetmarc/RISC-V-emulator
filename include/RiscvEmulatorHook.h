@@ -15,7 +15,91 @@ SPDX-License-Identifier: Apache-2.0
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
-__attribute__((weak)) void RiscvEmulatorCSRRWHookBegin(
+// Extension: I
+
+/**
+ * Generic hook function for Integer Register-Register Operations.
+ */
+__attribute__((weak)) void RiscvEmulatorIntRegRegHookBegin(
+    const char *instruction,
+    const RiscvEmulatorState_t *state,
+    const uint8_t rdnum,
+    const void *rd,
+    const uint8_t rs1num,
+    const void *rs1,
+    const uint8_t rs2num,
+    const void *rs2) {
+}
+
+/**
+ * Generic hook function for Integer Register-Register Operations.
+ */
+__attribute__((weak)) void RiscvEmulatorIntRegRegHookEnd(
+    const char *instruction,
+    const RiscvEmulatorState_t *state,
+    const uint8_t rdnum,
+    const void *rd,
+    const uint8_t rs1num,
+    const void *rs1,
+    const uint8_t rs2num,
+    const void *rs2) {
+}
+
+/**
+ * Generic hook function for Integer Register-Immediate Operations.
+ */
+__attribute__((weak)) void RiscvEmulatorIntRegImmHookBegin(
+    const char *instruction,
+    const RiscvEmulatorState_t *state,
+    const uint8_t rdnum,
+    const void *rd,
+    const uint8_t rs1num,
+    const void *rs1,
+    const uint32_t imm) {
+}
+
+/**
+ * Generic hook function for Integer Register-Immediate Operations.
+ */
+__attribute__((weak)) void RiscvEmulatorIntRegImmHookEnd(
+    const char *instruction,
+    const RiscvEmulatorState_t *state,
+    const uint8_t rdnum,
+    const void *rd,
+    const uint8_t rs1num,
+    const void *rs1,
+    const uint32_t imm) {
+}
+
+/**
+ * AUIPC hook function.
+ */
+__attribute__((weak)) void RiscvEmulatorAUIPCHookBegin(
+    const RiscvEmulatorState_t *state,
+    const uint8_t rdnum,
+    const void *rd,
+    const uint32_t imm31_12,
+    const uint32_t imm) {
+}
+
+/**
+ * AUIPC hook function.
+ */
+__attribute__((weak)) void RiscvEmulatorAUIPCHookEnd(
+    const RiscvEmulatorState_t *state,
+    const uint8_t rdnum,
+    const void *rd,
+    const uint32_t imm31_12,
+    const uint32_t imm) {
+}
+
+// Extension: Zicsr
+
+/**
+ * CSRRW/CSRRS/CSRRC hook function.
+ */
+__attribute__((weak)) void RiscvEmulatorCSRR_HookBegin(
+    const char *instruction,
     const RiscvEmulatorState_t *state,
     const uint8_t rdnum,
     const void *rd,
@@ -25,7 +109,11 @@ __attribute__((weak)) void RiscvEmulatorCSRRWHookBegin(
     const void *csr) {
 }
 
-__attribute__((weak)) void RiscvEmulatorCSRRWHookEnd(
+/**
+ * CSRRW/CSRRS/CSRRC hook function.
+ */
+__attribute__((weak)) void RiscvEmulatorCSRR_HookEnd(
+    const char *instruction,
     const RiscvEmulatorState_t *state,
     const uint8_t rdnum,
     const void *rd,

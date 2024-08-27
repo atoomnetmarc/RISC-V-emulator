@@ -22,12 +22,52 @@ SPDX-License-Identifier: Apache-2.0
 #include "RiscvEmulatorExtensionI.h"
 
 /**
+ * Add rd and rs2.
+ */
+static inline void RiscvEmulatorAMOADD_W(void *rd, const void *rs2) {
+    int32_t temp = *(int32_t *)rd;
+
+    *(int32_t *)rd = *(int32_t *)rd + *(int32_t *)rs2;
+    *(int32_t *)rs2 = temp;
+}
+
+/**
  * Swap rd and rs2.
  */
 static inline void RiscvEmulatorAMOSWAP_W(void *rd, const void *rs2) {
     int32_t temp = *(int32_t *)rd;
 
     *(int32_t *)rd = *(int32_t *)rs2;
+    *(int32_t *)rs2 = temp;
+}
+
+/**
+ * XOR rd and rs2.
+ */
+static inline void RiscvEmulatorAMOXOR_W(void *rd, const void *rs2) {
+    int32_t temp = *(int32_t *)rd;
+
+    *(uint32_t *)rd = *(uint32_t *)rd ^ *(uint32_t *)rs2;
+    *(int32_t *)rs2 = temp;
+}
+
+/**
+ * OR rd and rs2.
+ */
+static inline void RiscvEmulatorAMOOR_W(void *rd, const void *rs2) {
+    int32_t temp = *(int32_t *)rd;
+
+    *(int32_t *)rd = *(int32_t *)rd | *(int32_t *)rs2;
+    *(int32_t *)rs2 = temp;
+}
+
+/**
+ * AND rd and rs2.
+ */
+static inline void RiscvEmulatorAMOAND_W(void *rd, const void *rs2) {
+    int32_t temp = *(int32_t *)rd;
+
+    *(int32_t *)rd = *(int32_t *)rd & *(int32_t *)rs2;
     *(int32_t *)rs2 = temp;
 }
 
@@ -71,9 +111,12 @@ static inline void RiscvEmulatorAMOMAXU_W(void *rd, const void *rs2) {
  * Process atomic memory operation opcodes.
  */
 static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(RiscvEmulatorState_t *state) {
-    void *rd = &state->registers.array.location[state->instruction.rtypeatomicmemoryoperation.rd];
-    void *rs1 = &state->registers.array.location[state->instruction.rtypeatomicmemoryoperation.rs1];
-    void *rs2 = &state->registers.array.location[state->instruction.rtypeatomicmemoryoperation.rs2];
+    uint8_t rdnum = state->instruction.rtypeatomicmemoryoperation.rd;
+    void *rd = &state->registers.array.location[rdnum];
+    uint8_t rs1num = state->instruction.rtypeatomicmemoryoperation.rs1;
+    void *rs1 = &state->registers.array.location[rs1num];
+    uint8_t rs2num = state->instruction.rtypeatomicmemoryoperation.rs2;
+    void *rs2 = &state->registers.array.location[rs2num];
 
     // Remember original address stored in rs1.
     uint32_t originaladdressrs1 = *(uint32_t *)rs1;
@@ -95,19 +138,19 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(RiscvEmulatorState_t
 
     switch (instruction_decoderhelper_rtypeatomicmemoryoperation.output.funct5_3) {
         case FUNCT5_FUNCT3_OPERATION_AMOADD_W:
-            RiscvEmulatorADD(&loadedvalue, &loadedvalue, &originalvaluers2);
+            RiscvEmulatorAMOADD_W(&loadedvalue, &originalvaluers2);
             break;
         case FUNCT5_FUNCT3_OPERATION_AMOSWAP_W:
             RiscvEmulatorAMOSWAP_W(&loadedvalue, &originalvaluers2);
             break;
         case FUNCT5_FUNCT3_OPERATION_AMOXOR_W:
-            RiscvEmulatorXOR(&loadedvalue, &loadedvalue, &originalvaluers2);
+            RiscvEmulatorAMOXOR_W(&loadedvalue, &originalvaluers2);
             break;
         case FUNCT5_FUNCT3_OPERATION_AMOOR_W:
-            RiscvEmulatorOR(&loadedvalue, &loadedvalue, &originalvaluers2);
+            RiscvEmulatorAMOOR_W(&loadedvalue, &originalvaluers2);
             break;
         case FUNCT5_FUNCT3_OPERATION_AMOAND_W:
-            RiscvEmulatorAND(&loadedvalue, &loadedvalue, &originalvaluers2);
+            RiscvEmulatorAMOAND_W(&loadedvalue, &originalvaluers2);
             break;
         case FUNCT5_FUNCT3_OPERATION_AMOMIN_W:
             RiscvEmulatorAMOMIN_W(&loadedvalue, &originalvaluers2);

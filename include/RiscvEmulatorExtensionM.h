@@ -22,14 +22,38 @@ SPDX-License-Identifier: Apache-2.0
 /**
  * Multiply signed or unsigned.
  */
-static inline void RiscvEmulatorMUL(void *rd, const void *rs1, const void *rs2) {
+static inline void RiscvEmulatorMUL(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint8_t rs2num __attribute__((unused)),
+    const void *rs2) {
+
+    if (rdnum == 0) {
+        return;
+    }
+
     *(uint32_t *)rd = (*(uint32_t *)rs1 * *(uint32_t *)rs2);
 }
 
 /**
  * Multiply signed, return 32 bit MSB of resulting 64-bit value.
  */
-static inline void RiscvEmulatorMULH(void *rd, const void *rs1, const void *rs2) {
+static inline void RiscvEmulatorMULH(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint8_t rs2num __attribute__((unused)),
+    const void *rs2) {
+
+    if (rdnum == 0) {
+        return;
+    }
+
     int64_t result = (int64_t)(*(int32_t *)rs1 * (int64_t) * (int32_t *)rs2);
     *(int32_t *)rd = (result >> 32);
 }
@@ -37,7 +61,19 @@ static inline void RiscvEmulatorMULH(void *rd, const void *rs1, const void *rs2)
 /**
  * Multiply signed rs1 and unsigned rs2, return 32 bit MSB of resulting unsigned 64-bit value.
  */
-static inline void RiscvEmulatorMULHSU(void *rd, const void *rs1, const void *rs2) {
+static inline void RiscvEmulatorMULHSU(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint8_t rs2num __attribute__((unused)),
+    const void *rs2) {
+
+    if (rdnum == 0) {
+        return;
+    }
+
     int64_t result = (int64_t)(*(int32_t *)rs1 * (uint64_t) * (uint32_t *)rs2);
     *(int32_t *)rd = (result >> 32);
 }
@@ -45,7 +81,19 @@ static inline void RiscvEmulatorMULHSU(void *rd, const void *rs1, const void *rs
 /**
  * Multiply unsigned, return 32 bit MSB of resulting unsigned 64-bit value.
  */
-static inline void RiscvEmulatorMULHU(void *rd, const void *rs1, const void *rs2) {
+static inline void RiscvEmulatorMULHU(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint8_t rs2num __attribute__((unused)),
+    const void *rs2) {
+
+    if (rdnum == 0) {
+        return;
+    }
+
     uint64_t result = (uint64_t)(*(uint32_t *)rs1 * (uint64_t) * (uint32_t *)rs2);
     *(uint32_t *)rd = (result >> 32);
 }
@@ -53,7 +101,19 @@ static inline void RiscvEmulatorMULHU(void *rd, const void *rs1, const void *rs2
 /**
  * Divide signed.
  */
-static inline void RiscvEmulatorDIV(void *rd, const void *rs1, const void *rs2) {
+static inline void RiscvEmulatorDIV(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint8_t rs2num __attribute__((unused)),
+    const void *rs2) {
+
+    if (rdnum == 0) {
+        return;
+    }
+
     if (*(int32_t *)rs2 == 0) {
         // Division by zero.
         *(int32_t *)rd = -1;
@@ -68,7 +128,19 @@ static inline void RiscvEmulatorDIV(void *rd, const void *rs1, const void *rs2) 
 /**
  * Divide unsigned.
  */
-static inline void RiscvEmulatorDIVU(void *rd, const void *rs1, const void *rs2) {
+static inline void RiscvEmulatorDIVU(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint8_t rs2num __attribute__((unused)),
+    const void *rs2) {
+
+    if (rdnum == 0) {
+        return;
+    }
+
     if (*(uint32_t *)rs2 == 0) {
         // Division by zero.
         *(uint32_t *)rd = UINT32_MAX;
@@ -80,7 +152,19 @@ static inline void RiscvEmulatorDIVU(void *rd, const void *rs1, const void *rs2)
 /**
  * Remainder signed.
  */
-static inline void RiscvEmulatorREM(void *rd, const void *rs1, const void *rs2) {
+static inline void RiscvEmulatorREM(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint8_t rs2num __attribute__((unused)),
+    const void *rs2) {
+
+    if (rdnum == 0) {
+        return;
+    }
+
     if (*(int32_t *)rs2 == 0) {
         // Division by zero.
         *(int32_t *)rd = *(int32_t *)rs1;
@@ -95,7 +179,19 @@ static inline void RiscvEmulatorREM(void *rd, const void *rs1, const void *rs2) 
 /**
  * Remainder unsigned.
  */
-static inline void RiscvEmulatorREMU(void *rd, const void *rs1, const void *rs2) {
+static inline void RiscvEmulatorREMU(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint8_t rs2num __attribute__((unused)),
+    const void *rs2) {
+
+    if (rdnum == 0) {
+        return;
+    }
+
     if (*(uint32_t *)rs2 == 0) {
         // Division by zero.
         *(uint32_t *)rd = *(uint32_t *)rs1;
