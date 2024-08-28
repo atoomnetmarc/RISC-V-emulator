@@ -161,4 +161,69 @@ const char *RiscvEmulatorGetCSRName(const uint16_t csr) {
     return name;
 }
 
+/**
+ * Debug function to get exception description.
+ */
+const char *RiscvEmulatorGetMcauseException(const uint8_t interrupt, const uint32_t exceptioncode) {
+    if (interrupt) {
+        switch (exceptioncode) {
+            case 1:
+                return "Supervisor software interrupt";
+            case 3:
+                return "Machine software interrupt";
+            case 5:
+                return "Supervisor timer interrupt";
+            case 7:
+                return "Machine timer interrupt";
+            case 9:
+                return "Supervisor external interrupt";
+            case 11:
+                return "Machine external interrupt";
+            case 13:
+                return "Counter-overflow interrupt";
+            default:
+                return "Unknown Interrupt";
+        }
+    } else {
+        switch (exceptioncode) {
+            case 0:
+                return "Instruction Address Misaligned";
+            case 1:
+                return "Instruction Access Fault";
+            case 2:
+                return "Illegal Instruction";
+            case 3:
+                return "Breakpoint";
+            case 4:
+                return "Load Address Misaligned";
+            case 5:
+                return "Load Access Fault";
+            case 6:
+                return "Store/AMO Address Misaligned";
+            case 7:
+                return "Store/AMO Access Fault";
+            case 8:
+                return "Environment Call from U-mode";
+            case 9:
+                return "Environment Call from S-mode";
+            case 11:
+                return "Environment Call from M-mode";
+            case 12:
+                return "Instruction page fault";
+            case 13:
+                return "Load page fault";
+            case 15:
+                return "Store/AMO page fault";
+            case 16:
+                return "Double trap";
+            case 18:
+                return "Software check";
+            case 19:
+                return "Hardware error";
+            default:
+                return "Unknown Exception";
+        }
+    }
+}
+
 #endif
