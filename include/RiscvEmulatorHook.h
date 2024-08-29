@@ -15,12 +15,14 @@ SPDX-License-Identifier: Apache-2.0
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
+#if (RVE_E_ZICSR == 1)
 /**
  * Hook function for trap.
  */
 __attribute__((weak)) void RiscvEmulatorTrapHookBegin(
     const RiscvEmulatorState_t *state) {
 }
+#endif
 
 /**
  * Generic hook function for Integer Register-Register Operations.
@@ -182,6 +184,8 @@ __attribute__((weak)) void RiscvEmulatorJALRHookEnd(
     const int16_t imm) {
 }
 
+#if (RVE_E_ZICSR == 1)
+
 /**
  * CSRRW/CSRRS/CSRRC hook function.
  */
@@ -209,6 +213,8 @@ __attribute__((weak)) void RiscvEmulatorCSRR_HookEnd(
     const uint16_t csrnum,
     const void *csr) {
 }
+
+#endif
 
 #pragma GCC diagnostic pop
 

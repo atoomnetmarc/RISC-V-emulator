@@ -54,7 +54,7 @@ static inline void RiscvEmulatorTrap(RiscvEmulatorState_t *state) {
 
     state->trapflags.value = 0;
 
-#if (RVE_E_HOOK == 1)
+#if (RVE_E_HOOK == 1 && RVE_E_ZICSR == 1)
     state->hookexists = 1;
     RiscvEmulatorTrapHookBegin(state);
 #endif
