@@ -1322,7 +1322,7 @@ static inline void RiscvEmulatorLUI(RiscvEmulatorState_t *state) {
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
-    RiscvEmulatorLUIHookBegin(state, rdnum, rd, helper.output.imm);
+    RiscvEmulatorLUIHookBegin(state, rdnum, rd, state->instruction.utype.imm31_12);
 #endif
 
     if (rdnum != 0) {
@@ -1331,7 +1331,7 @@ static inline void RiscvEmulatorLUI(RiscvEmulatorState_t *state) {
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
-    RiscvEmulatorLUIHookEnd(state, rdnum, rd, helper.output.imm);
+    RiscvEmulatorLUIHookEnd(state, rdnum, rd, state->instruction.utype.imm31_12);
 #endif
 }
 

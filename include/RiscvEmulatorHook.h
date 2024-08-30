@@ -188,7 +188,7 @@ __attribute__((weak)) void RiscvEmulatorLUIHookBegin(
     const RiscvEmulatorState_t *state,
     const uint8_t rdnum,
     const void *rd,
-    const uint32_t imm) {
+    const uint32_t imm31_12) {
 }
 
 /**
@@ -198,7 +198,7 @@ __attribute__((weak)) void RiscvEmulatorLUIHookEnd(
     const RiscvEmulatorState_t *state,
     const uint8_t rdnum,
     const void *rd,
-    const uint32_t imm) {
+    const uint32_t imm31_12) {
 }
 
 /**
@@ -208,7 +208,7 @@ __attribute__((weak)) void RiscvEmulatorJALHookBegin(
     const RiscvEmulatorState_t *state,
     const uint8_t rdnum,
     const void *rd,
-    const uint32_t imm) {
+    const int32_t imm) {
 }
 
 /**
@@ -218,7 +218,7 @@ __attribute__((weak)) void RiscvEmulatorJALHookEnd(
     const RiscvEmulatorState_t *state,
     const uint8_t rdnum,
     const void *rd,
-    const uint32_t imm) {
+    const int32_t imm) {
 }
 
 /**
