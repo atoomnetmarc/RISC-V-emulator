@@ -20,6 +20,11 @@ SPDX-License-Identifier: Apache-2.0
 static inline void RiscvEmulatorTrap(RiscvEmulatorState_t *state) {
 #if (RVE_E_ZICSR == 1)
 
+    // Instruction address misaligned
+    if (state->trapflags.bits.instructionaddressmisaligned == 1) {
+        state->csr.mcause.exceptioncode = MCAUSE_EXCEPTION_CODE_INSTRUCTION_ADDRESS_MISALIGNED;
+    }
+
     // Load address misaligned
     if (state->trapflags.bits.loadaddressmisaligned == 1) {
         state->csr.mcause.exceptioncode = MCAUSE_EXCEPTION_CODE_LOAD_ADDRESS_MISALIGNED;

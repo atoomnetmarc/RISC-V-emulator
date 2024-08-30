@@ -103,6 +103,16 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
             break;
     }
 
+#if (RVE_E_ZICSR == 1)
+    // Check if programcounternext is aligned.
+    // Must be changed from %4 to %2 when compressed instructions are added to the emulator.
+    uint8_t programcounternext8 = state->programcounternext & 0xFF;
+    if ((programcounternext8 % 4) != 0) {
+        state->trapflags.bits.instructionaddressmisaligned = 1;
+        state->csr.mtval = state->programcounternext;
+    }
+#endif
+
     if (state->trapflags.value > 0) {
         RiscvEmulatorTrap(state);
     }
