@@ -347,7 +347,7 @@ static inline void RiscvEmulatorRORI(
     void *rd,
     const uint8_t rs1num __attribute__((unused)),
     const void *rs1,
-    const uint32_t shamt) {
+    const uint8_t shamt) {
 
     if (rdnum == 0) {
         return;

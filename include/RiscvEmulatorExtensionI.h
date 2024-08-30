@@ -107,7 +107,7 @@ static inline void RiscvEmulatorADDI(
     void *rd,
     const uint8_t rs1num __attribute__((unused)),
     const void *rs1,
-    const int32_t imm) {
+    const int16_t imm) {
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
@@ -193,7 +193,7 @@ static inline void RiscvEmulatorSLLI(
     void *rd,
     const uint8_t rs1num __attribute__((unused)),
     const void *rs1,
-    const uint32_t shamt) {
+    const uint8_t shamt) {
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
@@ -250,7 +250,7 @@ static inline void RiscvEmulatorSLTI(
     void *rd,
     const uint8_t rs1num __attribute__((unused)),
     const void *rs1,
-    const int32_t imm) {
+    const int16_t imm) {
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
@@ -421,7 +421,7 @@ static inline void RiscvEmulatorSRLI(
     void *rd,
     const uint8_t rs1num __attribute__((unused)),
     const void *rs1,
-    const uint32_t shamt) {
+    const uint8_t shamt) {
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
@@ -478,7 +478,7 @@ static inline void RiscvEmulatorSRAI(
     void *rd,
     const uint8_t rs1num __attribute__((unused)),
     const void *rs1,
-    const uint32_t shamt) {
+    const uint8_t shamt) {
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
@@ -535,7 +535,7 @@ static inline void RiscvEmulatorORI(
     void *rd,
     const uint8_t rs1num __attribute__((unused)),
     const void *rs1,
-    const int32_t imm) {
+    const int16_t imm) {
 
     if (rdnum == 0) {
         return;
@@ -592,7 +592,7 @@ static inline void RiscvEmulatorANDI(
     void *rd,
     const uint8_t rs1num __attribute__((unused)),
     const void *rs1,
-    const int32_t imm) {
+    const int16_t imm) {
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
@@ -835,7 +835,7 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state) {
         if (state->instruction.itype.funct3 == FUNCT3_IMMEDIATE_FUNCTIONS_1 ||
             state->instruction.itype.funct3 == FUNCT3_IMMEDIATE_FUNCTIONS_5) {
 
-            uint32_t shamt = state->instruction.itypeshiftbyconstant.shamt;
+            uint8_t shamt = state->instruction.itypeshiftbyconstant.shamt;
 
             RiscvInstructionTypeIDecoderImm11_7Funct3Imm11_7Funct3_u instruction_decoderhelper_itype_functions_shamt;
 
@@ -881,7 +881,7 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state) {
 
     if (detectedUnknownInstruction == 1) {
         detectedUnknownInstruction = -1;
-        int32_t imm = state->instruction.itype.imm;
+        int16_t imm = state->instruction.itype.imm;
         switch (state->instruction.itype.funct3) {
             case FUNCT3_IMMEDIATE_ADDI:
                 RiscvEmulatorADDI(state, rdnum, rd, rs1num, rs1, imm);
@@ -916,29 +916,57 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state) {
  * Process load opcodes.
  */
 static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state) {
-    if (state->instruction.itype.rd == 0) {
-        return;
-    }
+    uint8_t rdnum = state->instruction.itype.rd;
+    void *rd = &state->registers.array.location[rdnum];
+    uint8_t rs1num = state->instruction.stype.rs1;
+    void *rs1 = &state->registers.array.location[rs1num];
 
-    uint32_t memorylocation = state->instruction.itype.imm + state->registers.array.location[state->instruction.stype.rs1];
-    void *rd = &state->registers.array.location[state->instruction.itype.rd];
+    int16_t imm = state->instruction.itype.imm;
+    uint32_t memorylocation = imm + *(uint32_t *)rs1;
+
+#if (RVE_E_HOOK == 1)
+    char *instruction = "unknown";
+#endif
 
     uint8_t length = 0;
     switch (state->instruction.itype.funct3) {
         case FUNCT3_LOAD_LB:
+#if (RVE_E_HOOK == 1)
+            instruction = "lb";
+#endif
+            length = sizeof(uint8_t);
+            break;
         case FUNCT3_LOAD_LBU:
+#if (RVE_E_HOOK == 1)
+            instruction = "lbu";
+#endif
             length = sizeof(uint8_t);
             break;
         case FUNCT3_LOAD_LH:
+#if (RVE_E_HOOK == 1)
+            instruction = "lh";
+#endif
+            length = sizeof(uint16_t);
+            break;
         case FUNCT3_LOAD_LHU:
+#if (RVE_E_HOOK == 1)
+            instruction = "lhu";
+#endif
             length = sizeof(uint16_t);
             break;
         case FUNCT3_LOAD_LW:
+#if (RVE_E_HOOK == 1)
+            instruction = "lw";
+#endif
             length = sizeof(uint32_t);
             break;
         default:
             state->trapflags.bits.illegalinstruction = 1;
             return;
+    }
+
+    if (rdnum == 0) {
+        return;
     }
 
 #if (RVE_E_ZICSR == 1)
@@ -948,8 +976,18 @@ static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state) {
         uint8_t memorylocation8 = memorylocation & 0xFF;
         if ((memorylocation8 % length) != 0) {
             state->trapflags.bits.loadaddressmisaligned = 1;
-            return;
         }
+    }
+#endif
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorLoadHookBegin(instruction, state, rdnum, rd, rs1num, rs1, imm, memorylocation, length);
+#endif
+
+#if (RVE_E_ZICSR == 1)
+    if (state->trapflags.bits.loadaddressmisaligned == 1) {
+        return;
     }
 #endif
 
@@ -973,6 +1011,11 @@ static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state) {
             *(uint32_t *)rd = (uint32_t)value;
             break;
     }
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorLoadHookEnd(instruction, state, rdnum, rd, rs1num, rs1, imm, memorylocation, length);
+#endif
 }
 
 /**
@@ -983,19 +1026,37 @@ static inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state) {
     RiscvInstructionTypeSDecoderImm_u helper;
     helper.input.imm4_0 = state->instruction.stype.imm4_0;
     helper.input.imm11_5 = state->instruction.stype.imm11_5;
+    int16_t imm = helper.output.imm;
 
-    uint32_t memorylocation = helper.output.imm + state->registers.array.location[state->instruction.stype.rs1];
-    void *rs2 = &state->registers.array.location[state->instruction.stype.rs2];
+    uint8_t rs1num = state->instruction.stype.rs1;
+    void *rs1 = &state->registers.array.location[rs1num];
+    uint8_t rs2num = state->instruction.stype.rs2;
+    void *rs2 = &state->registers.array.location[rs2num];
+
+    uint32_t memorylocation = imm + *(uint32_t *)rs1;
+
+#if (RVE_E_HOOK == 1)
+    char *instruction = "unkown";
+#endif
 
     uint8_t length = 0;
     switch (state->instruction.stype.funct3) {
         case FUNCT3_STORE_SW:
+#if (RVE_E_HOOK == 1)
+            instruction = "sw";
+#endif
             length = sizeof(uint32_t);
             break;
         case FUNCT3_STORE_SH:
+#if (RVE_E_HOOK == 1)
+            instruction = "sh";
+#endif
             length = sizeof(uint16_t);
             break;
         case FUNCT3_STORE_SB:
+#if (RVE_E_HOOK == 1)
+            instruction = "sb";
+#endif
             length = sizeof(uint8_t);
             break;
         default:
@@ -1010,12 +1071,27 @@ static inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state) {
         uint8_t memorylocation8 = memorylocation & 0xFF;
         if ((memorylocation8 % length) != 0) {
             state->trapflags.bits.storeaddressmisaligned = 1;
-            return;
         }
     }
 #endif
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorStoreHookBegin(instruction, state, rs1num, rs1, rs2num, rs2, imm, memorylocation, length);
+#endif
+
+#if (RVE_E_ZICSR == 1)
+    if (state->trapflags.bits.loadaddressmisaligned == 1) {
+        return;
+    }
+#endif
+
     RiscvEmulatorStore(memorylocation, rs2, length);
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorStoreHookEnd(instruction, state, rs1num, rs1, rs2num, rs2, imm, memorylocation, length);
+#endif
 }
 
 /**

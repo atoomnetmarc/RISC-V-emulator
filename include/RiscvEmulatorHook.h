@@ -62,7 +62,7 @@ __attribute__((weak)) void RiscvEmulatorIntRegImmHookBegin(
     const void *rd,
     const uint8_t rs1num,
     const void *rs1,
-    const uint32_t imm) {
+    const int16_t imm) {
 }
 
 /**
@@ -75,7 +75,68 @@ __attribute__((weak)) void RiscvEmulatorIntRegImmHookEnd(
     const void *rd,
     const uint8_t rs1num,
     const void *rs1,
-    const uint32_t imm) {
+    const int16_t imm) {
+}
+
+/**
+ * Generic hook function for Load Operations.
+ */
+__attribute__((weak)) void RiscvEmulatorLoadHookBegin(
+    const char *instruction,
+    const RiscvEmulatorState_t *state,
+    const uint8_t rdnum,
+    const void *rd,
+    const uint8_t rs1num,
+    const void *rs1,
+    const int16_t imm,
+    const uint32_t memorylocation,
+    const uint8_t length) {
+}
+
+/**
+ * Generic hook function for Load Operations.
+ */
+__attribute__((weak)) void RiscvEmulatorLoadHookEnd(
+    const char *instruction,
+    const RiscvEmulatorState_t *state,
+    const uint8_t rdnum,
+    const void *rd,
+    const uint8_t rs1num,
+    const void *rs1,
+    const int16_t imm,
+    const uint32_t memorylocation,
+    const uint8_t length) {
+
+}
+
+/**
+ * Generic hook function for Store Operations.
+ */
+__attribute__((weak)) void RiscvEmulatorStoreHookBegin(
+    const char *instruction,
+    const RiscvEmulatorState_t *state,
+    const uint8_t rs1num,
+    const void *rs1,
+    const uint8_t rs2num,
+    const void *rs2,
+    const int16_t imm,
+    const uint32_t memorylocation,
+    const uint8_t length) {
+}
+
+/**
+ * Generic hook function for Store Operations.
+ */
+__attribute__((weak)) void RiscvEmulatorStoreHookEnd(
+    const char *instruction,
+    const RiscvEmulatorState_t *state,
+    const uint8_t rs1num,
+    const void *rs1,
+    const uint8_t rs2num,
+    const void *rs2,
+    const int16_t imm,
+    const uint32_t memorylocation,
+    const uint8_t length) {
 }
 
 /**
