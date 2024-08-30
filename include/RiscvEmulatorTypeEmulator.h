@@ -25,6 +25,7 @@ typedef struct
 
 #if (RVE_E_ZICSR == 1)
     uint8_t instructionaddressmisaligned : 1;
+    uint8_t breakpoint : 1;
     uint8_t loadaddressmisaligned : 1;
     uint8_t storeaddressmisaligned : 1;
     uint8_t environmentcallfrommmode : 1;

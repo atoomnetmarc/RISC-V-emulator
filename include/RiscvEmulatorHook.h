@@ -22,6 +22,13 @@ __attribute__((weak)) void RiscvEmulatorEcallHookBegin(
     const RiscvEmulatorState_t *state) {
 }
 
+/**
+ * Hook function for ebreak.
+ */
+__attribute__((weak)) void RiscvEmulatorEbreakHookBegin(
+    const RiscvEmulatorState_t *state) {
+}
+
 #if (RVE_E_ZICSR == 1)
 /**
  * Hook function for trap.

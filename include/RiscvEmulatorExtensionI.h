@@ -1391,6 +1391,16 @@ static inline void RiscvEmulatorECALL(RiscvEmulatorState_t *state) {
  * Cause control to be transferred back to a debugging environment.
  */
 static inline void RiscvEmulatorEBREAK(RiscvEmulatorState_t *state) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorEbreakHookBegin(state);
+#endif
+
+#if (RVE_E_ZICSR == 1)
+    state->trapflags.bits.breakpoint = 1;
+#endif
+
     RiscvEmulatorHandleEBREAK(state);
 }
 

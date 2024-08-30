@@ -25,6 +25,11 @@ static inline void RiscvEmulatorTrap(RiscvEmulatorState_t *state) {
         state->csr.mcause.exceptioncode = MCAUSE_EXCEPTION_CODE_INSTRUCTION_ADDRESS_MISALIGNED;
     }
 
+    // Breakpoint
+    if (state->trapflags.bits.breakpoint == 1) {
+        state->csr.mcause.exceptioncode = MCAUSE_EXCEPTION_CODE_BREAKPOINT;
+    }
+
     // Load address misaligned
     if (state->trapflags.bits.loadaddressmisaligned == 1) {
         state->csr.mcause.exceptioncode = MCAUSE_EXCEPTION_CODE_LOAD_ADDRESS_MISALIGNED;
