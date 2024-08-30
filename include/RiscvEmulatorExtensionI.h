@@ -1399,6 +1399,19 @@ static inline void RiscvEmulatorEBREAK(RiscvEmulatorState_t *state) {
 
 #if (RVE_E_ZICSR == 1)
     state->trapflags.bits.breakpoint = 1;
+
+    /**
+     * https://github.com/riscv/riscv-isa-manual/releases/tag/riscv-isa-release-52a5742-2024-08-30 says:
+     * EBREAK raises a breakpoint exception and performs no other operation.
+     *
+     * But it also says:
+     * If mtval is written with a nonzero value when a breakpoint, address-misaligned, access-fault, or page-fault exception occurs on an instruction fetch, load, or store, then mtval will contain the faulting virtual address.
+     *
+     * See https://github.com/riscv-non-isa/riscv-arch-test/issues/200
+     *
+     * Doing what sail does to pass validation.
+     */
+    state->csr.mtval = state->programcounter;
 #endif
 
     RiscvEmulatorHandleEBREAK(state);
