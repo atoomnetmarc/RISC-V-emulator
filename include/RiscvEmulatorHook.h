@@ -15,11 +15,32 @@ SPDX-License-Identifier: Apache-2.0
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
+/**
+ * Hook function for ecall.
+ */
+__attribute__((weak)) void RiscvEmulatorEcallHookBegin(
+    const RiscvEmulatorState_t *state) {
+}
+
 #if (RVE_E_ZICSR == 1)
 /**
  * Hook function for trap.
  */
 __attribute__((weak)) void RiscvEmulatorTrapHookBegin(
+    const RiscvEmulatorState_t *state) {
+}
+
+/**
+ * Hook function for mret.
+ */
+__attribute__((weak)) void RiscvEmulatorMretHookBegin(
+    const RiscvEmulatorState_t *state) {
+}
+
+/**
+ * Hook function for mret.
+ */
+__attribute__((weak)) void RiscvEmulatorMretHookEnd(
     const RiscvEmulatorState_t *state) {
 }
 #endif

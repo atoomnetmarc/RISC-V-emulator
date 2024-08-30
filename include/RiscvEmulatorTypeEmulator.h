@@ -27,6 +27,7 @@ typedef struct
     uint8_t instructionaddressmisaligned : 1;
     uint8_t loadaddressmisaligned : 1;
     uint8_t storeaddressmisaligned : 1;
+    uint8_t environmentcallfrommmode : 1;
 #endif
 
 } RiscvEmulatorTrapFlagBits_t;

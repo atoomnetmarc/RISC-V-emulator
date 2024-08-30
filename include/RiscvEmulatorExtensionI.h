@@ -1374,6 +1374,16 @@ static inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state) {
  * Make a service request to the execution environment.
  */
 static inline void RiscvEmulatorECALL(RiscvEmulatorState_t *state) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorEcallHookBegin(state);
+#endif
+
+#if (RVE_E_ZICSR == 1)
+    state->trapflags.bits.environmentcallfrommmode = 1;
+#endif
+
     RiscvEmulatorHandleECALL(state);
 }
 

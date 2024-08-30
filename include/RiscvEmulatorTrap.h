@@ -34,6 +34,11 @@ static inline void RiscvEmulatorTrap(RiscvEmulatorState_t *state) {
     if (state->trapflags.bits.storeaddressmisaligned == 1) {
         state->csr.mcause.exceptioncode = MCAUSE_EXCEPTION_CODE_STORE_ADDRESS_MISALIGNED;
     }
+
+    //  Environment call from M-mode
+    if (state->trapflags.bits.environmentcallfrommmode == 1) {
+        state->csr.mcause.exceptioncode = MCAUSE_EXCEPTION_CODE_ENVIRONMENT_CALL_FROM_MMODE;
+    }
 #endif
 
     // Illegal instruction

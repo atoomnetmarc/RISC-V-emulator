@@ -25,6 +25,11 @@ SPDX-License-Identifier: Apache-2.0
  */
 static inline void RiscvEmulatorMRET(RiscvEmulatorState_t *state) {
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorMretHookBegin(state);
+#endif
+
     // TODO: Determine what the new privilege mode will be according to the values of MPP and MPV in mstatus.
     // Could this always be M-mode for this emulator?
 
@@ -36,6 +41,11 @@ static inline void RiscvEmulatorMRET(RiscvEmulatorState_t *state) {
     // TODO: Set the privilege mode as previously determined.
 
     state->programcounternext = state->csr.mepc;
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorMretHookEnd(state);
+#endif
 }
 
 /**
