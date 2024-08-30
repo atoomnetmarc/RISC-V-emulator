@@ -976,6 +976,7 @@ static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state) {
         uint8_t memorylocation8 = memorylocation & 0xFF;
         if ((memorylocation8 % length) != 0) {
             state->trapflags.bits.loadaddressmisaligned = 1;
+            state->csr.mtval = memorylocation;
         }
     }
 #endif
@@ -1071,6 +1072,7 @@ static inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state) {
         uint8_t memorylocation8 = memorylocation & 0xFF;
         if ((memorylocation8 % length) != 0) {
             state->trapflags.bits.storeaddressmisaligned = 1;
+            state->csr.mtval = memorylocation;
         }
     }
 #endif

@@ -35,7 +35,7 @@ typedef struct __attribute__((packed)) {
     RiscvCSRmscratch_t mscratch;
     uint32_t mepc; // Machine exception program counter.
     RiscvCSRmcause_t mcause;
-    RiscvCSRmtval_t mtval;
+    uint32_t mtval; // Machine bad address or instruction.
     RiscvCSRmip_t mip;
 
     // Machine Memory Protection

@@ -26,13 +26,6 @@ typedef struct __attribute__((packed)) {
 } RiscvCSRmcause_t;
 
 /**
- *  Machine bad address or instruction.
- */
-typedef struct __attribute__((packed)) {
-    uint32_t mtval;
-} RiscvCSRmtval_t;
-
-/**
  *   Machine interrupt pending.
  */
 typedef struct __attribute__((packed)) {
