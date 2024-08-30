@@ -33,7 +33,7 @@ Extensions are confirmed working when all instructions of that extension pass [r
 | Carry-less multiplication           | B         | Zbc           | Bonus | :ballot_box_with_check: |
 | Single-bit operation                | B         | Zbs           | Bonus | :ballot_box_with_check: |
 
-The emulator can be configured to the enable specific extensions. The list of defines and their default values are located in [include/RiscvEmulatorConfig.h](include/RiscvEmulatorConfig.h).
+The emulator can be configured to enable specific extensions. The list of defines and their default values are located in [include/RiscvEmulatorConfig.h](include/RiscvEmulatorConfig.h).
 
 For example, to enable the `M` extension compile with `-DRVE_E_M=1`.
 
