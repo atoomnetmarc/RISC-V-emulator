@@ -37,6 +37,7 @@ static inline void RiscvEmulatorTrap(RiscvEmulatorState_t *state) {
 
 #if (RVE_E_ZICSR == 1)
         state->csr.mcause.exceptioncode = MCAUSE_EXCEPTION_CODE_ILLEGAL_INSTRUCTION;
+        state->csr.mtval = state->instruction.value;
 #endif
     }
 
