@@ -1083,7 +1083,7 @@ static inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state) {
 #endif
 
 #if (RVE_E_ZICSR == 1)
-    if (state->trapflags.bits.loadaddressmisaligned == 1) {
+    if (state->trapflags.bits.storeaddressmisaligned == 1) {
         return;
     }
 #endif
