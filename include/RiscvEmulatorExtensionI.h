@@ -1351,9 +1351,22 @@ static inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state) {
     helper.input.imm19_12 = state->instruction.jtype.imm19_12;
     helper.input.imm20 = state->instruction.jtype.imm20;
 
+    uint32_t jumptoprogramcounter = state->programcounter + helper.output.imm;
+
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
     RiscvEmulatorJALHookBegin(state, rdnum, rd, helper.output.imm);
+#endif
+
+#if (RVE_E_ZICSR == 1)
+    // Check if jumptoprogramcounter is aligned.
+    // Must be changed from %4 to %2 when compressed instructions are added to the emulator.
+    uint8_t programcounter8 = jumptoprogramcounter & 0xFF;
+    if ((programcounter8 % 4) != 0) {
+        state->trapflags.bits.instructionaddressmisaligned = 1;
+        state->csr.mtval = jumptoprogramcounter;
+        return;
+    }
 #endif
 
     // Set destination register to current next instruction acting as a return address.
@@ -1362,7 +1375,7 @@ static inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state) {
     }
 
     // Execute jump.
-    state->programcounternext = state->programcounter + helper.output.imm;
+    state->programcounternext = jumptoprogramcounter;
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
