@@ -723,7 +723,7 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state) {
                 RiscvEmulatorROR(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
 #endif
-#if (RVE_E_ZBS == 1)
+#if (RVE_E_ZBC == 1)
             case FUNCT7_FUNCT3_OPERATION_CMUL:
                 RiscvEmulatorCMUL(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
