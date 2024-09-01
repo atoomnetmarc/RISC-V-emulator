@@ -10,6 +10,10 @@ SPDX-License-Identifier: Apache-2.0
 
 #include <stdint.h>
 
+#include "RiscvEmulatorConfig.h"
+
+#if (RVE_E_ZICSR == 1)
+
 /**
  * Supervisor Address Translation and Protection (satp) Register.
  */
@@ -30,5 +34,7 @@ typedef struct __attribute__((packed)) {
     uint8_t mode : 1;
 
 } RiscvCSRsatp_t;
+
+#endif
 
 #endif

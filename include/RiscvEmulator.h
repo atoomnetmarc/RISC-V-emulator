@@ -55,52 +55,86 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
 #endif
 
     state->programcounter = state->programcounternext;
-    state->programcounternext = state->programcounter + 4;
 
-    state->instruction.value = RiscvEmulatorLoadInstruction(state->programcounter);
+    uint8_t instructionlength = 32;
 
-    switch (state->instruction.opcode.opcode) {
-        case OPCODE_JUMPANDLINKREGISTER:
-            RiscvEmulatorOpcodeJumpAndLinkRegister(state);
-            break;
-        case OPCODE_OPERATION:
-            RiscvEmulatorOpcodeOperation(state);
-            break;
-        case OPCODE_IMMEDIATE:
-            RiscvEmulatorOpcodeImmediate(state);
-            break;
-        case OPCODE_LOAD:
-            RiscvEmulatorOpcodeLoad(state);
-            break;
-        case OPCODE_STORE:
-            RiscvEmulatorOpcodeStore(state);
-            break;
-        case OPCODE_BRANCH:
-            RiscvEmulatorOpcodeBranch(state);
-            break;
-        case OPCODE_ADDUPPERIMMEDIATE2PC:
-            RiscvEmulatorAUIPC(state);
-            break;
-        case OPCODE_LOADUPPERIMMEDIATE:
-            RiscvEmulatorLUI(state);
-            break;
-        case OPCODE_JUMPANDLINK:
-            RiscvEmulatorJAL(state);
-            break;
-        case OPCODE_SYSTEM:
-            RiscvEmulatorOpcodeSystem(state);
-            break;
-        case OPCODE_MISCMEM:
-            RiscvEmulatorOpcodeMiscMem(state);
-            break;
-#if (RVE_E_A == 1)
-        case OPCODE_ATOMICMEMORYOPERATION:
-            RiscvEmulatorOpcodeAtomicMemoryOperation(state);
-            break;
+#if (RVE_E_C == 1)
+    // Read 16 bits.
+    state->instruction.value16.H = 0;
+    RiscvEmulatorLoadInstruction(
+        state->programcounter,
+        &state->instruction.value16.L,
+        sizeof(state->instruction.value16.L));
+
+    state->programcounternext += sizeof(state->instruction.value16.L);
+
+    // Read another 16 bits when this is a 32-bit instruction.
+    if ((state->instruction.value & 0b11) == 0b11) {
+        RiscvEmulatorLoadInstruction(
+            state->programcounternext,
+            &state->instruction.value16.H,
+            sizeof(state->instruction.value16.L));
+
+        state->programcounternext += sizeof(state->instruction.value16.L);
+    } else {
+        instructionlength = 16;
+    }
+#else
+    // Read 32 bits.
+    RiscvEmulatorLoadInstruction(state->programcounter, &state->instruction.value, sizeof(state->instruction.value));
+    state->programcounternext += sizeof(state->instruction.value);
 #endif
-        default:
-            state->trapflags.bits.illegalinstruction = 1;
-            break;
+
+#if (RVE_E_C == 1)
+    if (instructionlength == 16) {
+        RiscvEmulatorOpcodeCompressed(state);
+    }
+#endif
+
+    if (instructionlength == 32) {
+        switch (state->instruction.opcode.opcode) {
+            case OPCODE32_JUMPANDLINKREGISTER:
+                RiscvEmulatorOpcodeJumpAndLinkRegister(state);
+                break;
+            case OPCODE32_OPERATION:
+                RiscvEmulatorOpcodeOperation(state);
+                break;
+            case OPCODE32_IMMEDIATE:
+                RiscvEmulatorOpcodeImmediate(state);
+                break;
+            case OPCODE32_LOAD:
+                RiscvEmulatorOpcodeLoad(state);
+                break;
+            case OPCODE32_STORE:
+                RiscvEmulatorOpcodeStore(state);
+                break;
+            case OPCODE32_BRANCH:
+                RiscvEmulatorOpcodeBranch(state);
+                break;
+            case OPCODE32_ADDUPPERIMMEDIATE2PC:
+                RiscvEmulatorAUIPC(state);
+                break;
+            case OPCODE32_LOADUPPERIMMEDIATE:
+                RiscvEmulatorLUI(state);
+                break;
+            case OPCODE32_JUMPANDLINK:
+                RiscvEmulatorJAL(state);
+                break;
+            case OPCODE32_SYSTEM:
+                RiscvEmulatorOpcodeSystem(state);
+                break;
+            case OPCODE32_MISCMEM:
+                RiscvEmulatorOpcodeMiscMem(state);
+                break;
+#if (RVE_E_A == 1)
+            case OPCODE32_ATOMICMEMORYOPERATION:
+                RiscvEmulatorOpcodeAtomicMemoryOperation(state);
+                break;
+#endif
+            default:
+                state->trapflags.bits.illegalinstruction = 1;
+                break;
+        }
     }
 
     if (state->trapflags.value > 0) {

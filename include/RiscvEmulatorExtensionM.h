@@ -8,14 +8,11 @@ SPDX-License-Identifier: Apache-2.0
 #ifndef RiscvEmulatorExtensionM_H_
 #define RiscvEmulatorExtensionM_H_
 
-#include "RiscvEmulatorConfig.h"
-
 #if (RVE_E_M == 1)
 
 #include <stdint.h>
 
-#include <RiscvEmulatorImplementationSpecific.h>
-
+#include "RiscvEmulatorConfig.h"
 #include "RiscvEmulatorDefine.h"
 #include "RiscvEmulatorType.h"
 

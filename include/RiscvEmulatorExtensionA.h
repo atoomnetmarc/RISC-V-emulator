@@ -132,7 +132,7 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(RiscvEmulatorState_t
         *(uint32_t *)rd = loadedvalue;
     }
 
-    RiscvInstructionTypeRDecoderFunct5Funct3_u instruction_decoderhelper_rtypeatomicmemoryoperation;
+    RiscvInstruction32TypeRDecoderFunct5Funct3_u instruction_decoderhelper_rtypeatomicmemoryoperation;
     instruction_decoderhelper_rtypeatomicmemoryoperation.input.funct3 = state->instruction.rtypeatomicmemoryoperation.funct3;
     instruction_decoderhelper_rtypeatomicmemoryoperation.input.funct5 = state->instruction.rtypeatomicmemoryoperation.funct5;
 

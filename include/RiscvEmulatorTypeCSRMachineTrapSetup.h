@@ -10,6 +10,10 @@ SPDX-License-Identifier: Apache-2.0
 
 #include <stdint.h>
 
+#include "RiscvEmulatorConfig.h"
+
+#if (RVE_E_ZICSR == 1)
+
 /**
  * Machine status register.
  */
@@ -344,5 +348,7 @@ typedef struct __attribute__((packed)) {
     uint8_t mode : 2;
     uint32_t base : 30;
 } RiscvCSRmtvec_t;
+
+#endif
 
 #endif

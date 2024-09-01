@@ -18,6 +18,11 @@ SPDX-License-Identifier: Apache-2.0
 #define RVE_E_A 0
 #endif
 
+// Compressed instructions.
+#ifndef RVE_E_C
+#define RVE_E_C 0
+#endif
+
 // Control and Status Register Access.
 #ifndef RVE_E_ZICSR
 #define RVE_E_ZICSR 0

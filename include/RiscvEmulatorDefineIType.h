@@ -8,7 +8,10 @@ SPDX-License-Identifier: Apache-2.0
 #ifndef RiscvEmulatorDefineIType_H_
 #define RiscvEmulatorDefineIType_H_
 
+#include "RiscvEmulatorConfig.h"
+
 // I-type, register immediate.
+
 #define FUNCT3_IMMEDIATE_ADDI  0b000
 #define FUNCT3_IMMEDIATE_SLTI  0b010
 #define FUNCT3_IMMEDIATE_SLTIU 0b011

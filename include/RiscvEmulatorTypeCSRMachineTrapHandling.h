@@ -10,6 +10,10 @@ SPDX-License-Identifier: Apache-2.0
 
 #include <stdint.h>
 
+#include "RiscvEmulatorConfig.h"
+
+#if (RVE_E_ZICSR == 1)
+
 /**
  * Scratch register for machine trap handlers.
  */
@@ -31,5 +35,7 @@ typedef struct __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
     uint32_t mip;
 } RiscvCSRmip_t;
+
+#endif
 
 #endif

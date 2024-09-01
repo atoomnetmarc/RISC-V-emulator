@@ -10,6 +10,10 @@ SPDX-License-Identifier: Apache-2.0
 
 #include <stdint.h>
 
+#include "RiscvEmulatorConfig.h"
+
+#if (RVE_E_ZICSR == 1)
+
 /**
  * Physical memory protection configuration.
  */
@@ -26,5 +30,7 @@ typedef struct __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
     uint32_t address;
 } RiscvCSRpmpaddr0_t;
+
+#endif
 
 #endif

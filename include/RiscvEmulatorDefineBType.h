@@ -9,6 +9,7 @@ SPDX-License-Identifier: Apache-2.0
 #define RiscvEmulatorDefineBType_H_
 
 // B-type, branch.
+
 #define FUNCT3_BRANCH_BEQ  0b000
 #define FUNCT3_BRANCH_BNE  0b001
 #define FUNCT3_BRANCH_BLT  0b100

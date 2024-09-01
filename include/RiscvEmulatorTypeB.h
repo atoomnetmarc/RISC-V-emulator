@@ -22,7 +22,7 @@ typedef struct __attribute__((packed)) {
     uint8_t rs2 : 5;
     uint8_t imm10_5 : 6;
     uint8_t imm12 : 1;
-} RiscvInstructionTypeB_t;
+} RiscvInstruction32TypeB_t;
 
 typedef struct __attribute__((packed)) {
     uint8_t imm0 : 1;
@@ -30,18 +30,18 @@ typedef struct __attribute__((packed)) {
     uint8_t imm10_5 : 6;
     uint8_t imm11 : 1;
     uint8_t imm12 : 1;
-} RiscvInstructionTypeBDecoderImmIn_t;
+} RiscvInstruction32TypeBDecoderImmIn_t;
 
 typedef struct __attribute__((packed)) {
     int16_t imm : 13;
-} RiscvInstructionTypeBDecoderImmOut_t;
+} RiscvInstruction32TypeBDecoderImmOut_t;
 
 /**
  * Union for decoding imm field of a B-type instruction.
  */
 typedef union {
-    RiscvInstructionTypeBDecoderImmIn_t input;
-    RiscvInstructionTypeBDecoderImmOut_t output;
-} RiscvInstructionTypeBDecoderImm_u;
+    RiscvInstruction32TypeBDecoderImmIn_t input;
+    RiscvInstruction32TypeBDecoderImmOut_t output;
+} RiscvInstruction32TypeBDecoderImm_u;
 
 #endif

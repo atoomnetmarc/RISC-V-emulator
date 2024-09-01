@@ -44,19 +44,13 @@ static inline void RiscvEmulatorTrap(RiscvEmulatorState_t *state) {
     if (state->trapflags.bits.environmentcallfrommmode == 1) {
         state->csr.mcause.exceptioncode = MCAUSE_EXCEPTION_CODE_ENVIRONMENT_CALL_FROM_MMODE;
     }
-#endif
 
     // Illegal instruction
     if (state->trapflags.bits.illegalinstruction == 1) {
-        RiscvEmulatorIllegalInstruction(state);
-
-#if (RVE_E_ZICSR == 1)
         state->csr.mcause.exceptioncode = MCAUSE_EXCEPTION_CODE_ILLEGAL_INSTRUCTION;
         state->csr.mtval = state->instruction.value;
-#endif
     }
 
-#if (RVE_E_ZICSR == 1)
     state->csr.mstatus.mpp = 3; // Previous privilege mode: M
     state->csr.mstatus.mpie = state->csr.mstatus.mie;
     state->csr.mstatus.mie = 0;
@@ -70,12 +64,16 @@ static inline void RiscvEmulatorTrap(RiscvEmulatorState_t *state) {
     }
 #endif
 
-    state->trapflags.value = 0;
-
 #if (RVE_E_HOOK == 1 && RVE_E_ZICSR == 1)
     state->hookexists = 1;
     RiscvEmulatorTrapHookBegin(state);
 #endif
+
+    if (state->trapflags.bits.illegalinstruction == 1) {
+        RiscvEmulatorIllegalInstruction(state);
+    }
+
+    state->trapflags.value = 0;
 }
 
 #endif

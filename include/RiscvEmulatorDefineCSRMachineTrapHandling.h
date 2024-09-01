@@ -8,7 +8,9 @@ SPDX-License-Identifier: Apache-2.0
 #ifndef RiscvEmulatorDefineCSRMachineTrapHandling_H_
 #define RiscvEmulatorDefineCSRMachineTrapHandling_H_
 
+#if (RVE_E_ZICSR == 1)
 // Machine cause exception code.
+
 #define MCAUSE_EXCEPTION_CODE_INSTRUCTION_ADDRESS_MISALIGNED 0
 #define MCAUSE_EXCEPTION_CODE_INSTRUCTION_ACCESS_FAULT       1
 #define MCAUSE_EXCEPTION_CODE_ILLEGAL_INSTRUCTION            2
@@ -26,5 +28,7 @@ SPDX-License-Identifier: Apache-2.0
 #define MCAUSE_EXCEPTION_CODE_DOUBLE_TRAP                    16
 #define MCAUSE_EXCEPTION_CODE_SOFTWARE_CHECK                 18
 #define MCAUSE_EXCEPTION_CODE_HARDWARE_ERROR                 19
+
+#endif
 
 #endif

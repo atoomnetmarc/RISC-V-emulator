@@ -10,6 +10,10 @@ SPDX-License-Identifier: Apache-2.0
 
 #include <stdint.h>
 
+#include "RiscvEmulatorConfig.h"
+
+#if (RVE_E_ZICSR == 1)
+
 /**
  * Resumable NMI status.
  */
@@ -22,5 +26,7 @@ typedef struct __attribute__((packed)) {
     uint8_t mnpp : 2;
     uint32_t : 19;
 } RiscvCSRmnstatus_t;
+
+#endif
 
 #endif

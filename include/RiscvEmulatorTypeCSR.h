@@ -8,6 +8,10 @@ SPDX-License-Identifier: Apache-2.0
 #ifndef RiscvEmulatorTypeCSR_H_
 #define RiscvEmulatorTypeCSR_H_
 
+#include "RiscvEmulatorConfig.h"
+
+#if (RVE_E_ZICSR == 1)
+
 #include "RiscvEmulatorTypeCSRMachineInformationRegister.h"
 #include "RiscvEmulatorTypeCSRMachineMemoryProtection.h"
 #include "RiscvEmulatorTypeCSRMachineNonMaskableInterruptHandling.h"
@@ -48,5 +52,7 @@ typedef struct __attribute__((packed)) {
     // Supervisor Protection and Translation
     RiscvCSRsatp_t satp;
 } RiscvCSR_t;
+
+#endif
 
 #endif

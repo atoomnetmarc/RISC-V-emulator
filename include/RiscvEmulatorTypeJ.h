@@ -20,7 +20,7 @@ typedef struct __attribute__((packed)) {
     uint8_t imm11 : 1;
     uint16_t imm10_1 : 10;
     uint8_t imm20 : 1;
-} RiscvInstructionTypeJ_t;
+} RiscvInstruction32TypeJ_t;
 
 typedef struct __attribute__((packed)) {
     uint8_t : 1;
@@ -28,18 +28,18 @@ typedef struct __attribute__((packed)) {
     uint8_t imm11 : 1;
     uint8_t imm19_12 : 8;
     uint8_t imm20 : 1;
-} RiscvInstructionTypeJDecoderImmIn_t;
+} RiscvInstruction32TypeJDecoderImmIn_t;
 
 typedef struct __attribute__((packed)) {
     int32_t imm : 21;
-} RiscvInstructionTypeJDecoderImmOut_t;
+} RiscvInstruction32TypeJDecoderImmOut_t;
 
 /**
  * Union for decoding imm field of a J-type instruction.
  */
 typedef union {
-    RiscvInstructionTypeJDecoderImmIn_t input;
-    RiscvInstructionTypeJDecoderImmOut_t output;
-} RiscvInstructionTypeJDecoderImm_u;
+    RiscvInstruction32TypeJDecoderImmIn_t input;
+    RiscvInstruction32TypeJDecoderImmOut_t output;
+} RiscvInstruction32TypeJDecoderImm_u;
 
 #endif

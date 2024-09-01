@@ -8,7 +8,10 @@ SPDX-License-Identifier: Apache-2.0
 #ifndef RiscvEmulatorDefineRType_H_
 #define RiscvEmulatorDefineRType_H_
 
+#include "RiscvEmulatorConfig.h"
+
 // R-type, register register.
+
 #define FUNCT7_FUNCT3_OPERATION_ADD  0b0000000000
 #define FUNCT7_FUNCT3_OPERATION_SUB  0b0100000000
 #define FUNCT7_FUNCT3_OPERATION_SLL  0b0000000001

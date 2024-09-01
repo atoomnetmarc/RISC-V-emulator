@@ -81,6 +81,28 @@ __attribute__((weak)) void RiscvEmulatorIntRegRegHookEnd(
 }
 
 /**
+ * Generic hook function for Register-Immediate Operations.
+ */
+__attribute__((weak)) void RiscvEmulatorRegImmHookBegin(
+    const char *instruction,
+    const RiscvEmulatorState_t *state,
+    const uint8_t rdnum,
+    const void *rd,
+    const int32_t imm) {
+}
+
+/**
+ * Generic hook function for Register-Immediate Operations.
+ */
+__attribute__((weak)) void RiscvEmulatorRegImmHookEnd(
+    const char *instruction,
+    const RiscvEmulatorState_t *state,
+    const uint8_t rdnum,
+    const void *rd,
+    const int32_t imm) {
+}
+
+/**
  * Generic hook function for Integer Register-Immediate Operations.
  */
 __attribute__((weak)) void RiscvEmulatorIntRegImmHookBegin(

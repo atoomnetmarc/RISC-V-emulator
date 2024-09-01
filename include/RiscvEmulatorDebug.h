@@ -84,6 +84,7 @@ const char *RiscvEmulatorGetRegisterSymbolicName(const uint8_t r) {
     }
 }
 
+#if (RVE_E_ZICSR == 1)
 /**
  * Debug function for returning the name of a CSR.
  */
@@ -225,5 +226,7 @@ const char *RiscvEmulatorGetMcauseException(const uint8_t interrupt, const uint3
         }
     }
 }
+
+#endif
 
 #endif
