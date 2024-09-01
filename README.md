@@ -37,6 +37,12 @@ The emulator can be configured to enable specific extensions. The list of define
 
 For example, to enable the `M` extension compile with `-DRVE_E_M=1`.
 
+# Testing
+
+Typically only the configuration with all extensions enabled is tested using the mentioned riscv-arch-test during development of this emulator.
+
+As a sanity check, all combinations of extensions will be compiled. At the time of writing this sentence there are 512 combinations of 9 extensions, see [platformio_isa-extension-combination_env.ini](https://github.com/atoomnetmarc/RISC-V-emulator-Native/blob/main/platformio_isa-extension-combination_env.ini). Compilation of these 512 combinations takes about 5 minutes on my fastest machine.
+
 # Workings
 
 Instruction decoding is done with packed bitfield structs. When bits need to be untangled I used a union of 2 helper structs instead of trying to shift all the bits into the correct places.
