@@ -37,7 +37,10 @@ typedef union {
 #if (RVE_E_C == 1)
     RiscvInstruction16_t value16;
     RiscvInstruction16Opcode_t copcode;
+    RiscvInstruction16OpcodeQuadrant_t copcodequadrant;
     RiscvInstruction16TypeCQ1v1_t cq1v1type;
+    RiscvInstruction16TypeCQ2v1_t cq2v1type;
+    RiscvInstruction16TypeCQ1lui_t cq1lui;
 #endif
 
     RiscvInstruction32Opcode_t opcode;
@@ -61,6 +64,6 @@ typedef union {
     RiscvInstruction32TypeB_t btype;
     RiscvInstruction32TypeU_t utype;
     RiscvInstruction32TypeJ_t jtype;
-} RiscvInstruction32_u;
+} RiscvInstruction_u;
 
 #endif

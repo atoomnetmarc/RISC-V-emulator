@@ -45,18 +45,85 @@ static inline void RiscvEmulatorC_LI(
 }
 
 /**
+ * Load upper with immediate.
+ */
+static inline void RiscvEmulatorC_LUI(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum __attribute__((unused)),
+    void *rd) {
+
+    RiscvInstruction16TypeCQ1luiDecoderImm_u decoderimm = {0};
+    decoderimm.input.imm16_12 = state->instruction.cq1lui.imm16_12;
+    decoderimm.input.imm17 = state->instruction.cq1lui.imm17;
+
+    // Sign extend.
+    if (decoderimm.input.imm17 == 1) {
+        decoderimm.input.imm31_18 = 0x3FFF;
+    }
+
+    int32_t imm = decoderimm.output.imm;
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorRegImmHookBegin("c.lui", state, rdnum, rd, imm);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
+    *(int32_t *)rd = imm;
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorRegImmHookEnd("c.lui", state, rdnum, rd, imm);
+#endif
+}
+
+/**
+ * rd = rd + rs2
+ */
+static inline void RiscvEmulatorC_ADD(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum __attribute__((unused)),
+    void *rd,
+    const uint8_t rs2num __attribute__((unused)),
+    void *rs2) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorRegRegHookBegin("c.add", state, rdnum, rd, rs2num, rs2);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
+    *(int32_t *)rd = *(int32_t *)rd + *(int32_t *)rs2;
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorRegRegHookEnd("c.add", state, rdnum, rd, rs2num, rs2);
+#endif
+}
+
+/**
  * Process compressed opcodes.
  */
 static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
     RiscvInstruction16TypeCDecoderOpcode_u decoderOpcode16;
     decoderOpcode16.input.inst15_13 = state->instruction.copcode.inst15_13;
     decoderOpcode16.input.inst1_0 = state->instruction.copcode.inst1_0;
+    uint8_t opcode = decoderOpcode16.output.opcode;
 
-    uint8_t rdnum;
-    uint32_t imm;
-    void *rd;
+    uint8_t rdnum = 0;
+    uint8_t rs2num = 0;
+    uint32_t imm = 0;
+    void *rd = 0;
+    void *rs2 = 0;
 
-    switch (decoderOpcode16.output.opcode) {
+    // Whenever possible, decode instruction bits only once.
+    switch (opcode) {
         case OPCODE16_ADDI:
         case OPCODE16_LI: {
             RiscvInstruction16TypeCQ1v1DecoderImm_u RiscvInstruction16TypeCQ1v1DecoderImm;
@@ -70,78 +137,98 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
 
             rdnum = state->instruction.cq1v1type.rd;
             rd = &state->registers.array.location[rdnum];
-
             break;
-        }
-        default: {
-            state->trapflags.bits.illegalinstruction = 1;
-            return;
         }
     }
 
-    switch (decoderOpcode16.output.opcode) {
+    switch (opcode) {
         case OPCODE16_ADDI4SPN:
-            // Voeg hier de logica voor ADDI4SPN toe
+            state->trapflags.bits.illegalinstruction = 1;
             break;
         case OPCODE16_FLD:
-            // Voeg hier de logica voor FLD toe
+            state->trapflags.bits.illegalinstruction = 1;
             break;
         case OPCODE16_LW:
-            // Voeg hier de logica voor LW toe
+            state->trapflags.bits.illegalinstruction = 1;
             break;
         case OPCODE16_FLW:
-            // Voeg hier de logica voor FLW toe
+            state->trapflags.bits.illegalinstruction = 1;
             break;
         case OPCODE16_FSD:
-            // Voeg hier de logica voor FSD toe
+            state->trapflags.bits.illegalinstruction = 1;
             break;
         case OPCODE16_SW:
-            // Voeg hier de logica voor SW toe
+            state->trapflags.bits.illegalinstruction = 1;
             break;
         case OPCODE16_FSW:
-            // Voeg hier de logica voor FSW toe
+            state->trapflags.bits.illegalinstruction = 1;
             break;
         case OPCODE16_ADDI:
-            // Voeg hier de logica voor ADDI toe
+            state->trapflags.bits.illegalinstruction = 1;
             break;
         case OPCODE16_JAL:
-            // Voeg hier de logica voor JAL toe
+            state->trapflags.bits.illegalinstruction = 1;
             break;
         case OPCODE16_LI:
             RiscvEmulatorC_LI(state, rdnum, rd, imm);
             break;
-        case OPCODE16_LUI_ADDI16SP:
-            // Voeg hier de logica voor LUI/ADDI16SP toe
+        case OPCODE16_LUI_ADDI16SP: {
+            rdnum = state->instruction.cq1lui.rd;
+            rd = &state->registers.array.location[rdnum];
+
+            if (rdnum == 2) {
+                // ADDI16SP
+                state->trapflags.bits.illegalinstruction = 1;
+            } else {
+                RiscvEmulatorC_LUI(state, rdnum, rd);
+            }
             break;
+        }
         case OPCODE16_MISCALU:
-            // Voeg hier de logica voor MISCALU toe
+            state->trapflags.bits.illegalinstruction = 1;
             break;
         case OPCODE16_J:
-            // Voeg hier de logica voor J toe
+            state->trapflags.bits.illegalinstruction = 1;
             break;
         case OPCODE16_BEQZ:
-            // Voeg hier de logica voor BEQZ toe
+            state->trapflags.bits.illegalinstruction = 1;
             break;
         case OPCODE16_BNEZ:
-            // Voeg hier de logica voor BNEZ toe
+            state->trapflags.bits.illegalinstruction = 1;
             break;
         case OPCODE16_SLLI:
-            // Voeg hier de logica voor SLLI toe
+            state->trapflags.bits.illegalinstruction = 1;
             break;
         case OPCODE16_FLDSP:
-            // Voeg hier de logica voor FLDSP toe
+            state->trapflags.bits.illegalinstruction = 1;
             break;
         case OPCODE16_LWSP:
-            // Voeg hier de logica voor LWSP toe
+            state->trapflags.bits.illegalinstruction = 1;
             break;
         case OPCODE16_FLWSP:
-            // Voeg hier de logica voor FLWSP toe
+            state->trapflags.bits.illegalinstruction = 1;
             break;
         case OPCODE16_JALR_MV_ADD:
-            // Voeg hier de logica voor JALR/MV/ADD toe
+            rdnum = state->instruction.cq2v1type.rd;
+            rd = &state->registers.array.location[rdnum];
+            rs2num = state->instruction.cq2v1type.rs2;
+            rs2 = &state->registers.array.location[rs2num];
+
+            if (state->instruction.cq2v1type.inst12 == 1) {
+                if (rdnum == 0 &&
+                    rs2num == 0) {
+                    // ebreak
+                    state->trapflags.bits.illegalinstruction = 1;
+                } else if (rs2num == 0) {
+                    // jalr
+                    state->trapflags.bits.illegalinstruction = 1;
+                } else {
+                    RiscvEmulatorC_ADD(state, rdnum, rd, rs2num, rs2);
+                }
+            }
             break;
         case OPCODE16_FSDSP:
-            // Voeg hier de logica voor FSDSP toe
+            state->trapflags.bits.illegalinstruction = 1;
             break;
         default:
             state->trapflags.bits.illegalinstruction = 1;

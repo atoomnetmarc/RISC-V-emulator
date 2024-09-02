@@ -17,7 +17,7 @@ SPDX-License-Identifier: Apache-2.0
 /**
  * Compressed instructions quadrant 1, variant 1.
  *
- * Valid for addi, li.
+ * Valid for addi and li.
  */
 typedef struct __attribute__((packed)) {
     uint8_t inst1_0 : 2;
@@ -26,6 +26,30 @@ typedef struct __attribute__((packed)) {
     uint8_t imm5 : 1;
     uint8_t inst15_13 : 3;
 } RiscvInstruction16TypeCQ1v1_t;
+
+/**
+ * Compressed instructions quadrant 1, lui.
+ */
+typedef struct __attribute__((packed)) {
+    uint8_t inst1_0 : 2;
+    uint8_t imm16_12 : 5;
+    uint8_t rd : 5;
+    uint8_t imm17 : 1;
+    uint8_t inst15_13 : 3;
+} RiscvInstruction16TypeCQ1lui_t;
+
+/**
+ * Compressed instructions quadrant 2, variant 1.
+ *
+ * Valid for jr, mv, ebreak, jalr and add.
+ */
+typedef struct __attribute__((packed)) {
+    uint8_t inst1_0 : 2;
+    uint8_t rs2 : 5;
+    uint8_t rd : 5;
+    uint8_t inst12 : 1;
+    uint8_t inst15_13 : 3;
+} RiscvInstruction16TypeCQ2v1_t;
 
 typedef struct __attribute__((packed)) {
     uint8_t imm4_0 : 5;
@@ -43,6 +67,25 @@ typedef union {
     RiscvInstruction16TypeCQ1v1DecoderImmIn_t input;
     RiscvInstruction16TypeCQ1v1DecoderImmOut_t output;
 } RiscvInstruction16TypeCQ1v1DecoderImm_u;
+
+typedef struct __attribute__((packed)) {
+    uint16_t : 12;
+    uint8_t imm16_12 : 5;
+    uint8_t imm17 : 1;
+    uint16_t imm31_18 : 14;
+} RiscvInstruction16TypeCQ1luiDecoderImmIn_t;
+
+typedef struct __attribute__((packed)) {
+    uint32_t imm;
+} RiscvInstruction16TypeCQ1luiDecoderImmOut_t;
+
+/**
+ * Union for decoding imm of lui.
+ */
+typedef union {
+    RiscvInstruction16TypeCQ1luiDecoderImmIn_t input;
+    RiscvInstruction16TypeCQ1luiDecoderImmOut_t output;
+} RiscvInstruction16TypeCQ1luiDecoderImm_u;
 
 typedef struct __attribute__((packed)) {
     uint16_t L;
@@ -75,6 +118,13 @@ typedef union {
     RiscvInstruction16TypeCDecoderOpcodeOut_t output;
 } RiscvInstruction16TypeCDecoderOpcode_u;
 
+/**
+ * Easy access to the 16bit instruction quadrant bits.
+ */
+typedef struct __attribute__((packed)) {
+    uint8_t quadrant : 2;
+    uint16_t : 14;
+} RiscvInstruction16OpcodeQuadrant_t;
 #endif
 
 #endif

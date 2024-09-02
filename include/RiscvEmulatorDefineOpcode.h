@@ -12,6 +12,11 @@ SPDX-License-Identifier: Apache-2.0
 
 #if (RVE_E_C == 1)
 
+#define OPCODE16_QUADRANT_0       0b00
+#define OPCODE16_QUADRANT_1       0b01
+#define OPCODE16_QUADRANT_2       0b10
+#define OPCODE16_QUADRANT_INVALID 0b11
+
 // 16-bit opcodes when RV32. Bits [15:13][1:0].
 
 #define OPCODE16_ADDI4SPN     0b00000

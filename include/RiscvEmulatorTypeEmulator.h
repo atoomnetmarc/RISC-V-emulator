@@ -46,7 +46,7 @@ typedef struct
     RiscvEmulatorTrapFlags_u trapflags;
     uint32_t programcounter;
     uint32_t programcounternext;
-    RiscvInstruction32_u instruction;
+    RiscvInstruction_u instruction;
     RiscvRegister_u registers;
 
 #if (RVE_E_HOOK == 1)
