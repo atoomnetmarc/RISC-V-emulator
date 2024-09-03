@@ -26,7 +26,7 @@ SPDX-License-Identifier: Apache-2.0
 typedef struct __attribute__((packed)) {
     uint8_t opcode : 7;
     uint32_t : 25;
-} RiscvInstruction32Opcode_t;
+} RiscvInstructionOpcode_t;
 
 /**
  * All the instruction types combined.
@@ -35,35 +35,35 @@ typedef union {
     uint32_t value;
 
 #if (RVE_E_C == 1)
-    RiscvInstruction16_t value16;
-    RiscvInstruction16Opcode_t copcode;
-    RiscvInstruction16OpcodeQuadrant_t copcodequadrant;
-    RiscvInstruction16TypeCQ1v1_t cq1v1type;
-    RiscvInstruction16TypeCQ2v1_t cq2v1type;
-    RiscvInstruction16TypeCQ1lui_t cq1lui;
+    RiscvInstruction_t value16;
+    RiscvInstructionOpcodeC_t copcode;
+    RiscvInstructionTypeCR_t crtype;
+    RiscvInstructionTypeCI_t citype;
+    RiscvInstructionTypeCILui_t cilui;
+    RiscvInstructionTypeCS_t cstype;
 #endif
 
-    RiscvInstruction32Opcode_t opcode;
-    RiscvInstruction32TypeR_t rtype;
+    RiscvInstructionOpcode_t opcode;
+    RiscvInstructionTypeR_t rtype;
 #if (RVE_E_ZBA)
-    RiscvInstruction32TypeRShift_t rtypeshift;
+    RiscvInstructionTypeRShift_t rtypeshift;
 #endif
 #if (RVE_E_A == 1)
-    RiscvInstruction32TypeRAtomicMemoryOperation_t rtypeatomicmemoryoperation;
+    RiscvInstructionTypeRAtomicMemoryOperation_t rtypeatomicmemoryoperation;
 #endif
-    RiscvInstruction32TypeI_t itype;
+    RiscvInstructionTypeI_t itype;
 #if (RVE_E_ZICSR == 1)
-    RiscvInstruction32TypeICSR_t itypecsr;
-    RiscvInstruction32TypeICSRImm_t itypecsrimm;
+    RiscvInstructionTypeICSR_t itypecsr;
+    RiscvInstructionTypeICSRImm_t itypecsrimm;
 #endif
-    RiscvInstruction32TypeIMiscMemt_t itypemiscmem;
-    RiscvInstruction32TypeIShiftByConstant_t itypeshiftbyconstant;
-    RiscvInstruction32TypeIStystem_t itypesystem;
-    RiscvInstruction32TypeIStystemCustom_t itypesystemcustom;
-    RiscvInstruction32TypeS_t stype;
-    RiscvInstruction32TypeB_t btype;
-    RiscvInstruction32TypeU_t utype;
-    RiscvInstruction32TypeJ_t jtype;
+    RiscvInstructionTypeIMiscMemt_t itypemiscmem;
+    RiscvInstructionTypeIShiftByConstant_t itypeshiftbyconstant;
+    RiscvInstructionTypeIStystem_t itypesystem;
+    RiscvInstructionTypeIStystemCustom_t itypesystemcustom;
+    RiscvInstructionTypeS_t stype;
+    RiscvInstructionTypeB_t btype;
+    RiscvInstructionTypeU_t utype;
+    RiscvInstructionTypeJ_t jtype;
 } RiscvInstruction_u;
 
 #endif

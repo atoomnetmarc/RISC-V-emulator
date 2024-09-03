@@ -15,116 +15,146 @@ SPDX-License-Identifier: Apache-2.0
 #include <stdint.h>
 
 /**
- * Compressed instructions quadrant 1, variant 1.
- *
- * Valid for addi and li.
- */
-typedef struct __attribute__((packed)) {
-    uint8_t inst1_0 : 2;
-    uint8_t imm4_0 : 5;
-    uint8_t rd : 5;
-    uint8_t imm5 : 1;
-    uint8_t inst15_13 : 3;
-} RiscvInstruction16TypeCQ1v1_t;
-
-/**
- * Compressed instructions quadrant 1, lui.
- */
-typedef struct __attribute__((packed)) {
-    uint8_t inst1_0 : 2;
-    uint8_t imm16_12 : 5;
-    uint8_t rd : 5;
-    uint8_t imm17 : 1;
-    uint8_t inst15_13 : 3;
-} RiscvInstruction16TypeCQ1lui_t;
-
-/**
- * Compressed instructions quadrant 2, variant 1.
+ * Compressed Register instruction format.
  *
  * Valid for jr, mv, ebreak, jalr and add.
  */
 typedef struct __attribute__((packed)) {
-    uint8_t inst1_0 : 2;
+    uint8_t op : 2;
     uint8_t rs2 : 5;
     uint8_t rd : 5;
-    uint8_t inst12 : 1;
-    uint8_t inst15_13 : 3;
-} RiscvInstruction16TypeCQ2v1_t;
+    uint8_t funct4 : 3;
+} RiscvInstructionTypeCR_t;
+
+/**
+ * Compressed Immediate instruction format.
+ *
+ * Valid for addi and li.
+ */
+typedef struct __attribute__((packed)) {
+    uint8_t op : 2;
+    uint8_t imm4_0 : 5;
+    uint8_t rd : 5;
+    uint8_t imm5 : 1;
+    uint8_t funct3 : 3;
+} RiscvInstructionTypeCI_t;
+
+/**
+ * Compressed Immediate instruction format.
+ *
+ * Valid for lui.
+ */
+typedef struct __attribute__((packed)) {
+    uint8_t op : 2;
+    uint8_t imm16_12 : 5;
+    uint8_t rd : 5;
+    uint8_t imm17 : 1;
+    uint8_t funct3 : 3;
+} RiscvInstructionTypeCILui_t;
+
+/**
+ * Compressed Store instruction format.
+ *
+ * Valid for sw, fsw.
+ */
+typedef struct __attribute__((packed)) {
+    uint8_t op : 2;
+    uint8_t rs2p : 3;
+    uint8_t uimm6 : 1;
+    uint8_t uimm2 : 1;
+    uint8_t rs1p : 3;
+    uint8_t uimm5_3 : 3;
+    uint8_t funct3 : 3;
+} RiscvInstructionTypeCS_t;
 
 typedef struct __attribute__((packed)) {
     uint8_t imm4_0 : 5;
     uint8_t imm5 : 1;
-} RiscvInstruction16TypeCQ1v1DecoderImmIn_t;
+    uint32_t imm31_6 : 26;
+} RiscvInstructionTypeCIDecoderImmIn_t;
 
 typedef struct __attribute__((packed)) {
-    uint8_t imm : 6;
-} RiscvInstruction16TypeCQ1v1DecoderImmOut_t;
+    uint32_t imm;
+} RiscvInstructionTypeCIDecoderImmOut_t;
 
 /**
- * Union for decoding imm of TypeCQ1v1.
+ * Union for decoding imm of TypeCI.
  */
 typedef union {
-    RiscvInstruction16TypeCQ1v1DecoderImmIn_t input;
-    RiscvInstruction16TypeCQ1v1DecoderImmOut_t output;
-} RiscvInstruction16TypeCQ1v1DecoderImm_u;
+    RiscvInstructionTypeCIDecoderImmIn_t input;
+    RiscvInstructionTypeCIDecoderImmOut_t output;
+} RiscvInstructionTypeCIDecoderImm_u;
 
 typedef struct __attribute__((packed)) {
     uint16_t : 12;
     uint8_t imm16_12 : 5;
     uint8_t imm17 : 1;
     uint16_t imm31_18 : 14;
-} RiscvInstruction16TypeCQ1luiDecoderImmIn_t;
+} RiscvInstructionTypeCILuiDecoderImmIn_t;
 
 typedef struct __attribute__((packed)) {
     uint32_t imm;
-} RiscvInstruction16TypeCQ1luiDecoderImmOut_t;
+} RiscvInstructionTypeCILuiDecoderImmOut_t;
 
 /**
  * Union for decoding imm of lui.
  */
 typedef union {
-    RiscvInstruction16TypeCQ1luiDecoderImmIn_t input;
-    RiscvInstruction16TypeCQ1luiDecoderImmOut_t output;
-} RiscvInstruction16TypeCQ1luiDecoderImm_u;
+    RiscvInstructionTypeCILuiDecoderImmIn_t input;
+    RiscvInstructionTypeCILuiDecoderImmOut_t output;
+} RiscvInstructionTypeCILuiDecoderImm_u;
+
+typedef struct __attribute__((packed)) {
+    uint8_t : 2;
+    uint8_t uimm2 : 1;
+    uint8_t uimm5_3 : 3;
+    uint8_t uimm6 : 1;
+    uint32_t : 25;
+} RiscvInstructionTypeCSDecoderImmIn_t;
+
+typedef struct __attribute__((packed)) {
+    uint32_t uimm;
+} RiscvInstructionTypeCSDecoderImmOut_t;
+
+/**
+ * Union for decoding imm of TypeCS.
+ */
+typedef union {
+    RiscvInstructionTypeCSDecoderImmIn_t input;
+    RiscvInstructionTypeCSDecoderImmOut_t output;
+} RiscvInstructionTypeCSDecoderImm_u;
 
 typedef struct __attribute__((packed)) {
     uint16_t L;
     uint16_t H;
-} RiscvInstruction16_t;
+} RiscvInstruction_t;
 
 /**
  * Easier access to the opcode of an 16-bit instruction when you do not know the instruction yet.
  */
 typedef struct __attribute__((packed)) {
-    uint8_t inst1_0 : 2;
+    uint8_t op : 2;
     uint16_t : 11;
-    uint8_t inst15_13 : 3;
-} RiscvInstruction16Opcode_t;
+    uint8_t funct3 : 3;
+} RiscvInstructionOpcodeC_t;
 
 typedef struct __attribute__((packed)) {
-    uint8_t inst1_0 : 2;
-    uint8_t inst15_13 : 3;
-} RiscvInstruction16TypeCDecoderOpcodeIn_t;
+    uint8_t op : 2;
+    uint8_t funct3 : 3;
+} RiscvInstructionTypeCDecoderOpcodeIn_t;
 
 typedef struct __attribute__((packed)) {
-    uint8_t opcode : 5;
-} RiscvInstruction16TypeCDecoderOpcodeOut_t;
+    uint8_t opfunct3 : 5;
+} RiscvInstructionTypeCDecoderOpcodeOut_t;
 
 /**
  * Union for decoding opcode of a compressed instruction.
  */
 typedef union {
-    RiscvInstruction16TypeCDecoderOpcodeIn_t input;
-    RiscvInstruction16TypeCDecoderOpcodeOut_t output;
-} RiscvInstruction16TypeCDecoderOpcode_u;
+    RiscvInstructionTypeCDecoderOpcodeIn_t input;
+    RiscvInstructionTypeCDecoderOpcodeOut_t output;
+} RiscvInstructionTypeCDecoderOpcode_u;
 
-/**
- * Easy access to the 16bit instruction quadrant bits.
- */
-typedef struct __attribute__((packed)) {
-    uint8_t quadrant : 2;
-    uint16_t : 14;
-} RiscvInstruction16OpcodeQuadrant_t;
 #endif
 
 #endif

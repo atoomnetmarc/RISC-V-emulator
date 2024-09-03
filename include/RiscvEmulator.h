@@ -69,7 +69,7 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
     state->programcounternext += sizeof(state->instruction.value16.L);
 
     // Read another 16 bits when this is a 32-bit instruction.
-    if (state->instruction.copcodequadrant.quadrant == OPCODE16_QUADRANT_INVALID) {
+    if (state->instruction.copcode.op == OPCODE16_QUADRANT_INVALID) {
         RiscvEmulatorLoadInstruction(
             state->programcounternext,
             &state->instruction.value16.H,

@@ -25,7 +25,7 @@ Extensions are confirmed working when all instructions of that extension pass [r
 | Atomics                             | A         |               |       | :ballot_box_with_check: |
 | Single-Precision Floating-Point     | F         |               |       | :x:                     |
 | Double-Precision Floating-Point     | D         |               |       | :x:                     |
-| Control and Status Register Access  | Zicsr     |               |       | :x:                     |
+| Control and Status Register Access  | Zicsr     |               |       | :ballot_box_with_check: |
 | Instruction-Fetch Fence             | Zifencei  |               |       | :ballot_box_with_check: |
 | Compressed Instructions             | C         |               |       | :x:                     |
 | Address calculation                 | B         | Zba           | Bonus | :ballot_box_with_check: |
@@ -36,6 +36,9 @@ Extensions are confirmed working when all instructions of that extension pass [r
 The emulator can be configured to enable specific extensions. The list of defines and their default values are located in [include/RiscvEmulatorConfig.h](include/RiscvEmulatorConfig.h).
 
 For example, to enable the `M` extension compile with `-DRVE_E_M=1`.
+
+> [!NOTE]
+> At the time of writing this emulator needs the C-extension to pass the riscv-arch-test for Zicsr. See https://github.com/riscv-non-isa/riscv-arch-test/issues/445
 
 # Testing
 

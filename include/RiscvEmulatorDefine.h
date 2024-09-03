@@ -11,9 +11,9 @@ SPDX-License-Identifier: Apache-2.0
 #include "RiscvEmulatorConfig.h"
 
 #if (RVE_E_C == 1)
-    #define IALIGN 16
+#define IALIGN 16
 #else
-    #define IALIGN 32
+#define IALIGN 32
 #endif
 
 #define IO_ORIGIN  0x02000000
@@ -22,6 +22,7 @@ SPDX-License-Identifier: Apache-2.0
 
 #include "RiscvEmulatorDefineBType.h"
 #include "RiscvEmulatorDefineCSRMachineTrapHandling.h"
+#include "RiscvEmulatorDefineCType.h"
 #include "RiscvEmulatorDefineIType.h"
 #include "RiscvEmulatorDefineOpcode.h"
 #include "RiscvEmulatorDefineRType.h"
