@@ -213,6 +213,58 @@ __attribute__((weak)) void RiscvEmulatorStoreHookEnd(
 }
 
 /**
+ * Generic hook function for Stack-relative Store Operations.
+ */
+__attribute__((weak)) void RiscvEmulatorStackRelativeStoreHookBegin(
+    const char *instruction,
+    const RiscvEmulatorState_t *state,
+    const uint8_t rs2num,
+    const void *rs2,
+    const void *sp,
+    const uint32_t imm,
+    const uint32_t memorylocation) {
+}
+
+/**
+ * Generic hook function for Stack-relative Store Operations.
+ */
+__attribute__((weak)) void RiscvEmulatorStackRelativeStoreHookEnd(
+    const char *instruction,
+    const RiscvEmulatorState_t *state,
+    const uint8_t rs2num,
+    const void *rs2,
+    const void *sp,
+    const uint32_t imm,
+    const uint32_t memorylocation) {
+}
+
+/**
+ * Generic hook function for Stack-relative Load Operations.
+ */
+__attribute__((weak)) void RiscvEmulatorStackRelativeLoadHookBegin(
+    const char *instruction,
+    const RiscvEmulatorState_t *state,
+    const uint8_t rdnum,
+    const void *rd,
+    const void *sp,
+    const uint32_t imm,
+    const uint32_t memorylocation) {
+}
+
+/**
+ * Generic hook function for Stack-relative Load Operations.
+ */
+__attribute__((weak)) void RiscvEmulatorStackRelativeLoadHookEnd(
+    const char *instruction,
+    const RiscvEmulatorState_t *state,
+    const uint8_t rdnum,
+    const void *rd,
+    const void *sp,
+    const uint32_t imm,
+    const uint32_t memorylocation) {
+}
+
+/**
  * Generic hook function for Branch Operations.
  */
 __attribute__((weak)) void RiscvEmulatorBranchHookBegin(

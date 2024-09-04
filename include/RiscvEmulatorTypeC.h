@@ -23,7 +23,7 @@ typedef struct __attribute__((packed)) {
     uint8_t op : 2;
     uint8_t rs2 : 5;
     uint8_t rd : 5;
-    uint8_t funct4 : 3;
+    uint8_t funct4 : 4;
 } RiscvInstructionTypeCR_t;
 
 /**
@@ -53,6 +53,46 @@ typedef struct __attribute__((packed)) {
 } RiscvInstructionTypeCILui_t;
 
 /**
+ * Compressed Immediate instruction format.
+ *
+ * Valid for lwsp and flwsp.
+ */
+typedef struct __attribute__((packed)) {
+    uint8_t op : 2;
+    uint8_t imm7_6 : 2;
+    uint8_t imm4_2 : 3;
+    uint8_t rd : 5;
+    uint8_t imm5 : 1;
+    uint8_t funct3 : 3;
+} RiscvInstructionTypeCILwsp_t;
+
+/**
+ * Compressed Stack-relative Store instruction format.
+ *
+ * Valid for swsp and fswsp.
+ */
+typedef struct __attribute__((packed)) {
+    uint8_t op : 2;
+    uint8_t rs2 : 5;
+    uint8_t imm7_6 : 2;
+    uint8_t imm5_2 : 4;
+    uint8_t funct3 : 3;
+} RiscvInstructionTypeCSS_t;
+
+/**
+ * Compressed Stack-relative Store instruction format.
+ *
+ * Valid for fsdsp.
+ */
+typedef struct __attribute__((packed)) {
+    uint8_t op : 2;
+    uint8_t rs2 : 5;
+    uint8_t imm8_6 : 3;
+    uint8_t imm5_3 : 3;
+    uint8_t funct3 : 3;
+} RiscvInstructionTypeCSSFsdsp_t;
+
+/**
  * Compressed Store instruction format.
  *
  * Valid for sw, fsw.
@@ -60,10 +100,10 @@ typedef struct __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
     uint8_t op : 2;
     uint8_t rs2p : 3;
-    uint8_t uimm6 : 1;
-    uint8_t uimm2 : 1;
+    uint8_t imm6 : 1;
+    uint8_t imm2 : 1;
     uint8_t rs1p : 3;
-    uint8_t uimm5_3 : 3;
+    uint8_t imm5_3 : 3;
     uint8_t funct3 : 3;
 } RiscvInstructionTypeCS_t;
 
@@ -106,14 +146,53 @@ typedef union {
 
 typedef struct __attribute__((packed)) {
     uint8_t : 2;
-    uint8_t uimm2 : 1;
-    uint8_t uimm5_3 : 3;
-    uint8_t uimm6 : 1;
+    uint8_t imm4_2 : 3;
+    uint8_t imm5 : 1;
+    uint8_t imm7_6 : 2;
+    uint32_t : 24;
+} RiscvInstructionTypeCILwspDecoderImmIn_t;
+
+typedef struct __attribute__((packed)) {
+    uint32_t imm;
+} RiscvInstructionTypeCILwspDecoderImmOut_t;
+
+/**
+ * Union for decoding imm of lwsp and flwsp.
+ */
+typedef union {
+    RiscvInstructionTypeCILwspDecoderImmIn_t input;
+    RiscvInstructionTypeCILwspDecoderImmOut_t output;
+} RiscvInstructionTypeCILwspDecoderImm_u;
+
+typedef struct __attribute__((packed)) {
+    uint8_t imm1_0 : 2;
+    uint8_t imm5_2 : 4;
+    uint8_t imm7_6 : 2;
+    uint32_t imm31_8 : 24;
+} RiscvInstructionTypeCSSDecoderImmIn_t;
+
+typedef struct __attribute__((packed)) {
+    uint32_t imm;
+} RiscvInstructionTypeCSSDecoderImmOut_t;
+
+/**
+ * Union for decoding imm of TypeCSS.
+ */
+typedef union {
+    RiscvInstructionTypeCSSDecoderImmIn_t input;
+    RiscvInstructionTypeCSSDecoderImmOut_t output;
+} RiscvInstructionTypeCSSDecoderImm_u;
+
+typedef struct __attribute__((packed)) {
+    uint8_t : 2;
+    uint8_t imm2 : 1;
+    uint8_t imm5_3 : 3;
+    uint8_t imm6 : 1;
     uint32_t : 25;
 } RiscvInstructionTypeCSDecoderImmIn_t;
 
 typedef struct __attribute__((packed)) {
-    uint32_t uimm;
+    uint32_t imm;
 } RiscvInstructionTypeCSDecoderImmOut_t;
 
 /**

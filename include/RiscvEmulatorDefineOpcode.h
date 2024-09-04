@@ -40,6 +40,8 @@ SPDX-License-Identifier: Apache-2.0
 #define OPCODE16_FLWSP        0b01110
 #define OPCODE16_JALR_MV_ADD  0b10010
 #define OPCODE16_FSDSP        0b10110
+#define OPCODE16_SWSP         0b11010
+#define OPCODE16_FSWSP        0b11110
 
 #endif
 

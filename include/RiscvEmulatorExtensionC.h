@@ -141,6 +141,62 @@ static inline void RiscvEmulatorC_LUI(
 }
 
 /**
+ * Load memorylocation (*sp + imm) into rd.
+ */
+static inline void RiscvEmulatorC_LWSP(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum __attribute__((unused)),
+    void *rd,
+    void *sp,
+    const uint32_t imm) {
+
+    uint32_t memorylocation = *(int32_t *)sp + imm;
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorStackRelativeLoadHookBegin("c.lwsp", state, rdnum, rd, sp, imm, memorylocation);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
+    RiscvEmulatorLoad(memorylocation, rd, sizeof(uint32_t));
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorStackRelativeLoadHookEnd("c.lwsp", state, rdnum, rd, sp, imm, memorylocation);
+#endif
+}
+
+/**
+ * rd = rs2
+ */
+static inline void RiscvEmulatorC_MV(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum __attribute__((unused)),
+    void *rd,
+    const uint8_t rs2num __attribute__((unused)),
+    void *rs2) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorRegRegHookBegin("c.mv", state, rdnum, rd, rs2num, rs2);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
+    *(int32_t *)rd = *(int32_t *)rs2;
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorRegRegHookEnd("c.mv", state, rdnum, rd, rs2num, rs2);
+#endif
+}
+
+/**
  * rd = rd + rs2
  */
 static inline void RiscvEmulatorC_ADD(
@@ -168,6 +224,31 @@ static inline void RiscvEmulatorC_ADD(
 }
 
 /**
+ * Store rs2 to memorylocation (*sp + imm)
+ */
+static inline void RiscvEmulatorC_SWSP(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rs2num __attribute__((unused)),
+    void *rs2,
+    void *sp,
+    const uint32_t imm) {
+
+    uint32_t memorylocation = *(int32_t *)sp + imm;
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorStackRelativeStoreHookBegin("c.swsp", state, rs2num, rs2, sp, imm, memorylocation);
+#endif
+
+    RiscvEmulatorStore(memorylocation, rs2, sizeof(uint32_t));
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorStackRelativeStoreHookEnd("c.swsp", state, rs2num, rs2, sp, imm, memorylocation);
+#endif
+}
+
+/**
  * Process compressed opcodes.
  */
 static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
@@ -183,6 +264,7 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
     void *rd = 0;
     void *rs1 = 0;
     void *rs2 = 0;
+    void *sp = &state->registers.symbolic.sp;
 
     // Whenever possible, combine decoding instruction bits for multiple instructions.
     switch (opfunct3) {
@@ -204,15 +286,34 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
         }
         case OPCODE16_SW:
         case OPCODE16_FSW: {
-
             RiscvInstructionTypeCSDecoderImm_u RiscvInstructionTypeCSDecoderImm = {0};
-            RiscvInstructionTypeCSDecoderImm.input.uimm2 = state->instruction.cstype.uimm2;
-            RiscvInstructionTypeCSDecoderImm.input.uimm5_3 = state->instruction.cstype.uimm5_3;
-            RiscvInstructionTypeCSDecoderImm.input.uimm6 = state->instruction.cstype.uimm6;
-            imm = RiscvInstructionTypeCSDecoderImm.output.uimm;
+            RiscvInstructionTypeCSDecoderImm.input.imm2 = state->instruction.cstype.imm2;
+            RiscvInstructionTypeCSDecoderImm.input.imm5_3 = state->instruction.cstype.imm5_3;
+            RiscvInstructionTypeCSDecoderImm.input.imm6 = state->instruction.cstype.imm6;
+            imm = RiscvInstructionTypeCSDecoderImm.output.imm;
 
             rs1num = state->instruction.cstype.rs1p + 8;
             rs2num = state->instruction.cstype.rs2p + 8;
+            break;
+        }
+        case OPCODE16_LWSP:
+        case OPCODE16_FLWSP: {
+            RiscvInstructionTypeCILwspDecoderImm_u RiscvInstructionTypeCILwspDecoderImm = {0};
+            RiscvInstructionTypeCILwspDecoderImm.input.imm4_2 = state->instruction.cilwsp.imm4_2;
+            RiscvInstructionTypeCILwspDecoderImm.input.imm5 = state->instruction.cilwsp.imm5;
+            RiscvInstructionTypeCILwspDecoderImm.input.imm7_6 = state->instruction.cilwsp.imm7_6;
+            imm = RiscvInstructionTypeCILwspDecoderImm.output.imm;
+            rdnum = state->instruction.cilwsp.rd;
+            break;
+        }
+        case OPCODE16_SWSP:
+        case OPCODE16_FSWSP: {
+            RiscvInstructionTypeCSSDecoderImm_u RiscvInstructionTypeCSSDecoderImm = {0};
+            RiscvInstructionTypeCSSDecoderImm.input.imm5_2 = state->instruction.csstype.imm5_2;
+            RiscvInstructionTypeCSSDecoderImm.input.imm7_6 = state->instruction.csstype.imm7_6;
+            imm = RiscvInstructionTypeCSSDecoderImm.output.imm;
+
+            rs2num = state->instruction.csstype.rs2;
             break;
         }
     }
@@ -289,7 +390,7 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             state->trapflags.bits.illegalinstruction = 1;
             break;
         case OPCODE16_LWSP:
-            state->trapflags.bits.illegalinstruction = 1;
+            RiscvEmulatorC_LWSP(state, rdnum, rd, sp, imm);
             break;
         case OPCODE16_FLWSP:
             state->trapflags.bits.illegalinstruction = 1;
@@ -301,8 +402,12 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             rs2 = &state->registers.array.location[rs2num];
 
             if (state->instruction.crtype.funct4 == FUNCT4_MV) {
-                // jr, mv
-                state->trapflags.bits.illegalinstruction = 1;
+                if (rs2num == 0) {
+                    // jr
+                    state->trapflags.bits.illegalinstruction = 1;
+                } else {
+                    RiscvEmulatorC_MV(state, rdnum, rd, rs2num, rs2);
+                }
             } else /* FUNCT4_ADD */
             {
                 if (rdnum == 0 &&
@@ -318,6 +423,12 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             }
             break;
         case OPCODE16_FSDSP:
+            state->trapflags.bits.illegalinstruction = 1;
+            break;
+        case OPCODE16_SWSP:
+            RiscvEmulatorC_SWSP(state, rs2num, rs2, sp, imm);
+            break;
+        case OPCODE16_FSWSP:
             state->trapflags.bits.illegalinstruction = 1;
             break;
         default:
