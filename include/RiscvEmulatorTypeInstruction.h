@@ -43,6 +43,7 @@ typedef union {
     RiscvInstructionTypeCILwsp_t cilwsp;
     RiscvInstructionTypeCSS_t csstype;
     RiscvInstructionTypeCSSFsdsp_t cssfsdsp;
+    RiscvInstructionTypeCIW_t ciwtype;
     RiscvInstructionTypeCS_t cstype;
 #endif
 

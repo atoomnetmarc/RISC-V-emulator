@@ -80,6 +80,21 @@ typedef struct __attribute__((packed)) {
 } RiscvInstructionTypeCSS_t;
 
 /**
+ * Compressed Wide Immediate instruction format.
+ *
+ * Valid for addi4spn.
+ */
+typedef struct __attribute__((packed)) {
+    uint8_t op : 2;
+    uint8_t rdp : 3;
+    uint8_t imm3 : 1;
+    uint8_t imm2 : 1;
+    uint8_t imm9_6 : 4;
+    uint8_t imm5_4 : 2;
+    uint8_t funct3 : 3;
+} RiscvInstructionTypeCIW_t;
+
+/**
  * Compressed Stack-relative Store instruction format.
  *
  * Valid for fsdsp.
@@ -182,6 +197,27 @@ typedef union {
     RiscvInstructionTypeCSSDecoderImmIn_t input;
     RiscvInstructionTypeCSSDecoderImmOut_t output;
 } RiscvInstructionTypeCSSDecoderImm_u;
+
+typedef struct __attribute__((packed)) {
+    uint8_t imm1_0 : 2;
+    uint8_t imm2 : 1;
+    uint8_t imm3 : 1;
+    uint8_t imm5_4 : 2;
+    uint8_t imm9_6 : 4;
+    uint32_t imm31_10 : 22;
+} RiscvInstructionTypeCIWDecoderImmIn_t;
+
+typedef struct __attribute__((packed)) {
+    uint32_t imm;
+} RiscvInstructionTypeCIWDecoderImmOut_t;
+
+/**
+ * Union for decoding imm of TypeCIW.
+ */
+typedef union {
+    RiscvInstructionTypeCIWDecoderImmIn_t input;
+    RiscvInstructionTypeCIWDecoderImmOut_t output;
+} RiscvInstructionTypeCIWDecoderImm_u;
 
 typedef struct __attribute__((packed)) {
     uint8_t : 2;

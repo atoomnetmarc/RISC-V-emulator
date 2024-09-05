@@ -19,6 +19,33 @@ SPDX-License-Identifier: Apache-2.0
 #include "RiscvEmulatorType.h"
 
 /**
+ * rd = (*sp + imm)
+ */
+static inline void RiscvEmulatorC_ADDI4SPN(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum __attribute__((unused)),
+    void *rd,
+    void *sp,
+    const int32_t imm) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorRegImmHookBegin("c.addi4spn", state, rdnum, rd, imm);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
+    *(int32_t *)rd = *(int32_t *)sp + imm;
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorRegImmHookEnd("c.addi4spn", state, rdnum, rd, imm);
+#endif
+}
+
+/**
  * Store word in rs2 to memory.
  */
 static inline void RiscvEmulatorC_SW(
@@ -268,6 +295,17 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
 
     // Whenever possible, combine decoding instruction bits for multiple instructions.
     switch (opfunct3) {
+        case OPCODE16_ADDI4SPN: {
+            RiscvInstructionTypeCIWDecoderImm_u RiscvInstructionTypeCIWDecoderImm = {0};
+            RiscvInstructionTypeCIWDecoderImm.input.imm2 = state->instruction.ciwtype.imm2;
+            RiscvInstructionTypeCIWDecoderImm.input.imm3 = state->instruction.ciwtype.imm3;
+            RiscvInstructionTypeCIWDecoderImm.input.imm5_4 = state->instruction.ciwtype.imm5_4;
+            RiscvInstructionTypeCIWDecoderImm.input.imm9_6 = state->instruction.ciwtype.imm9_6;
+            imm = RiscvInstructionTypeCIWDecoderImm.output.imm;
+
+            rdnum = state->instruction.ciwtype.rdp + 8;
+            break;
+        }
         case OPCODE16_ADDI:
         case OPCODE16_LI: {
             RiscvInstructionTypeCIDecoderImm_u RiscvInstructionTypeCIDecoderImm = {0};
@@ -330,7 +368,11 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
 
     switch (opfunct3) {
         case OPCODE16_ADDI4SPN:
-            state->trapflags.bits.illegalinstruction = 1;
+            if (imm != 0) {
+                RiscvEmulatorC_ADDI4SPN(state, rdnum, rd, sp, imm);
+            } else {
+                state->trapflags.bits.illegalinstruction = 1;
+            }
             break;
         case OPCODE16_FLD:
             state->trapflags.bits.illegalinstruction = 1;
