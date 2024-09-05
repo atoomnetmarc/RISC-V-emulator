@@ -19,29 +19,37 @@ SPDX-License-Identifier: Apache-2.0
 #include "RiscvEmulatorType.h"
 
 /**
- * rd = (*sp + imm)
+ * rd = (*sp + nzuimm)
  */
 static inline void RiscvEmulatorC_ADDI4SPN(
     RiscvEmulatorState_t *state __attribute__((unused)),
     const uint8_t rdnum __attribute__((unused)),
     void *rd,
     void *sp,
-    const int32_t imm) {
+    const uint16_t nzuimm) {
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
-    RiscvEmulatorRegImmHookBegin("c.addi4spn", state, rdnum, rd, imm);
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "c.addi4spn";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.imm = nzuimm;
+    hc.immlength = sizeof(nzuimm);
+    hc.immname = "nzuimm";
+    RiscvEmulatorHook(state, &hc);
 #endif
 
     if (rdnum == 0) {
         return;
     }
 
-    *(int32_t *)rd = *(int32_t *)sp + imm;
+    *(int32_t *)rd = *(int32_t *)sp + nzuimm;
 
 #if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
-    RiscvEmulatorRegImmHookEnd("c.addi4spn", state, rdnum, rd, imm);
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
 #endif
 }
 
@@ -54,15 +62,27 @@ static inline void RiscvEmulatorC_SW(
     void *rs1,
     const uint8_t rs2num __attribute__((unused)),
     void *rs2,
-    const int32_t imm) {
+    const uint8_t offset) {
 
     uint8_t length = sizeof(uint32_t);
 
-    uint32_t memorylocation = *(int32_t *)rs1 + imm;
+    uint32_t memorylocation = *(int32_t *)rs1 + offset;
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
-    RiscvEmulatorStoreHookBegin("c.sw", state, rs1num, rs1, rs2num, rs2, imm, memorylocation, length);
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "c.sw";
+    hc.hook = HOOK_BEGIN;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    hc.rs2num = rs2num;
+    hc.rs2 = rs2;
+    hc.imm = offset;
+    hc.immlength = sizeof(offset);
+    hc.immname = "offset";
+    hc.memorylocation = memorylocation;
+    hc.length = length;
+    RiscvEmulatorHook(state, &hc);
 #endif
 
 #if (RVE_E_ZICSR == 1)
@@ -74,34 +94,43 @@ static inline void RiscvEmulatorC_SW(
     RiscvEmulatorStore(memorylocation, rs2, length);
 
 #if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
-    RiscvEmulatorStoreHookEnd("c.sw", state, rs1num, rs1, rs2num, rs2, imm, memorylocation, length);
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
 #endif
 }
 
 /**
- * rd = rd + imm
+ * rd = rd + nzimm
  */
 static inline void RiscvEmulatorC_ADDI(
     RiscvEmulatorState_t *state __attribute__((unused)),
     const uint8_t rdnum __attribute__((unused)),
     void *rd,
-    const int32_t imm) {
+    const int8_t nzimm) {
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
-    RiscvEmulatorRegImmHookBegin("c.addi", state, rdnum, rd, imm);
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "c.addi";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.imm = nzimm;
+    hc.immlength = sizeof(nzimm);
+    hc.immissigned = 1;
+    hc.immname = "nzimm";
+    RiscvEmulatorHook(state, &hc);
 #endif
 
     if (rdnum == 0) {
         return;
     }
 
-    *(int32_t *)rd = *(int32_t *)rd + imm;
+    *(int32_t *)rd = *(int32_t *)rd + nzimm;
 
 #if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
-    RiscvEmulatorRegImmHookEnd("c.addi", state, rdnum, rd, imm);
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
 #endif
 }
 
@@ -116,7 +145,15 @@ static inline void RiscvEmulatorC_LI(
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
-    RiscvEmulatorRegImmHookBegin("c.li", state, rdnum, rd, imm);
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "c.li";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.imm = imm;
+    hc.immlength = sizeof(imm);
+    hc.immissigned = 1;
+    RiscvEmulatorHook(state, &hc);
 #endif
 
     if (rdnum == 0) {
@@ -126,8 +163,8 @@ static inline void RiscvEmulatorC_LI(
     *(int32_t *)rd = imm;
 
 #if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
-    RiscvEmulatorRegImmHookEnd("c.li", state, rdnum, rd, imm);
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
 #endif
 }
 
@@ -142,17 +179,19 @@ static inline void RiscvEmulatorC_LUI(
     RiscvInstructionTypeCILuiDecoderImm_u decoderimm = {0};
     decoderimm.input.imm16_12 = state->instruction.cilui.imm16_12;
     decoderimm.input.imm17 = state->instruction.cilui.imm17;
-
-    // Sign extend.
-    if (decoderimm.input.imm17 == 1) {
-        decoderimm.input.imm31_18 = 0x3FFF;
-    }
-
     int32_t imm = decoderimm.output.imm;
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
-    RiscvEmulatorRegImmHookBegin("c.lui", state, rdnum, rd, imm);
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "c.lui";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.imm = imm;
+    hc.immissigned = 1;
+    hc.immname = "nzimm";
+    RiscvEmulatorHook(state, &hc);
 #endif
 
     if (rdnum == 0) {
@@ -162,26 +201,35 @@ static inline void RiscvEmulatorC_LUI(
     *(int32_t *)rd = imm;
 
 #if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
-    RiscvEmulatorRegImmHookEnd("c.lui", state, rdnum, rd, imm);
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
 #endif
 }
 
 /**
- * Load memorylocation (*sp + imm) into rd.
+ * Load memorylocation (*sp + offset) into rd.
  */
 static inline void RiscvEmulatorC_LWSP(
     RiscvEmulatorState_t *state __attribute__((unused)),
     const uint8_t rdnum __attribute__((unused)),
     void *rd,
     void *sp,
-    const uint32_t imm) {
+    const uint8_t offset) {
 
-    uint32_t memorylocation = *(int32_t *)sp + imm;
+    uint32_t memorylocation = *(int32_t *)sp + offset;
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
-    RiscvEmulatorStackRelativeLoadHookBegin("c.lwsp", state, rdnum, rd, sp, imm, memorylocation);
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "c.lwsp";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.imm = offset;
+    hc.immlength = sizeof(offset);
+    hc.immname = "offset";
+    hc.memorylocation = memorylocation;
+    RiscvEmulatorHook(state, &hc);
 #endif
 
     if (rdnum == 0) {
@@ -191,8 +239,8 @@ static inline void RiscvEmulatorC_LWSP(
     RiscvEmulatorLoad(memorylocation, rd, sizeof(uint32_t));
 
 #if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
-    RiscvEmulatorStackRelativeLoadHookEnd("c.lwsp", state, rdnum, rd, sp, imm, memorylocation);
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
 #endif
 }
 
@@ -208,7 +256,14 @@ static inline void RiscvEmulatorC_MV(
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
-    RiscvEmulatorRegRegHookBegin("c.mv", state, rdnum, rd, rs2num, rs2);
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "c.mv";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs2num = rs2num;
+    hc.rs2 = rs2;
+    RiscvEmulatorHook(state, &hc);
 #endif
 
     if (rdnum == 0) {
@@ -218,8 +273,8 @@ static inline void RiscvEmulatorC_MV(
     *(int32_t *)rd = *(int32_t *)rs2;
 
 #if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
-    RiscvEmulatorRegRegHookEnd("c.mv", state, rdnum, rd, rs2num, rs2);
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
 #endif
 }
 
@@ -235,7 +290,14 @@ static inline void RiscvEmulatorC_ADD(
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
-    RiscvEmulatorRegRegHookBegin("c.add", state, rdnum, rd, rs2num, rs2);
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "c.add";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs2num = rs2num;
+    hc.rs2 = rs2;
+    RiscvEmulatorHook(state, &hc);
 #endif
 
     if (rdnum == 0) {
@@ -245,33 +307,42 @@ static inline void RiscvEmulatorC_ADD(
     *(int32_t *)rd = *(int32_t *)rd + *(int32_t *)rs2;
 
 #if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
-    RiscvEmulatorRegRegHookEnd("c.add", state, rdnum, rd, rs2num, rs2);
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
 #endif
 }
 
 /**
- * Store rs2 to memorylocation (*sp + imm)
+ * Store rs2 to memorylocation (*sp + offset)
  */
 static inline void RiscvEmulatorC_SWSP(
     RiscvEmulatorState_t *state __attribute__((unused)),
     const uint8_t rs2num __attribute__((unused)),
     void *rs2,
     void *sp,
-    const uint32_t imm) {
+    const uint8_t offset) {
 
-    uint32_t memorylocation = *(int32_t *)sp + imm;
+    uint32_t memorylocation = *(int32_t *)sp + offset;
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
-    RiscvEmulatorStackRelativeStoreHookBegin("c.swsp", state, rs2num, rs2, sp, imm, memorylocation);
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "c.swsp";
+    hc.hook = HOOK_BEGIN;
+    hc.rs2num = rs2num;
+    hc.rs2 = rs2;
+    hc.imm = offset;
+    hc.immlength = sizeof(offset);
+    hc.immname = "offset";
+    hc.memorylocation = memorylocation;
+    RiscvEmulatorHook(state, &hc);
 #endif
 
     RiscvEmulatorStore(memorylocation, rs2, sizeof(uint32_t));
 
 #if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
-    RiscvEmulatorStackRelativeStoreHookEnd("c.swsp", state, rs2num, rs2, sp, imm, memorylocation);
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
 #endif
 }
 
@@ -311,11 +382,6 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             RiscvInstructionTypeCIDecoderImm_u RiscvInstructionTypeCIDecoderImm = {0};
             RiscvInstructionTypeCIDecoderImm.input.imm4_0 = state->instruction.citype.imm4_0;
             RiscvInstructionTypeCIDecoderImm.input.imm5 = state->instruction.citype.imm5;
-
-            // Sign extend 6 bits to 32.
-            if (RiscvInstructionTypeCIDecoderImm.input.imm5 == 1) {
-                RiscvInstructionTypeCIDecoderImm.input.imm31_6 = 0x3FFFFFF;
-            }
 
             imm = RiscvInstructionTypeCIDecoderImm.output.imm;
 

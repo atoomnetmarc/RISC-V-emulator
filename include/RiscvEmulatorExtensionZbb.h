@@ -29,11 +29,30 @@ static inline void RiscvEmulatorANDN(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "andn";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    hc.rs2num = rs2num;
+    hc.rs2 = rs2;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
     if (rdnum == 0) {
         return;
     }
 
     *(uint32_t *)rd = *(uint32_t *)rs1 & ~*(uint32_t *)rs2;
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 /**
@@ -48,11 +67,30 @@ static inline void RiscvEmulatorORN(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "orn";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    hc.rs2num = rs2num;
+    hc.rs2 = rs2;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
     if (rdnum == 0) {
         return;
     }
 
     *(uint32_t *)rd = *(uint32_t *)rs1 | ~*(uint32_t *)rs2;
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 /**
@@ -67,11 +105,30 @@ static inline void RiscvEmulatorXNOR(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "xnor";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    hc.rs2num = rs2num;
+    hc.rs2 = rs2;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
     if (rdnum == 0) {
         return;
     }
 
     *(uint32_t *)rd = ~(*(uint32_t *)rs1 ^ *(uint32_t *)rs2);
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 /**
@@ -84,20 +141,37 @@ static inline void RiscvEmulatorCLZ(
     const uint8_t rs1num __attribute__((unused)),
     const void *rs1) {
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "clz";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
     if (rdnum == 0) {
         return;
     }
 
-    uint8_t leadingZeros = 32;
+    uint8_t leadingzeros = 32;
 
     for (int8_t i = 31; i >= 0; i--) {
         if (*(uint32_t *)rs1 & (1 << i)) {
-            leadingZeros = 31 - i;
+            leadingzeros = 31 - i;
             break;
         }
     }
 
-    *(uint32_t *)rd = leadingZeros;
+    *(uint32_t *)rd = leadingzeros;
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 /**
@@ -110,20 +184,37 @@ static inline void RiscvEmulatorCTZ(
     const uint8_t rs1num __attribute__((unused)),
     const void *rs1) {
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "ctz";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
     if (rdnum == 0) {
         return;
     }
 
-    uint8_t trailingZeros = 32;
+    uint8_t trailingzeros = 32;
 
     for (int8_t i = 0; i <= 31; i++) {
         if (*(uint32_t *)rs1 & (1 << i)) {
-            trailingZeros = i;
+            trailingzeros = i;
             break;
         }
     }
 
-    *(uint32_t *)rd = trailingZeros;
+    *(uint32_t *)rd = trailingzeros;
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 /**
@@ -136,19 +227,36 @@ static inline void RiscvEmulatorCPOP(
     const uint8_t rs1num __attribute__((unused)),
     const void *rs1) {
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "cpop";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
     if (rdnum == 0) {
         return;
     }
 
-    uint8_t setBits = 0;
+    uint8_t setbits = 0;
 
     for (int8_t i = 0; i <= 31; i++) {
         if (*(uint32_t *)rs1 & (1 << i)) {
-            setBits++;
+            setbits++;
         }
     }
 
-    *(uint32_t *)rd = setBits;
+    *(uint32_t *)rd = setbits;
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 /**
@@ -163,6 +271,20 @@ static inline void RiscvEmulatorMAX(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "max";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    hc.rs2num = rs2num;
+    hc.rs2 = rs2;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
     if (rdnum == 0) {
         return;
     }
@@ -172,6 +294,11 @@ static inline void RiscvEmulatorMAX(
     } else {
         *(int32_t *)rd = *(int32_t *)rs2;
     }
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 /**
@@ -186,6 +313,20 @@ static inline void RiscvEmulatorMAXU(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "maxu";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    hc.rs2num = rs2num;
+    hc.rs2 = rs2;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
     if (rdnum == 0) {
         return;
     }
@@ -195,6 +336,11 @@ static inline void RiscvEmulatorMAXU(
     } else {
         *(uint32_t *)rd = *(uint32_t *)rs2;
     }
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 /**
@@ -209,6 +355,20 @@ static inline void RiscvEmulatorMIN(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "min";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    hc.rs2num = rs2num;
+    hc.rs2 = rs2;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
     if (rdnum == 0) {
         return;
     }
@@ -218,6 +378,11 @@ static inline void RiscvEmulatorMIN(
     } else {
         *(int32_t *)rd = *(int32_t *)rs2;
     }
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 /**
@@ -232,6 +397,20 @@ static inline void RiscvEmulatorMINU(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "minu";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    hc.rs2num = rs2num;
+    hc.rs2 = rs2;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
     if (rdnum == 0) {
         return;
     }
@@ -241,57 +420,113 @@ static inline void RiscvEmulatorMINU(
     } else {
         *(uint32_t *)rd = *(uint32_t *)rs2;
     }
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 /**
  * Sign-extend byte.
  */
-static inline void RiscvEmulatorSEXTB(
+static inline void RiscvEmulatorSEXT_B(
     RiscvEmulatorState_t *state __attribute__((unused)),
     const uint8_t rdnum,
     void *rd,
     const uint8_t rs1num __attribute__((unused)),
     const void *rs1) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "sext.b";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    RiscvEmulatorHook(state, &hc);
+#endif
 
     if (rdnum == 0) {
         return;
     }
 
     *(int32_t *)rd = *(int8_t *)rs1;
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 /**
  * Sign-extend halfword.
  */
-static inline void RiscvEmulatorSEXTH(
+static inline void RiscvEmulatorSEXT_H(
     RiscvEmulatorState_t *state __attribute__((unused)),
     const uint8_t rdnum,
     void *rd,
     const uint8_t rs1num __attribute__((unused)),
     const void *rs1) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "sext.h";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    RiscvEmulatorHook(state, &hc);
+#endif
 
     if (rdnum == 0) {
         return;
     }
 
     *(int32_t *)rd = *(int16_t *)rs1;
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 /**
  * Zero-extend halfword.
  */
-static inline void RiscvEmulatorZEXTH(
+static inline void RiscvEmulatorZEXT_H(
     RiscvEmulatorState_t *state __attribute__((unused)),
     const uint8_t rdnum,
     void *rd,
     const uint8_t rs1num __attribute__((unused)),
     const void *rs1) {
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "zext.h";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
     if (rdnum == 0) {
         return;
     }
 
     *(uint32_t *)rd = *(uint16_t *)rs1;
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 /**
@@ -306,6 +541,20 @@ static inline void RiscvEmulatorROL(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "rol";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    hc.rs2num = rs2num;
+    hc.rs2 = rs2;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
     if (rdnum == 0) {
         return;
     }
@@ -313,6 +562,11 @@ static inline void RiscvEmulatorROL(
     *(uint32_t *)rd =
         *(uint32_t *)rs1 << *(uint32_t *)rs2 |
         *(uint32_t *)rs1 >> (32 - *(uint32_t *)rs2);
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 /**
@@ -327,6 +581,20 @@ static inline void RiscvEmulatorROR(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "ror";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    hc.rs2num = rs2num;
+    hc.rs2 = rs2;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
     if (rdnum == 0) {
         return;
     }
@@ -334,6 +602,11 @@ static inline void RiscvEmulatorROR(
     *(uint32_t *)rd =
         *(uint32_t *)rs1 >> *(uint32_t *)rs2 |
         *(uint32_t *)rs1 << (32 - *(uint32_t *)rs2);
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 /**
@@ -347,6 +620,21 @@ static inline void RiscvEmulatorRORI(
     const void *rs1,
     const uint8_t shamt) {
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "rori";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    hc.imm = shamt;
+    hc.immlength = sizeof(shamt);
+    hc.immname = "shamt";
+    RiscvEmulatorHook(state, &hc);
+#endif
+
     if (rdnum == 0) {
         return;
     }
@@ -354,17 +642,34 @@ static inline void RiscvEmulatorRORI(
     *(uint32_t *)rd =
         *(uint32_t *)rs1 >> shamt |
         *(uint32_t *)rs1 << (32 - shamt);
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 /**
  * Bitwise OR-Combine, byte granule.
  */
-static inline void RiscvEmulatorORCB(
+static inline void RiscvEmulatorORC_B(
     RiscvEmulatorState_t *state __attribute__((unused)),
     const uint8_t rdnum,
     void *rd,
     const uint8_t rs1num __attribute__((unused)),
     const void *rs1) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "orc.b";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    RiscvEmulatorHook(state, &hc);
+#endif
 
     if (rdnum == 0) {
         return;
@@ -377,6 +682,11 @@ static inline void RiscvEmulatorORCB(
             ((uint8_t *)rd)[i] = UINT8_MAX;
         }
     }
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 /**
@@ -389,6 +699,18 @@ static inline void RiscvEmulatorREV8(
     const uint8_t rs1num __attribute__((unused)),
     const void *rs1) {
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "rev8";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
     if (rdnum == 0) {
         return;
     }
@@ -400,6 +722,11 @@ static inline void RiscvEmulatorREV8(
     }
 
     *(uint32_t *)rd = temp;
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 #endif

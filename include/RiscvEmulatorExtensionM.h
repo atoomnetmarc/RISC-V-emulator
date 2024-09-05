@@ -28,11 +28,30 @@ static inline void RiscvEmulatorMUL(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "mul";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    hc.rs2num = rs2num;
+    hc.rs2 = rs2;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
     if (rdnum == 0) {
         return;
     }
 
     *(uint32_t *)rd = (*(uint32_t *)rs1 * *(uint32_t *)rs2);
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 /**
@@ -47,12 +66,31 @@ static inline void RiscvEmulatorMULH(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "mulh";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    hc.rs2num = rs2num;
+    hc.rs2 = rs2;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
     if (rdnum == 0) {
         return;
     }
 
     int64_t result = (int64_t)(*(int32_t *)rs1 * (int64_t) * (int32_t *)rs2);
     *(int32_t *)rd = (result >> 32);
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 /**
@@ -67,12 +105,31 @@ static inline void RiscvEmulatorMULHSU(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "mulhsu";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    hc.rs2num = rs2num;
+    hc.rs2 = rs2;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
     if (rdnum == 0) {
         return;
     }
 
     int64_t result = (int64_t)(*(int32_t *)rs1 * (uint64_t) * (uint32_t *)rs2);
     *(int32_t *)rd = (result >> 32);
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 /**
@@ -87,12 +144,31 @@ static inline void RiscvEmulatorMULHU(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "mulhu";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    hc.rs2num = rs2num;
+    hc.rs2 = rs2;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
     if (rdnum == 0) {
         return;
     }
 
     uint64_t result = (uint64_t)(*(uint32_t *)rs1 * (uint64_t) * (uint32_t *)rs2);
     *(uint32_t *)rd = (result >> 32);
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 /**
@@ -107,6 +183,20 @@ static inline void RiscvEmulatorDIV(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "div";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    hc.rs2num = rs2num;
+    hc.rs2 = rs2;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
     if (rdnum == 0) {
         return;
     }
@@ -120,6 +210,11 @@ static inline void RiscvEmulatorDIV(
     } else {
         *(int32_t *)rd = (*(int32_t *)rs1 / *(int32_t *)rs2);
     }
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 /**
@@ -134,6 +229,20 @@ static inline void RiscvEmulatorDIVU(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "divu";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    hc.rs2num = rs2num;
+    hc.rs2 = rs2;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
     if (rdnum == 0) {
         return;
     }
@@ -144,6 +253,11 @@ static inline void RiscvEmulatorDIVU(
     } else {
         *(uint32_t *)rd = (*(uint32_t *)rs1 / *(uint32_t *)rs2);
     }
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 /**
@@ -158,6 +272,20 @@ static inline void RiscvEmulatorREM(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "rem";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    hc.rs2num = rs2num;
+    hc.rs2 = rs2;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
     if (rdnum == 0) {
         return;
     }
@@ -171,6 +299,11 @@ static inline void RiscvEmulatorREM(
     } else {
         *(int32_t *)rd = (*(int32_t *)rs1 % *(int32_t *)rs2);
     }
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 /**
@@ -185,6 +318,20 @@ static inline void RiscvEmulatorREMU(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "remu";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    hc.rs2num = rs2num;
+    hc.rs2 = rs2;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
     if (rdnum == 0) {
         return;
     }
@@ -195,6 +342,11 @@ static inline void RiscvEmulatorREMU(
     } else {
         *(uint32_t *)rd = (*(uint32_t *)rs1 % *(uint32_t *)rs2);
     }
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 #endif

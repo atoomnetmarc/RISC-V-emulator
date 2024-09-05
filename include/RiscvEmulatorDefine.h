@@ -27,5 +27,6 @@ SPDX-License-Identifier: Apache-2.0
 #include "RiscvEmulatorDefineOpcode.h"
 #include "RiscvEmulatorDefineRType.h"
 #include "RiscvEmulatorDefineSType.h"
+#include "RiscvEmulatorDefineHook.h"
 
 #endif

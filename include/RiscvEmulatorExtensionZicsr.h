@@ -24,10 +24,12 @@ SPDX-License-Identifier: Apache-2.0
  * Return from machine mode.
  */
 static inline void RiscvEmulatorMRET(RiscvEmulatorState_t *state) {
-
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
-    RiscvEmulatorMretHookBegin(state);
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "mret";
+    hc.hook = HOOK_BEGIN;
+    RiscvEmulatorHook(state, &hc);
 #endif
 
     // TODO: Determine what the new privilege mode will be according to the values of MPP and MPV in mstatus.
@@ -43,8 +45,8 @@ static inline void RiscvEmulatorMRET(RiscvEmulatorState_t *state) {
     state->programcounternext = state->csr.mepc;
 
 #if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
-    RiscvEmulatorMretHookEnd(state);
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
 #endif
 }
 
@@ -140,7 +142,16 @@ static inline void RiscvEmulatorCSRRW(
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
-    RiscvEmulatorCSRR_HookBegin("csrrw", state, rdnum, rd, rs1num, rs1, csrnum, csr);
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "csrrw";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    hc.csrnum = csrnum;
+    hc.csr = csr;
+    RiscvEmulatorHook(state, &hc);
 #endif
 
     uint32_t originalvaluers1 = *(uint32_t *)rs1;
@@ -153,8 +164,8 @@ static inline void RiscvEmulatorCSRRW(
     *(uint32_t *)csr = originalvaluers1;
 
 #if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
-    RiscvEmulatorCSRR_HookEnd("csrrw", state, rdnum, rd, rs1num, rs1, csrnum, csr);
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
 #endif
 }
 
@@ -169,12 +180,30 @@ static inline void RiscvEmulatorCSRRWI(
     const uint16_t csrnum __attribute__((unused)),
     const void *csr) {
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "csrrwi";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.imm = imm;
+    hc.csrnum = csrnum;
+    hc.csr = csr;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
     // Read old value into destination register when requested.
     if (rdnum != 0) {
         *(uint32_t *)rd = *(uint32_t *)csr;
     }
 
     *(uint32_t *)csr = imm;
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 /**
@@ -193,7 +222,16 @@ static inline void RiscvEmulatorCSRRS(
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
-    RiscvEmulatorCSRR_HookBegin("csrrs", state, rdnum, rd, rs1num, rs1, csrnum, csr);
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "csrrs";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    hc.csrnum = csrnum;
+    hc.csr = csr;
+    RiscvEmulatorHook(state, &hc);
 #endif
 
     if (rdnum != 0) {
@@ -206,8 +244,8 @@ static inline void RiscvEmulatorCSRRS(
     }
 
 #if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
-    RiscvEmulatorCSRR_HookEnd("csrrs", state, rdnum, rd, rs1num, rs1, csrnum, csr);
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
 #endif
 }
 
@@ -222,6 +260,19 @@ static inline void RiscvEmulatorCSRRSI(
     const uint16_t csrnum __attribute__((unused)),
     const void *csr) {
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "csrrsi";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.imm = imm;
+    hc.csrnum = csrnum;
+    hc.csr = csr;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
     if (rdnum != 0) {
         *(uint32_t *)rd = *(uint32_t *)csr;
     }
@@ -230,6 +281,11 @@ static inline void RiscvEmulatorCSRRSI(
     if (imm != 0) {
         *(uint32_t *)csr |= imm;
     }
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 /**
@@ -248,7 +304,16 @@ static inline void RiscvEmulatorCSRRC(
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
-    RiscvEmulatorCSRR_HookBegin("csrrc", state, rdnum, rd, rs1num, rs1, csrnum, csr);
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "csrrc";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    hc.csrnum = csrnum;
+    hc.csr = csr;
+    RiscvEmulatorHook(state, &hc);
 #endif
 
     if (rdnum != 0) {
@@ -261,8 +326,8 @@ static inline void RiscvEmulatorCSRRC(
     }
 
 #if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
-    RiscvEmulatorCSRR_HookEnd("csrrc", state, rdnum, rd, rs1num, rs1, csrnum, csr);
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
 #endif
 }
 
@@ -277,6 +342,19 @@ static inline void RiscvEmulatorCSRRCI(
     const uint16_t csrnum __attribute__((unused)),
     const void *csr) {
 
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "csrrci";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.imm = imm;
+    hc.csrnum = csrnum;
+    hc.csr = csr;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
     if (rdnum != 0) {
         *(uint32_t *)rd = *(uint32_t *)csr;
     }
@@ -285,6 +363,11 @@ static inline void RiscvEmulatorCSRRCI(
     if (imm != 0) {
         *(uint32_t *)csr &= ~imm;
     }
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
 }
 
 #endif

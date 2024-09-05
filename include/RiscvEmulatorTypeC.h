@@ -125,11 +125,10 @@ typedef struct __attribute__((packed)) {
 typedef struct __attribute__((packed)) {
     uint8_t imm4_0 : 5;
     uint8_t imm5 : 1;
-    uint32_t imm31_6 : 26;
 } RiscvInstructionTypeCIDecoderImmIn_t;
 
 typedef struct __attribute__((packed)) {
-    uint32_t imm;
+    int32_t imm : 6;
 } RiscvInstructionTypeCIDecoderImmOut_t;
 
 /**
@@ -144,11 +143,10 @@ typedef struct __attribute__((packed)) {
     uint16_t : 12;
     uint8_t imm16_12 : 5;
     uint8_t imm17 : 1;
-    uint16_t imm31_18 : 14;
 } RiscvInstructionTypeCILuiDecoderImmIn_t;
 
 typedef struct __attribute__((packed)) {
-    uint32_t imm;
+    int32_t imm : 18;
 } RiscvInstructionTypeCILuiDecoderImmOut_t;
 
 /**
@@ -164,11 +162,10 @@ typedef struct __attribute__((packed)) {
     uint8_t imm4_2 : 3;
     uint8_t imm5 : 1;
     uint8_t imm7_6 : 2;
-    uint32_t : 24;
 } RiscvInstructionTypeCILwspDecoderImmIn_t;
 
 typedef struct __attribute__((packed)) {
-    uint32_t imm;
+    uint8_t imm : 8;
 } RiscvInstructionTypeCILwspDecoderImmOut_t;
 
 /**
@@ -183,11 +180,10 @@ typedef struct __attribute__((packed)) {
     uint8_t imm1_0 : 2;
     uint8_t imm5_2 : 4;
     uint8_t imm7_6 : 2;
-    uint32_t imm31_8 : 24;
 } RiscvInstructionTypeCSSDecoderImmIn_t;
 
 typedef struct __attribute__((packed)) {
-    uint32_t imm;
+    uint8_t imm : 8;
 } RiscvInstructionTypeCSSDecoderImmOut_t;
 
 /**
@@ -204,11 +200,10 @@ typedef struct __attribute__((packed)) {
     uint8_t imm3 : 1;
     uint8_t imm5_4 : 2;
     uint8_t imm9_6 : 4;
-    uint32_t imm31_10 : 22;
 } RiscvInstructionTypeCIWDecoderImmIn_t;
 
 typedef struct __attribute__((packed)) {
-    uint32_t imm;
+    uint16_t imm : 10;
 } RiscvInstructionTypeCIWDecoderImmOut_t;
 
 /**
@@ -224,11 +219,10 @@ typedef struct __attribute__((packed)) {
     uint8_t imm2 : 1;
     uint8_t imm5_3 : 3;
     uint8_t imm6 : 1;
-    uint32_t : 25;
 } RiscvInstructionTypeCSDecoderImmIn_t;
 
 typedef struct __attribute__((packed)) {
-    uint32_t imm;
+    uint8_t imm : 7;
 } RiscvInstructionTypeCSDecoderImmOut_t;
 
 /**
