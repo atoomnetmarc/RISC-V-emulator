@@ -181,6 +181,116 @@ static inline void RiscvEmulatorC_ADDI(
 }
 
 /**
+ * pc += offset
+ */
+static inline void RiscvEmulatorC_JAL(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    void *ra,
+    const int16_t offset) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "c.jal";
+    hc.hook = HOOK_BEGIN;
+    hc.imm = offset;
+    hc.immlength = sizeof(offset);
+    hc.immissigned = 1;
+    hc.immname = "offset";
+    RiscvEmulatorHook(state, &hc);
+#endif
+
+    *(uint32_t *)ra = state->programcounter + 2;
+    state->programcounternext = state->programcounter + offset;
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
+}
+
+/**
+ * pc += rs1
+ */
+static inline void RiscvEmulatorC_JALR(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rs1num __attribute__((unused)),
+    void *rs1,
+    void *ra) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    hc.instruction = "c.jalr";
+    hc.hook = HOOK_BEGIN;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
+    *(uint32_t *)ra = state->programcounter + 2;
+    state->programcounternext = *(int32_t *)rs1;
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
+}
+
+/**
+ * pc += offset
+ */
+static inline void RiscvEmulatorC_J(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const int16_t offset) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "c.j";
+    hc.hook = HOOK_BEGIN;
+    hc.imm = offset;
+    hc.immlength = sizeof(offset);
+    hc.immissigned = 1;
+    hc.immname = "offset";
+    RiscvEmulatorHook(state, &hc);
+#endif
+
+    state->programcounternext = state->programcounter + offset;
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
+}
+
+/**
+ * pc += rs1
+ */
+static inline void RiscvEmulatorC_JR(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rs1num __attribute__((unused)),
+    void *rs1) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "c.jr";
+    hc.hook = HOOK_BEGIN;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
+    state->programcounternext = *(int32_t *)rs1;
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
+}
+
+/**
  * rd = imm
  */
 static inline void RiscvEmulatorC_LI(
@@ -453,6 +563,7 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
     void *rs1 = 0;
     void *rs2 = 0;
     void *sp = &state->registers.symbolic.sp;
+    void *ra = &state->registers.symbolic.ra;
 
     // Whenever possible, combine decoding instruction bits for multiple instructions.
     switch (opfunct3) {
@@ -463,7 +574,6 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             RiscvInstructionTypeCIWDecoderImm.input.imm5_4 = state->instruction.ciwtype.imm5_4;
             RiscvInstructionTypeCIWDecoderImm.input.imm9_6 = state->instruction.ciwtype.imm9_6;
             imm = RiscvInstructionTypeCIWDecoderImm.output.imm;
-
             rdnum = state->instruction.ciwtype.rdp + 8;
             break;
         }
@@ -472,10 +582,22 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             RiscvInstructionTypeCIDecoderImm_u RiscvInstructionTypeCIDecoderImm = {0};
             RiscvInstructionTypeCIDecoderImm.input.imm4_0 = state->instruction.citype.imm4_0;
             RiscvInstructionTypeCIDecoderImm.input.imm5 = state->instruction.citype.imm5;
-
             imm = RiscvInstructionTypeCIDecoderImm.output.imm;
-
             rdnum = state->instruction.citype.rd;
+            break;
+        }
+        case OPCODE16_JAL:
+        case OPCODE16_J: {
+            RiscvInstructionTypeCJDecoderImm_u RiscvInstructionTypeCJDecoderImm = {0};
+            RiscvInstructionTypeCJDecoderImm.input.imm3_1 = state->instruction.cjtype.imm3_1;
+            RiscvInstructionTypeCJDecoderImm.input.imm4 = state->instruction.cjtype.imm4;
+            RiscvInstructionTypeCJDecoderImm.input.imm5 = state->instruction.cjtype.imm5;
+            RiscvInstructionTypeCJDecoderImm.input.imm6 = state->instruction.cjtype.imm6;
+            RiscvInstructionTypeCJDecoderImm.input.imm7 = state->instruction.cjtype.imm7;
+            RiscvInstructionTypeCJDecoderImm.input.imm9_8 = state->instruction.cjtype.imm9_8;
+            RiscvInstructionTypeCJDecoderImm.input.imm10 = state->instruction.cjtype.imm10;
+            RiscvInstructionTypeCJDecoderImm.input.imm11 = state->instruction.cjtype.imm11;
+            imm = RiscvInstructionTypeCJDecoderImm.output.imm;
             break;
         }
 #if (RVE_E_F == 1)
@@ -487,7 +609,6 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             RiscvInstructionTypeCLDecoderImm.input.imm5_3 = state->instruction.cltype.imm5_3;
             RiscvInstructionTypeCLDecoderImm.input.imm6 = state->instruction.cltype.imm6;
             imm = RiscvInstructionTypeCLDecoderImm.output.imm;
-
             rs1num = state->instruction.cltype.rs1p + 8;
             rdnum = state->instruction.cltype.rdp + 8;
             break;
@@ -501,7 +622,6 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             RiscvInstructionTypeCSDecoderImm.input.imm5_3 = state->instruction.cstype.imm5_3;
             RiscvInstructionTypeCSDecoderImm.input.imm6 = state->instruction.cstype.imm6;
             imm = RiscvInstructionTypeCSDecoderImm.output.imm;
-
             rs1num = state->instruction.cstype.rs1p + 8;
             rs2num = state->instruction.cstype.rs2p + 8;
             break;
@@ -526,7 +646,6 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             RiscvInstructionTypeCSSDecoderImm.input.imm5_2 = state->instruction.csstype.imm5_2;
             RiscvInstructionTypeCSSDecoderImm.input.imm7_6 = state->instruction.csstype.imm7_6;
             imm = RiscvInstructionTypeCSSDecoderImm.output.imm;
-
             rs2num = state->instruction.csstype.rs2;
             break;
         }
@@ -560,7 +679,7 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             RiscvEmulatorC_ADDI(state, rdnum, rd, imm);
             break;
         case OPCODE16_JAL:
-            state->trapflags.bits.illegalinstruction = 1;
+            RiscvEmulatorC_JAL(state, ra, imm);
             break;
         case OPCODE16_LI:
             RiscvEmulatorC_LI(state, rdnum, rd, imm);
@@ -580,7 +699,7 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             state->trapflags.bits.illegalinstruction = 1;
             break;
         case OPCODE16_J:
-            state->trapflags.bits.illegalinstruction = 1;
+            RiscvEmulatorC_J(state, imm);
             break;
         case OPCODE16_BEQZ:
             state->trapflags.bits.illegalinstruction = 1;
@@ -602,8 +721,7 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
 
             if (state->instruction.crtype.funct4 == FUNCT4_MV) {
                 if (rs2num == 0) {
-                    // jr
-                    state->trapflags.bits.illegalinstruction = 1;
+                    RiscvEmulatorC_JR(state, rdnum, rd);
                 } else {
                     RiscvEmulatorC_MV(state, rdnum, rd, rs2num, rs2);
                 }
@@ -614,8 +732,7 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
                     // ebreak
                     state->trapflags.bits.illegalinstruction = 1;
                 } else if (rs2num == 0) {
-                    // jalr
-                    state->trapflags.bits.illegalinstruction = 1;
+                    RiscvEmulatorC_JALR(state, rdnum, rd, ra);
                 } else {
                     RiscvEmulatorC_ADD(state, rdnum, rd, rs2num, rs2);
                 }
