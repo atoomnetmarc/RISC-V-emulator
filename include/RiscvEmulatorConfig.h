@@ -53,7 +53,7 @@ SPDX-License-Identifier: Apache-2.0
 #define RVE_E_ZBS 0
 #endif
 
-// Enable weak function hooks.
+// Enable weak function hook.
 #ifndef RVE_E_HOOK
 #define RVE_E_HOOK 0
 #endif

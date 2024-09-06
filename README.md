@@ -154,16 +154,14 @@ lib_deps =
 
 # Hooks
 
-Enabling hooks `-D RVE_E_HOOK=1` creates the possibility to tap into the inner workings of the emulator. I added this functionality to be used in [RISC-V-emulator-Native](https://github.com/atoomnetmarc/RISC-V-emulator-Native) for debugging. Enabling hooks will create some overhead because empty weak functions will be called,
+Enabling hook `-D RVE_E_HOOK=1` creates the possibility to tap into the inner workings of the emulator. I added this functionality to be used in [RISC-V-emulator-Native](https://github.com/atoomnetmarc/RISC-V-emulator-Native) for debugging.
 
-In `RiscvEmulatorHook.h` you can find a list of all the supported hooks in the form of weak functions. Implement your own non-weak function to start using the hooks you are interested in. For example:
+Implement your own non-weak function to start using the hook. For example:
 
 ```c
-void RiscvEmulatorCSRR_HookBegin(RiscvEmulatorState_t *state, void *rd, const void *rs1, void *csr) {
-
-    printf("%08x: %08x          csrrw rd: %u, rs1: %u, csr: %u\n",
-           state->programcounter,
-           state->instruction.value, *(uint32_t *)rd, *(uint32_t *)rs1, *(uint32_t *)csr);
+void RiscvEmulatorHook(
+    const RiscvEmulatorState_t *state,
+    const RiscvEmulatorHookContext_t *context) {
 }
 ```
 
