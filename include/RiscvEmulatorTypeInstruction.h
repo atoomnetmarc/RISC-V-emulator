@@ -39,11 +39,13 @@ typedef union {
     RiscvInstructionOpcodeC_t copcode;
     RiscvInstructionTypeCR_t crtype;
     RiscvInstructionTypeCI_t citype;
+    RiscvInstructionTypeCIAddi16sp_t ciaddi16sp;
     RiscvInstructionTypeCILui_t cilui;
     RiscvInstructionTypeCILwsp_t cilwsp;
     RiscvInstructionTypeCSS_t csstype;
     RiscvInstructionTypeCSSFsdsp_t cssfsdsp;
     RiscvInstructionTypeCIW_t ciwtype;
+    RiscvInstructionTypeCL_t cltype;
     RiscvInstructionTypeCS_t cstype;
 #endif
 

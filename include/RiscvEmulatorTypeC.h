@@ -42,6 +42,22 @@ typedef struct __attribute__((packed)) {
 /**
  * Compressed Immediate instruction format.
  *
+ * Valid for addi16sp.
+ */
+typedef struct __attribute__((packed)) {
+    uint8_t op : 2;
+    uint8_t imm5 : 1;
+    uint8_t imm8_7 : 2;
+    uint8_t imm6 : 1;
+    uint8_t imm4 : 1;
+    uint8_t rd : 5;
+    uint8_t imm9 : 1;
+    uint8_t funct3 : 3;
+} RiscvInstructionTypeCIAddi16sp_t;
+
+/**
+ * Compressed Immediate instruction format.
+ *
  * Valid for lui.
  */
 typedef struct __attribute__((packed)) {
@@ -108,6 +124,21 @@ typedef struct __attribute__((packed)) {
 } RiscvInstructionTypeCSSFsdsp_t;
 
 /**
+ * Compressed Load instruction format.
+ *
+ * Valid for lw, flw.
+ */
+typedef struct __attribute__((packed)) {
+    uint8_t op : 2;
+    uint8_t rdp : 3;
+    uint8_t imm6 : 1;
+    uint8_t imm2 : 1;
+    uint8_t rs1p : 3;
+    uint8_t imm5_3 : 3;
+    uint8_t funct3 : 3;
+} RiscvInstructionTypeCL_t;
+
+/**
  * Compressed Store instruction format.
  *
  * Valid for sw, fsw.
@@ -138,6 +169,27 @@ typedef union {
     RiscvInstructionTypeCIDecoderImmIn_t input;
     RiscvInstructionTypeCIDecoderImmOut_t output;
 } RiscvInstructionTypeCIDecoderImm_u;
+
+typedef struct __attribute__((packed)) {
+    uint8_t : 4;
+    uint8_t imm4 : 1;
+    uint8_t imm5 : 1;
+    uint8_t imm6 : 1;
+    uint8_t imm8_7 : 2;
+    uint8_t imm9 : 1;
+} RiscvInstructionTypeCIAddi16spDecoderImmIn_t;
+
+typedef struct __attribute__((packed)) {
+    int16_t imm : 10;
+} RiscvInstructionTypeCIAddi16spDecoderImmOut_t;
+
+/**
+ * Union for decoding imm of addi16sp.
+ */
+typedef union {
+    RiscvInstructionTypeCIAddi16spDecoderImmIn_t input;
+    RiscvInstructionTypeCIAddi16spDecoderImmOut_t output;
+} RiscvInstructionTypeCIAddi16spDecoderImm_u;
 
 typedef struct __attribute__((packed)) {
     uint16_t : 12;
@@ -213,6 +265,25 @@ typedef union {
     RiscvInstructionTypeCIWDecoderImmIn_t input;
     RiscvInstructionTypeCIWDecoderImmOut_t output;
 } RiscvInstructionTypeCIWDecoderImm_u;
+
+typedef struct __attribute__((packed)) {
+    uint8_t : 2;
+    uint8_t imm2 : 1;
+    uint8_t imm5_3 : 3;
+    uint8_t imm6 : 1;
+} RiscvInstructionTypeCLDecoderImmIn_t;
+
+typedef struct __attribute__((packed)) {
+    uint8_t imm : 7;
+} RiscvInstructionTypeCLDecoderImmOut_t;
+
+/**
+ * Union for decoding imm of TypeCL.
+ */
+typedef union {
+    RiscvInstructionTypeCLDecoderImmIn_t input;
+    RiscvInstructionTypeCLDecoderImmOut_t output;
+} RiscvInstructionTypeCLDecoderImm_u;
 
 typedef struct __attribute__((packed)) {
     uint8_t : 2;

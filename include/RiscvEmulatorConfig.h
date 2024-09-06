@@ -18,6 +18,16 @@ SPDX-License-Identifier: Apache-2.0
 #define RVE_E_A 0
 #endif
 
+// Single-Precision Floating-Point.
+#ifndef RVE_E_F
+#define RVE_E_F 0
+#endif
+
+// Double-Precision Floating-Point.
+#ifndef RVE_E_D
+#define RVE_E_D 0
+#endif
+
 // Compressed instructions.
 #ifndef RVE_E_C
 #define RVE_E_C 0
@@ -56,6 +66,15 @@ SPDX-License-Identifier: Apache-2.0
 // Enable weak function hook.
 #ifndef RVE_E_HOOK
 #define RVE_E_HOOK 0
+#endif
+
+// Checks
+#if (RVE_E_F == 1) && (RVE_E_ZICSR != 1)
+#error "Single-Precision Floating-Point needs Control and Status Register Access to be enabled."
+#endif
+
+#if (RVE_E_D == 1) && (RVE_E_F != 1)
+#error "Double-Precision Floating-Point needs Single-Precision Floating-Point to be enabled."
 #endif
 
 #endif
