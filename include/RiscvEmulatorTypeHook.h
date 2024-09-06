@@ -22,7 +22,7 @@ typedef struct {
     const void *rs2;
     uint8_t rdnum;
     const void *rd;
-    uint8_t csrnum;
+    uint16_t csrnum;
     const void *csr;
     char *immname;
     uint8_t immlength;

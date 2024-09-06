@@ -44,9 +44,12 @@ static inline void RiscvEmulatorJALR(RiscvEmulatorState_t *state) {
     hc.instruction = "jalr";
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
+    hc.rd = rd;
     hc.rs1num = rs1num;
     hc.rs1 = rs1;
     hc.imm = imm;
+    hc.immissigned = 1;
+    hc.immname = "offset";
     RiscvEmulatorHook(state, &hc);
 #endif
 
@@ -689,10 +692,6 @@ static inline void RiscvEmulatorORI(
     const void *rs1,
     const int16_t imm) {
 
-    if (rdnum == 0) {
-        return;
-    }
-
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
     RiscvEmulatorHookContext_t hc = {0};
@@ -705,6 +704,10 @@ static inline void RiscvEmulatorORI(
     hc.imm = imm;
     RiscvEmulatorHook(state, &hc);
 #endif
+
+    if (rdnum == 0) {
+        return;
+    }
 
     *(int32_t *)rd = *(int32_t *)rs1 | imm;
 
@@ -1143,10 +1146,6 @@ static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state) {
             return;
     }
 
-    if (rdnum == 0) {
-        return;
-    }
-
 #if (RVE_E_ZICSR == 1)
     // Check if the load is aligned.
     if (length > 1) {
@@ -1171,6 +1170,10 @@ static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state) {
     hc.length = length;
     RiscvEmulatorHook(state, &hc);
 #endif
+
+    if (rdnum == 0) {
+        return;
+    }
 
 #if (RVE_E_ZICSR == 1)
     if (state->trapflags.bits.loadaddressmisaligned == 1) {
@@ -1304,18 +1307,22 @@ static inline void RiscvEmulatorBEQ(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2,
     const int16_t imm __attribute__((unused)),
-    uint8_t *executebranch) {
+    uint8_t *executebranch,
+    RiscvEmulatorHookContext_t *hc) {
 
 #if (RVE_E_HOOK == 1)
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "beq";
-    hc.hook = HOOK_BEGIN;
-    hc.rs1num = rs1num;
-    hc.rs1 = rs1;
-    hc.rs2num = rs2num;
-    hc.rs2 = rs2;
-    hc.imm = imm;
-    RiscvEmulatorHook(state, &hc);
+    state->hookexists = 1;
+    hc->instruction = "beq";
+    hc->hook = HOOK_BEGIN;
+    hc->rs1num = rs1num;
+    hc->rs1 = rs1;
+    hc->rs2num = rs2num;
+    hc->rs2 = rs2;
+    hc->imm = imm;
+    hc->immissigned = 1;
+    hc->immlength = sizeof(imm);
+    hc->immname = "offset";
+    RiscvEmulatorHook(state, hc);
 #endif
 
     if (*(int32_t *)rs1 == *(int32_t *)rs2) {
@@ -1333,18 +1340,22 @@ static inline void RiscvEmulatorBNE(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2,
     const int16_t imm __attribute__((unused)),
-    uint8_t *executebranch) {
+    uint8_t *executebranch,
+    RiscvEmulatorHookContext_t *hc) {
 
 #if (RVE_E_HOOK == 1)
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "bne";
-    hc.hook = HOOK_BEGIN;
-    hc.rs1num = rs1num;
-    hc.rs1 = rs1;
-    hc.rs2num = rs2num;
-    hc.rs2 = rs2;
-    hc.imm = imm;
-    RiscvEmulatorHook(state, &hc);
+    state->hookexists = 1;
+    hc->instruction = "bne";
+    hc->hook = HOOK_BEGIN;
+    hc->rs1num = rs1num;
+    hc->rs1 = rs1;
+    hc->rs2num = rs2num;
+    hc->rs2 = rs2;
+    hc->imm = imm;
+    hc->immissigned = 1;
+    hc->immlength = sizeof(imm);
+    hc->immname = "offset";
+    RiscvEmulatorHook(state, hc);
 #endif
 
     if (*(int32_t *)rs1 != *(int32_t *)rs2) {
@@ -1362,18 +1373,22 @@ static inline void RiscvEmulatorBGE(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2,
     const int16_t imm __attribute__((unused)),
-    uint8_t *executebranch) {
+    uint8_t *executebranch,
+    RiscvEmulatorHookContext_t *hc) {
 
 #if (RVE_E_HOOK == 1)
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "bge";
-    hc.hook = HOOK_BEGIN;
-    hc.rs1num = rs1num;
-    hc.rs1 = rs1;
-    hc.rs2num = rs2num;
-    hc.rs2 = rs2;
-    hc.imm = imm;
-    RiscvEmulatorHook(state, &hc);
+    state->hookexists = 1;
+    hc->instruction = "bge";
+    hc->hook = HOOK_BEGIN;
+    hc->rs1num = rs1num;
+    hc->rs1 = rs1;
+    hc->rs2num = rs2num;
+    hc->rs2 = rs2;
+    hc->imm = imm;
+    hc->immissigned = 1;
+    hc->immlength = sizeof(imm);
+    hc->immname = "offset";
+    RiscvEmulatorHook(state, hc);
 #endif
 
     if (*(int32_t *)rs1 >= *(int32_t *)rs2) {
@@ -1391,18 +1406,22 @@ static inline void RiscvEmulatorBGEU(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2,
     const int16_t imm __attribute__((unused)),
-    uint8_t *executebranch) {
+    uint8_t *executebranch,
+    RiscvEmulatorHookContext_t *hc) {
 
 #if (RVE_E_HOOK == 1)
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "bgeu";
-    hc.hook = HOOK_BEGIN;
-    hc.rs1num = rs1num;
-    hc.rs1 = rs1;
-    hc.rs2num = rs2num;
-    hc.rs2 = rs2;
-    hc.imm = imm;
-    RiscvEmulatorHook(state, &hc);
+    state->hookexists = 1;
+    hc->instruction = "bgeu";
+    hc->hook = HOOK_BEGIN;
+    hc->rs1num = rs1num;
+    hc->rs1 = rs1;
+    hc->rs2num = rs2num;
+    hc->rs2 = rs2;
+    hc->imm = imm;
+    hc->immissigned = 1;
+    hc->immlength = sizeof(imm);
+    hc->immname = "offset";
+    RiscvEmulatorHook(state, hc);
 #endif
 
     if (*(uint32_t *)rs1 >= *(uint32_t *)rs2) {
@@ -1420,18 +1439,22 @@ static inline void RiscvEmulatorBLT(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2,
     const int16_t imm __attribute__((unused)),
-    uint8_t *executebranch) {
+    uint8_t *executebranch,
+    RiscvEmulatorHookContext_t *hc) {
 
 #if (RVE_E_HOOK == 1)
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "blt";
-    hc.hook = HOOK_BEGIN;
-    hc.rs1num = rs1num;
-    hc.rs1 = rs1;
-    hc.rs2num = rs2num;
-    hc.rs2 = rs2;
-    hc.imm = imm;
-    RiscvEmulatorHook(state, &hc);
+    state->hookexists = 1;
+    hc->instruction = "blt";
+    hc->hook = HOOK_BEGIN;
+    hc->rs1num = rs1num;
+    hc->rs1 = rs1;
+    hc->rs2num = rs2num;
+    hc->rs2 = rs2;
+    hc->imm = imm;
+    hc->immissigned = 1;
+    hc->immlength = sizeof(imm);
+    hc->immname = "offset";
+    RiscvEmulatorHook(state, hc);
 #endif
 
     if (*(int32_t *)rs1 < *(int32_t *)rs2) {
@@ -1449,18 +1472,22 @@ static inline void RiscvEmulatorBLTU(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2,
     const int16_t imm __attribute__((unused)),
-    uint8_t *executebranch) {
+    uint8_t *executebranch,
+    RiscvEmulatorHookContext_t *hc) {
 
 #if (RVE_E_HOOK == 1)
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "bltu";
-    hc.hook = HOOK_BEGIN;
-    hc.rs1num = rs1num;
-    hc.rs1 = rs1;
-    hc.rs2num = rs2num;
-    hc.rs2 = rs2;
-    hc.imm = imm;
-    RiscvEmulatorHook(state, &hc);
+    state->hookexists = 1;
+    hc->instruction = "bltu";
+    hc->hook = HOOK_BEGIN;
+    hc->rs1num = rs1num;
+    hc->rs1 = rs1;
+    hc->rs2num = rs2num;
+    hc->rs2 = rs2;
+    hc->imm = imm;
+    hc->immissigned = 1;
+    hc->immlength = sizeof(imm);
+    hc->immname = "offset";
+    RiscvEmulatorHook(state, hc);
 #endif
 
     if (*(uint32_t *)rs1 < *(uint32_t *)rs2) {
@@ -1487,24 +1514,30 @@ static inline void RiscvEmulatorOpcodeBranch(RiscvEmulatorState_t *state) {
     helper.input.imm12 = state->instruction.btype.imm12;
     int16_t imm = helper.output.imm;
 
+#if (RVE_E_HOOK == 1)
+    RiscvEmulatorHookContext_t hc = {0};
+#else
+    RiscvEmulatorHookContext_t hc;
+#endif
+
     switch (state->instruction.btype.funct3) {
         case FUNCT3_BRANCH_BEQ:
-            RiscvEmulatorBEQ(state, rs1num, rs1, rs2num, rs2, imm, &executebranch);
+            RiscvEmulatorBEQ(state, rs1num, rs1, rs2num, rs2, imm, &executebranch, &hc);
             break;
         case FUNCT3_BRANCH_BNE:
-            RiscvEmulatorBNE(state, rs1num, rs1, rs2num, rs2, imm, &executebranch);
+            RiscvEmulatorBNE(state, rs1num, rs1, rs2num, rs2, imm, &executebranch, &hc);
             break;
         case FUNCT3_BRANCH_BGE:
-            RiscvEmulatorBGE(state, rs1num, rs1, rs2num, rs2, imm, &executebranch);
+            RiscvEmulatorBGE(state, rs1num, rs1, rs2num, rs2, imm, &executebranch, &hc);
             break;
         case FUNCT3_BRANCH_BGEU:
-            RiscvEmulatorBGEU(state, rs1num, rs1, rs2num, rs2, imm, &executebranch);
+            RiscvEmulatorBGEU(state, rs1num, rs1, rs2num, rs2, imm, &executebranch, &hc);
             break;
         case FUNCT3_BRANCH_BLT:
-            RiscvEmulatorBLT(state, rs1num, rs1, rs2num, rs2, imm, &executebranch);
+            RiscvEmulatorBLT(state, rs1num, rs1, rs2num, rs2, imm, &executebranch, &hc);
             break;
         case FUNCT3_BRANCH_BLTU:
-            RiscvEmulatorBLTU(state, rs1num, rs1, rs2num, rs2, imm, &executebranch);
+            RiscvEmulatorBLTU(state, rs1num, rs1, rs2num, rs2, imm, &executebranch, &hc);
             break;
         default:
             state->trapflags.bits.illegalinstruction = 1;
@@ -1515,9 +1548,6 @@ static inline void RiscvEmulatorOpcodeBranch(RiscvEmulatorState_t *state) {
         state->programcounternext = state->programcounter + imm;
 
 #if (RVE_E_HOOK == 1)
-        state->hookexists = 1;
-        RiscvEmulatorHookContext_t hc = {0};
-        hc.instruction = "_branch";
         hc.hook = HOOK_END;
         RiscvEmulatorHook(state, &hc);
 #endif
@@ -1530,9 +1560,9 @@ static inline void RiscvEmulatorOpcodeBranch(RiscvEmulatorState_t *state) {
 static inline void RiscvEmulatorAUIPC(RiscvEmulatorState_t *state) {
     uint32_t upperimmediate = state->instruction.utype.imm31_12;
 
-    RiscvInstructionTypeUDecoderImm_u helper;
-    helper.input.imm11_0 = 0;
+    RiscvInstructionTypeUDecoderImm_u helper = {0};
     helper.input.imm31_12 = upperimmediate;
+    int32_t imm = helper.output.imm;
 
     uint8_t rdnum = state->instruction.utype.rd;
 
@@ -1545,12 +1575,12 @@ static inline void RiscvEmulatorAUIPC(RiscvEmulatorState_t *state) {
     hc.rdnum = rdnum;
     hc.rd = rd;
     hc.upperimmediate = upperimmediate;
-    hc.imm = helper.output.imm;
+    hc.imm = imm;
     RiscvEmulatorHook(state, &hc);
 #endif
 
     if (rdnum != 0) {
-        state->registers.array.location[rdnum] = state->programcounter + helper.output.imm;
+        state->registers.array.location[rdnum] = state->programcounter + imm;
     }
 
 #if (RVE_E_HOOK == 1)
@@ -1617,6 +1647,8 @@ static inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state) {
     hc.rdnum = rdnum;
     hc.rd = rd;
     hc.imm = helper.output.imm;
+    hc.immissigned = 1;
+    hc.immname = "offset";
     RiscvEmulatorHook(state, &hc);
 #endif
 

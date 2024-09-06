@@ -176,7 +176,7 @@ static inline void RiscvEmulatorCSRRWI(
     RiscvEmulatorState_t *state __attribute__((unused)),
     const uint8_t rdnum,
     const void *rd,
-    const uint8_t imm,
+    const uint8_t uimm,
     const uint16_t csrnum __attribute__((unused)),
     const void *csr) {
 
@@ -187,9 +187,11 @@ static inline void RiscvEmulatorCSRRWI(
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
     hc.rd = rd;
-    hc.imm = imm;
+    hc.imm = uimm;
     hc.csrnum = csrnum;
     hc.csr = csr;
+    hc.immlength = sizeof(uimm);
+    hc.immname = "uimm";
     RiscvEmulatorHook(state, &hc);
 #endif
 
@@ -198,7 +200,7 @@ static inline void RiscvEmulatorCSRRWI(
         *(uint32_t *)rd = *(uint32_t *)csr;
     }
 
-    *(uint32_t *)csr = imm;
+    *(uint32_t *)csr = uimm;
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -256,7 +258,7 @@ static inline void RiscvEmulatorCSRRSI(
     RiscvEmulatorState_t *state __attribute__((unused)),
     const uint8_t rdnum,
     const void *rd,
-    const uint8_t imm,
+    const uint8_t uimm,
     const uint16_t csrnum __attribute__((unused)),
     const void *csr) {
 
@@ -267,9 +269,11 @@ static inline void RiscvEmulatorCSRRSI(
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
     hc.rd = rd;
-    hc.imm = imm;
+    hc.imm = uimm;
     hc.csrnum = csrnum;
     hc.csr = csr;
+    hc.immlength = sizeof(uimm);
+    hc.immname = "uimm";
     RiscvEmulatorHook(state, &hc);
 #endif
 
@@ -278,8 +282,8 @@ static inline void RiscvEmulatorCSRRSI(
     }
 
     // Set bits when requested.
-    if (imm != 0) {
-        *(uint32_t *)csr |= imm;
+    if (uimm != 0) {
+        *(uint32_t *)csr |= uimm;
     }
 
 #if (RVE_E_HOOK == 1)
@@ -338,7 +342,7 @@ static inline void RiscvEmulatorCSRRCI(
     RiscvEmulatorState_t *state __attribute__((unused)),
     const uint8_t rdnum,
     const void *rd,
-    const uint8_t imm,
+    const uint8_t uimm,
     const uint16_t csrnum __attribute__((unused)),
     const void *csr) {
 
@@ -349,9 +353,11 @@ static inline void RiscvEmulatorCSRRCI(
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
     hc.rd = rd;
-    hc.imm = imm;
+    hc.imm = uimm;
     hc.csrnum = csrnum;
     hc.csr = csr;
+    hc.immlength = sizeof(uimm);
+    hc.immname = "uimm";
     RiscvEmulatorHook(state, &hc);
 #endif
 
@@ -360,8 +366,8 @@ static inline void RiscvEmulatorCSRRCI(
     }
 
     // Clear bits when requested.
-    if (imm != 0) {
-        *(uint32_t *)csr &= ~imm;
+    if (uimm != 0) {
+        *(uint32_t *)csr &= ~uimm;
     }
 
 #if (RVE_E_HOOK == 1)
