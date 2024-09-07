@@ -29,14 +29,14 @@ SPDX-License-Identifier: Apache-2.0
  * Jump and link register.
  */
 static inline void RiscvEmulatorJALR(RiscvEmulatorState_t *state) {
-    uint32_t originalprogramcounternext = state->programcounternext;
-
     uint8_t rdnum = state->instruction.itype.rd;
     void *rd = &state->registers.array.location[rdnum];
     uint8_t rs1num = state->instruction.itype.rs1;
     void *rs1 = &state->registers.array.location[rs1num];
 
     int16_t imm = state->instruction.itype.imm;
+
+    uint32_t jumptoprogramcounter = (*(uint32_t *)rs1 + imm) & (UINT32_MAX - 1);
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
@@ -53,14 +53,23 @@ static inline void RiscvEmulatorJALR(RiscvEmulatorState_t *state) {
     RiscvEmulatorHook(state, &hc);
 #endif
 
-    // Execute jump.
-    state->programcounternext = *(uint32_t *)rs1 + imm;
-    state->programcounternext = state->programcounternext & (UINT32_MAX - 1);
-
-    // Set destination register to the original next instruction.
-    if (rdnum != 0) {
-        *(uint32_t *)rd = originalprogramcounternext;
+#if (RVE_E_ZICSR == 1) && (RVE_E_C != 1)
+    // Check if jumptoprogramcounter is aligned.
+    uint8_t programcounter8 = jumptoprogramcounter & 0xFF;
+    if ((programcounter8 % (IALIGN / 8)) != 0) {
+        state->trapflags.bits.instructionaddressmisaligned = 1;
+        state->csr.mtval = jumptoprogramcounter;
+        return;
     }
+#endif
+
+    // Set destination register to current next instruction acting as a return address.
+    if (rdnum != 0) {
+        *(uint32_t *)rd = state->programcounternext;
+    }
+
+    // Execute jump.
+    state->programcounternext = jumptoprogramcounter;
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -1652,7 +1661,7 @@ static inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state) {
     RiscvEmulatorHook(state, &hc);
 #endif
 
-#if (RVE_E_ZICSR == 1)
+#if (RVE_E_ZICSR == 1) && (RVE_E_C != 1)
     // Check if jumptoprogramcounter is aligned.
     uint8_t programcounter8 = jumptoprogramcounter & 0xFF;
     if ((programcounter8 % (IALIGN / 8)) != 0) {
