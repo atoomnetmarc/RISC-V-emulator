@@ -49,6 +49,7 @@ typedef union {
     RiscvInstructionTypeCS_t cstype;
     RiscvInstructionTypeCA_t catype;
     RiscvInstructionTypeCB_t cbtype;
+    RiscvInstructionTypeCBImm_t cbimm;
     RiscvInstructionTypeCJ_t cjtype;
 #endif
 

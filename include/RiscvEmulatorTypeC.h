@@ -156,7 +156,7 @@ typedef struct __attribute__((packed)) {
 /**
  * Compressed Arithmetic instruction format.
  *
- * Valid for sub, xor, or, and, subw, addw.
+ * Valid for sub, xor, or, and.
  */
 typedef struct __attribute__((packed)) {
     uint8_t op : 2;
@@ -181,6 +181,20 @@ typedef struct __attribute__((packed)) {
     uint8_t imm8 : 1;
     uint8_t funct3 : 3;
 } RiscvInstructionTypeCB_t;
+
+/**
+ * Compressed Branch instruction format.
+ *
+ * Valid for srli, srai, andi.
+ */
+typedef struct __attribute__((packed)) {
+    uint8_t op : 2;
+    uint8_t imm4_0 : 5;
+    uint8_t rdp : 3;
+    uint8_t funct2 : 2;
+    uint8_t imm5 : 1;
+    uint8_t funct3 : 3;
+} RiscvInstructionTypeCBImm_t;
 
 /**
  * Compressed Jump instruction format.
@@ -352,6 +366,23 @@ typedef union {
 } RiscvInstructionTypeCSDecoderImm_u;
 
 typedef struct __attribute__((packed)) {
+    uint8_t funct2 : 2;
+    uint8_t funct6 : 6;
+} RiscvInstructionTypeCADecoderFunct6Funct2In_t;
+
+typedef struct __attribute__((packed)) {
+    uint8_t funct6_funct2 : 8;
+} RiscvInstructionTypeCADecoderFunct6Funct2Out_t;
+
+/**
+ * Union for decoding funct6_funct2 of TypeCA.
+ */
+typedef union {
+    RiscvInstructionTypeCADecoderFunct6Funct2In_t input;
+    RiscvInstructionTypeCADecoderFunct6Funct2Out_t output;
+} RiscvInstructionTypeCADecoderFunct6Funct2_u;
+
+typedef struct __attribute__((packed)) {
     uint8_t : 1;
     uint8_t imm2_1 : 2;
     uint8_t imm4_3 : 2;
@@ -371,6 +402,40 @@ typedef union {
     RiscvInstructionTypeCBDecoderImmIn_t input;
     RiscvInstructionTypeCBDecoderImmOut_t output;
 } RiscvInstructionTypeCBDecoderImm_u;
+
+typedef struct __attribute__((packed)) {
+    uint8_t imm4_0 : 5;
+    uint8_t imm5 : 1;
+} RiscvInstructionTypeCBImmDecoderImmIn_t;
+
+typedef struct __attribute__((packed)) {
+    int16_t imm : 6;
+} RiscvInstructionTypeCBImmDecoderImmOut_t;
+
+/**
+ * Union for decoding imm of TypeCB.
+ */
+typedef union {
+    RiscvInstructionTypeCBImmDecoderImmIn_t input;
+    RiscvInstructionTypeCBImmDecoderImmOut_t output;
+} RiscvInstructionTypeCBImmDecoderImm_u;
+
+typedef struct __attribute__((packed)) {
+    uint8_t funct2 : 2;
+    uint8_t funct3 : 3;
+} RiscvInstructionTypeCBDecoderFunct3Funct2In_t;
+
+typedef struct __attribute__((packed)) {
+    uint8_t funct3_funct2 : 5;
+} RiscvInstructionTypeCBDecoderFunct3Funct2Out_t;
+
+/**
+ * Union for decoding funct3_funct2 of TypeCB.
+ */
+typedef union {
+    RiscvInstructionTypeCBDecoderFunct3Funct2In_t input;
+    RiscvInstructionTypeCBDecoderFunct3Funct2Out_t output;
+} RiscvInstructionTypeCBDecoderFunct3Funct2_u;
 
 typedef struct __attribute__((packed)) {
     uint8_t : 1;
