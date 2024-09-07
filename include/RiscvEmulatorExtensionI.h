@@ -55,8 +55,7 @@ static inline void RiscvEmulatorJALR(RiscvEmulatorState_t *state) {
 
 #if (RVE_E_ZICSR == 1) && (RVE_E_C != 1)
     // Check if jumptoprogramcounter is aligned.
-    uint8_t programcounter8 = jumptoprogramcounter & 0xFF;
-    if ((programcounter8 % (IALIGN / 8)) != 0) {
+    if ((jumptoprogramcounter & 0b11) != 0) {
         state->trapflags.bits.instructionaddressmisaligned = 1;
         state->csr.mtval = jumptoprogramcounter;
         return;
@@ -1556,6 +1555,14 @@ static inline void RiscvEmulatorOpcodeBranch(RiscvEmulatorState_t *state) {
     if (executebranch == BRANCH_YES) {
         state->programcounternext = state->programcounter + imm;
 
+#if (RVE_E_ZICSR == 1) && (RVE_E_C != 1)
+        // Check if programcounternext is aligned.
+        if ((state->programcounternext & 0b11) != 0) {
+            state->trapflags.bits.instructionaddressmisaligned = 1;
+            state->csr.mtval = state->programcounternext;
+        }
+#endif
+
 #if (RVE_E_HOOK == 1)
         hc.hook = HOOK_END;
         RiscvEmulatorHook(state, &hc);
@@ -1660,11 +1667,9 @@ static inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state) {
     hc.immname = "offset";
     RiscvEmulatorHook(state, &hc);
 #endif
-
 #if (RVE_E_ZICSR == 1) && (RVE_E_C != 1)
     // Check if jumptoprogramcounter is aligned.
-    uint8_t programcounter8 = jumptoprogramcounter & 0xFF;
-    if ((programcounter8 % (IALIGN / 8)) != 0) {
+    if ((jumptoprogramcounter & 0b11) != 0) {
         state->trapflags.bits.instructionaddressmisaligned = 1;
         state->csr.mtval = jumptoprogramcounter;
         return;
