@@ -228,8 +228,10 @@ static inline void RiscvEmulatorC_JALR(
     RiscvEmulatorHook(state, &hc);
 #endif
 
+    uint32_t originalvaluers1 = *(int32_t *)rs1;
+
     *(uint32_t *)ra = state->programcounter + 2;
-    state->programcounternext = (*(int32_t *)rs1 & (UINT32_MAX - 1));
+    state->programcounternext = (originalvaluers1 & (UINT32_MAX - 1));
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;

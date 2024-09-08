@@ -25,7 +25,7 @@ Extensions are confirmed working when all instructions of that extension pass [r
 | Atomics                             | A         |               |       | :ballot_box_with_check: |
 | Single-Precision Floating-Point     | F         |               |       | :x:                     |
 | Double-Precision Floating-Point     | D         |               |       | :x:                     |
-| Compressed Instructions             | C         |               |       | :x:                     |
+| Compressed Instructions             | C         |               |       | :ballot_box_with_check: |
 | Control and Status Register Access  | Zicsr     |               |       | :ballot_box_with_check: |
 | Instruction-Fetch Fence             | Zifencei  |               |       | :ballot_box_with_check: |
 | Address calculation                 | B         | Zba           | Bonus | :ballot_box_with_check: |
