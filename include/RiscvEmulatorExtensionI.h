@@ -1783,6 +1783,10 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state) {
         uint16_t csrnum = state->instruction.itypecsr.csr;
         void *csr = RiscvEmulatorGetCSRAddress(state, csrnum);
 
+        if (state->trapflags.value > 0) {
+            return;
+        }
+
         switch (state->instruction.itypecsr.funct3) {
             case FUNCT3_CSR_CSRRW:
                 RiscvEmulatorCSRRW(state, rdnum, rd, rs1num, rs1, csrnum, csr);

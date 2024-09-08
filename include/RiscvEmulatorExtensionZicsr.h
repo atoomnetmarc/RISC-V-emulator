@@ -122,6 +122,7 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
             break;
 
         default:
+            state->trapflags.bits.illegalinstruction = 1;
             RiscvEmulatorUnknownCSR(state);
     }
 
