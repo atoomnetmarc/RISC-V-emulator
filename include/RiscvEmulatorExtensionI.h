@@ -336,6 +336,7 @@ static inline void RiscvEmulatorSLTI(
     hc.rs1num = rs1num;
     hc.rs1 = rs1;
     hc.imm = imm;
+    hc.immlength = (sizeof(imm));
     RiscvEmulatorHook(state, &hc);
 #endif
 
@@ -410,6 +411,7 @@ static inline void RiscvEmulatorSLTIU(
     hc.rs1num = rs1num;
     hc.rs1 = rs1;
     hc.imm = imm;
+    hc.immlength = (sizeof(imm));
     RiscvEmulatorHook(state, &hc);
 #endif
 
@@ -484,6 +486,7 @@ static inline void RiscvEmulatorXORI(
     hc.rs1num = rs1num;
     hc.rs1 = rs1;
     hc.imm = imm;
+    hc.immlength = (sizeof(imm));
     RiscvEmulatorHook(state, &hc);
 #endif
 
@@ -710,6 +713,7 @@ static inline void RiscvEmulatorORI(
     hc.rs1num = rs1num;
     hc.rs1 = rs1;
     hc.imm = imm;
+    hc.immlength = (sizeof(imm));
     RiscvEmulatorHook(state, &hc);
 #endif
 
@@ -784,6 +788,7 @@ static inline void RiscvEmulatorANDI(
     hc.rs1num = rs1num;
     hc.rs1 = rs1;
     hc.imm = imm;
+    hc.immlength = (sizeof(imm));
     RiscvEmulatorHook(state, &hc);
 #endif
 
@@ -1174,6 +1179,8 @@ static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state) {
     hc.rs1num = rs1num;
     hc.rs1 = rs1;
     hc.imm = imm;
+    hc.immlength = (sizeof(imm));
+    hc.immname = "offset";
     hc.memorylocation = memorylocation;
     hc.length = length;
     RiscvEmulatorHook(state, &hc);
@@ -1725,18 +1732,6 @@ static inline void RiscvEmulatorEBREAK(RiscvEmulatorState_t *state) {
 
 #if (RVE_E_ZICSR == 1)
     state->trapflags.bits.breakpoint = 1;
-
-    /**
-     * https://github.com/riscv/riscv-isa-manual/releases/tag/riscv-isa-release-52a5742-2024-08-30 says:
-     * EBREAK raises a breakpoint exception and performs no other operation.
-     *
-     * But it also says:
-     * If mtval is written with a nonzero value when a breakpoint, address-misaligned, access-fault, or page-fault exception occurs on an instruction fetch, load, or store, then mtval will contain the faulting virtual address.
-     *
-     * See https://github.com/riscv-non-isa/riscv-arch-test/issues/200
-     *
-     * Doing what sail does to pass validation.
-     */
     state->csr.mtval = state->programcounter;
 #endif
 

@@ -29,7 +29,7 @@ typedef struct __attribute__((packed)) {
 /**
  * Compressed Immediate instruction format.
  *
- * Valid for addi and li.
+ * Valid for addi, li and slli.
  */
 typedef struct __attribute__((packed)) {
     uint8_t op : 2;
