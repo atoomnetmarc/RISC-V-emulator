@@ -19,35 +19,33 @@ SPDX-License-Identifier: Apache-2.0
 /**
  * Riscv emulator state flags.
  */
-typedef struct
-{
-    uint8_t illegalinstruction : 1;
+typedef union {
+    struct
+    {
+        uint8_t illegalinstruction : 1;
 
 #if (RVE_E_ZICSR == 1)
-    uint8_t instructionaddressmisaligned : 1;
-    uint8_t breakpoint : 1;
-    uint8_t loadaddressmisaligned : 1;
-    uint8_t storeaddressmisaligned : 1;
-    uint8_t environmentcallfrommmode : 1;
+        uint8_t instructionaddressmisaligned : 1;
+        uint8_t breakpoint : 1;
+        uint8_t loadaddressmisaligned : 1;
+        uint8_t storeaddressmisaligned : 1;
+        uint8_t environmentcallfrommmode : 1;
 #endif
+    };
 
-} RiscvEmulatorTrapFlagBits_t;
-
-typedef union {
     uint8_t value;
-    RiscvEmulatorTrapFlagBits_t bits;
-} RiscvEmulatorTrapFlags_u;
+} RiscvEmulatorTrapFlag_u;
 
 /**
  * Riscv emulator state.
  */
 typedef struct
 {
-    RiscvEmulatorTrapFlags_u trapflags;
+    RiscvEmulatorTrapFlag_u trapflag;
     uint32_t programcounter;
     uint32_t programcounternext;
     RiscvInstruction_u instruction;
-    RiscvRegister_u registers;
+    RiscvRegister_u reg;
 
 #if (RVE_E_HOOK == 1)
     uint8_t hookexists;

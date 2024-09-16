@@ -125,11 +125,11 @@ static inline void RiscvEmulatorAMOMAXU_W(
 static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(
     RiscvEmulatorState_t *state) {
     uint8_t rdnum = state->instruction.rtypeatomicmemoryoperation.rd;
-    void *rd = &state->registers.array.location[rdnum];
+    void *rd = &state->reg.x[rdnum];
     uint8_t rs1num = state->instruction.rtypeatomicmemoryoperation.rs1;
-    void *rs1 = &state->registers.array.location[rs1num];
+    void *rs1 = &state->reg.x[rs1num];
     uint8_t rs2num = state->instruction.rtypeatomicmemoryoperation.rs2;
-    void *rs2 = &state->registers.array.location[rs2num];
+    void *rs2 = &state->reg.x[rs2num];
 
     // Remember original address stored in rs1.
     uint32_t originaladdressrs1 = *(uint32_t *)rs1;
@@ -146,10 +146,10 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(
     }
 
     RiscvInstructionTypeRDecoderFunct5Funct3_u instruction_decoderhelper_rtypeatomicmemoryoperation;
-    instruction_decoderhelper_rtypeatomicmemoryoperation.input.funct3 = state->instruction.rtypeatomicmemoryoperation.funct3;
-    instruction_decoderhelper_rtypeatomicmemoryoperation.input.funct5 = state->instruction.rtypeatomicmemoryoperation.funct5;
+    instruction_decoderhelper_rtypeatomicmemoryoperation.funct3 = state->instruction.rtypeatomicmemoryoperation.funct3;
+    instruction_decoderhelper_rtypeatomicmemoryoperation.funct5 = state->instruction.rtypeatomicmemoryoperation.funct5;
 
-    switch (instruction_decoderhelper_rtypeatomicmemoryoperation.output.funct5_3) {
+    switch (instruction_decoderhelper_rtypeatomicmemoryoperation.funct5_3) {
         case FUNCT5_FUNCT3_OPERATION_AMOADD_W:
             RiscvEmulatorAMOADD_W(state, &loadedvalue, &originalvaluers2);
             break;
@@ -178,7 +178,7 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(
             RiscvEmulatorAMOMAXU_W(state, &loadedvalue, &originalvaluers2);
             break;
         default:
-            state->trapflags.bits.illegalinstruction = 1;
+            state->trapflag.illegalinstruction = 1;
             return;
     }
 

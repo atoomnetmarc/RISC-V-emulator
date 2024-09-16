@@ -21,21 +21,23 @@ SPDX-License-Identifier: Apache-2.0
 #include "RiscvEmulatorTypeU.h"
 
 /**
- * Easy access to the opcode of an 32-bit instruction when you do not know the instruction type yet.
- */
-typedef struct __attribute__((packed)) {
-    uint8_t opcode : 7;
-    uint32_t : 25;
-} RiscvInstructionOpcode_t;
-
-/**
  * All the instruction types combined.
  */
 typedef union {
     uint32_t value;
 
+    /**
+     * Easy access to the opcode of an 32-bit instruction when you do not know the instruction type yet.
+     */
+    struct __attribute__((packed)) {
+        uint8_t opcode : 7;
+    };
+
 #if (RVE_E_C == 1)
-    RiscvInstruction_t value16;
+    struct __attribute__((packed)) {
+        uint16_t L;
+        uint16_t H;
+    };
     RiscvInstructionOpcodeC_t copcode;
     RiscvInstructionTypeCR_t crtype;
     RiscvInstructionTypeCI_t citype;
@@ -53,7 +55,6 @@ typedef union {
     RiscvInstructionTypeCJ_t cjtype;
 #endif
 
-    RiscvInstructionOpcode_t opcode;
     RiscvInstructionTypeR_t rtype;
 #if (RVE_E_ZBA)
     RiscvInstructionTypeRShift_t rtypeshift;

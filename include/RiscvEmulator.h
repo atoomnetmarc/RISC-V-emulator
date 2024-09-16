@@ -26,14 +26,14 @@ SPDX-License-Identifier: Apache-2.0
  */
 static inline void RiscvEmulatorInit(RiscvEmulatorState_t *state, uint32_t ram_length) {
     // Initialize stack pointer.
-    state->registers.symbolic.sp = RAM_ORIGIN + ram_length;
+    state->reg.sp = RAM_ORIGIN + ram_length;
 
     // Initialize program counter.
     state->programcounter = ROM_ORIGIN;
     state->programcounternext = ROM_ORIGIN;
 
     // Initialize X0.
-    state->registers.symbolic.Zero = 0;
+    state->reg.Zero = 0;
 
 #if (RVE_E_ZICSR == 1)
     // Initialize CSR.
@@ -41,7 +41,7 @@ static inline void RiscvEmulatorInit(RiscvEmulatorState_t *state, uint32_t ram_l
 #endif
 
     // Initialize trap flags.
-    state->trapflags.value = 0;
+    state->trapflag.value = 0;
 }
 
 /**
@@ -60,22 +60,22 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
 
 #if (RVE_E_C == 1)
     // Read 16 bits.
-    state->instruction.value16.H = 0;
+    state->instruction.H = 0;
     RiscvEmulatorLoadInstruction(
         state->programcounter,
-        &state->instruction.value16.L,
-        sizeof(state->instruction.value16.L));
+        &state->instruction.L,
+        sizeof(state->instruction.L));
 
-    state->programcounternext += sizeof(state->instruction.value16.L);
+    state->programcounternext += sizeof(state->instruction.L);
 
     // Read another 16 bits when this is a 32-bit instruction.
     if (state->instruction.copcode.op == OPCODE16_QUADRANT_INVALID) {
         RiscvEmulatorLoadInstruction(
             state->programcounternext,
-            &state->instruction.value16.H,
-            sizeof(state->instruction.value16.L));
+            &state->instruction.H,
+            sizeof(state->instruction.L));
 
-        state->programcounternext += sizeof(state->instruction.value16.L);
+        state->programcounternext += sizeof(state->instruction.L);
     } else {
         instructionlength = 16;
     }
@@ -92,7 +92,7 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
 #endif
 
     if (instructionlength == 32) {
-        switch (state->instruction.opcode.opcode) {
+        switch (state->instruction.opcode) {
             case OPCODE32_JUMPANDLINKREGISTER:
                 RiscvEmulatorOpcodeJumpAndLinkRegister(state);
                 break;
@@ -132,12 +132,12 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
                 break;
 #endif
             default:
-                state->trapflags.bits.illegalinstruction = 1;
+                state->trapflag.illegalinstruction = 1;
                 break;
         }
     }
 
-    if (state->trapflags.value > 0) {
+    if (state->trapflag.value > 0) {
         RiscvEmulatorTrap(state);
     }
 }

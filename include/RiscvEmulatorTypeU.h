@@ -19,21 +19,18 @@ typedef struct __attribute__((packed)) {
     uint32_t imm31_12 : 20;
 } RiscvInstructionTypeU_t;
 
-typedef struct __attribute__((packed)) {
-    uint16_t imm11_0 : 12;
-    uint32_t imm31_12 : 20;
-} RiscvInstructionTypeUDecoderImmIn_t;
-
-typedef struct __attribute__((packed)) {
-    uint32_t imm : 32;
-} RiscvInstructionTypeUDecoderImmOut_t;
-
 /**
  * Union for decoding imm field of a U-type instruction.
  */
 typedef union {
-    RiscvInstructionTypeUDecoderImmIn_t input;
-    RiscvInstructionTypeUDecoderImmOut_t output;
+    struct __attribute__((packed)) {
+        uint16_t imm11_0 : 12;
+        uint32_t imm31_12 : 20;
+    } bit;
+
+    struct __attribute__((packed)) {
+        uint32_t imm : 32;
+    };
 } RiscvInstructionTypeUDecoderImm_u;
 
 #endif

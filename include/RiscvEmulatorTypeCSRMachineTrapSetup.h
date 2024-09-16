@@ -144,158 +144,147 @@ typedef struct __attribute__((packed)) {
 } RiscvCSRmstatush_t;
 
 /**
- * Machine ISA Register.
- */
-typedef struct __attribute__((packed)) {
-    uint32_t extensions : 26;
-    uint8_t mxlen : 4;
-    uint8_t mxl : 2;
-} RiscvCSRmisa_t;
-
-/**
  * Machine ISA Register with all the extensions.
  */
-typedef struct __attribute__((packed)) {
-    /**
-     * Atomic extension.
-     */
-    uint8_t a : 1;
-
-    /**
-     * B extension.
-     */
-    uint8_t b : 1;
-
-    /**
-     * Compressed extension.
-     */
-    uint8_t c : 1;
-
-    /**
-     * Double-precision floating-point extension.
-     */
-    uint8_t d : 1;
-
-    /**
-     * RV32E base ISA.
-     */
-    uint8_t e : 1;
-
-    /**
-     * Single-precision floating-point extension.
-     */
-    uint8_t f : 1;
-
-    /**
-     * Reserved.
-     */
-    uint8_t g : 1;
-
-    /**
-     * Hypervisor extension.
-     */
-    uint8_t h : 1;
-
-    /**
-     * RV32I/64I/128I base ISA.
-     */
-    uint8_t i : 1;
-
-    /**
-     * Reserved.
-     */
-    uint8_t j : 1;
-
-    /**
-     * Reserved.
-     */
-    uint8_t k : 1;
-
-    /**
-     * Reserved.
-     */
-    uint8_t l : 1;
-
-    /**
-     * Integer Multiply/Divide extension.
-     */
-    uint8_t m : 1;
-
-    /**
-     * Tentatively reserved for User-Level Interrupts extension.
-     */
-    uint8_t n : 1;
-
-    /**
-     * Reserved.
-     */
-    uint8_t o : 1;
-
-    /**
-     * Tentatively reserved for Packed-SIMD extension.
-     */
-    uint8_t p : 1;
-
-    /**
-     * Quad-precision floating-point extension.
-     */
-    uint8_t q : 1;
-
-    /**
-     * Reserved.
-     */
-    uint8_t r : 1;
-
-    /**
-     * Supervisor mode implemented.
-     */
-    uint8_t s : 1;
-
-    /**
-     * Reserved.
-     */
-    uint8_t t : 1;
-
-    /**
-     * User mode implemented.
-     */
-    uint8_t u : 1;
-
-    /**
-     *  Vector extension.
-     */
-    uint8_t v : 1;
-
-    /**
-     * Reserved.
-     */
-    uint8_t w : 1;
-
-    /**
-     * Non-standard extensions present.
-     */
-    uint8_t x : 1;
-
-    /**
-     * Reserved.
-     */
-    uint8_t y : 1;
-
-    /**
-     * Reserved.
-     */
-    uint8_t z : 1;
-
-    uint8_t mxlen : 4;
-    uint8_t mxl : 2;
-} RiscvCSRmisaExtensions_t;
-
-/**
- * Machine ISA Register union.
- */
 typedef union {
-    RiscvCSRmisa_t misa;
-    RiscvCSRmisaExtensions_t misaextensions;
+    struct __attribute__((packed)) {
+        uint32_t extensions : 26;
+        uint8_t mxlen : 4;
+        uint8_t mxl : 2;
+    };
+
+    struct __attribute__((packed)) {
+        /**
+         * Atomic extension.
+         */
+        uint8_t a : 1;
+
+        /**
+         * B extension.
+         */
+        uint8_t b : 1;
+
+        /**
+         * Compressed extension.
+         */
+        uint8_t c : 1;
+
+        /**
+         * Double-precision floating-point extension.
+         */
+        uint8_t d : 1;
+
+        /**
+         * RV32E base ISA.
+         */
+        uint8_t e : 1;
+
+        /**
+         * Single-precision floating-point extension.
+         */
+        uint8_t f : 1;
+
+        /**
+         * Reserved.
+         */
+        uint8_t g : 1;
+
+        /**
+         * Hypervisor extension.
+         */
+        uint8_t h : 1;
+
+        /**
+         * RV32I/64I/128I base ISA.
+         */
+        uint8_t i : 1;
+
+        /**
+         * Reserved.
+         */
+        uint8_t j : 1;
+
+        /**
+         * Reserved.
+         */
+        uint8_t k : 1;
+
+        /**
+         * Reserved.
+         */
+        uint8_t l : 1;
+
+        /**
+         * Integer Multiply/Divide extension.
+         */
+        uint8_t m : 1;
+
+        /**
+         * Tentatively reserved for User-Level Interrupts extension.
+         */
+        uint8_t n : 1;
+
+        /**
+         * Reserved.
+         */
+        uint8_t o : 1;
+
+        /**
+         * Tentatively reserved for Packed-SIMD extension.
+         */
+        uint8_t p : 1;
+
+        /**
+         * Quad-precision floating-point extension.
+         */
+        uint8_t q : 1;
+
+        /**
+         * Reserved.
+         */
+        uint8_t r : 1;
+
+        /**
+         * Supervisor mode implemented.
+         */
+        uint8_t s : 1;
+
+        /**
+         * Reserved.
+         */
+        uint8_t t : 1;
+
+        /**
+         * User mode implemented.
+         */
+        uint8_t u : 1;
+
+        /**
+         *  Vector extension.
+         */
+        uint8_t v : 1;
+
+        /**
+         * Reserved.
+         */
+        uint8_t w : 1;
+
+        /**
+         * Non-standard extensions present.
+         */
+        uint8_t x : 1;
+
+        /**
+         * Reserved.
+         */
+        uint8_t y : 1;
+
+        /**
+         * Reserved.
+         */
+        uint8_t z : 1;
+    };
+
 } RiscvCSRmisa_u;
 
 /**
@@ -315,30 +304,27 @@ typedef struct __attribute__((packed)) {
 /**
  * Machine interrupt-enable register.
  */
-typedef struct __attribute__((packed)) {
-    uint32_t interrupts;
-} RiscvCSRmie_t;
-
-typedef struct __attribute__((packed)) {
-    uint8_t : 1;
-    uint8_t ssie : 1;
-    uint8_t : 1;
-    uint8_t msie : 1;
-    uint8_t : 1;
-    uint8_t stie : 1;
-    uint8_t : 1;
-    uint8_t mtie : 1;
-    uint8_t : 1;
-    uint8_t seie : 1;
-    uint8_t : 1;
-    uint8_t meie : 1;
-    uint8_t : 4;
-    uint16_t : 16;
-} RiscvCSRmiebits_t;
-
 typedef union {
-    RiscvCSRmie_t mie;
-    RiscvCSRmiebits_t bits;
+    struct __attribute__((packed)) {
+        uint32_t mie;
+    };
+
+    struct __attribute__((packed)) {
+        uint8_t : 1;
+        uint8_t ssie : 1;
+        uint8_t : 1;
+        uint8_t msie : 1;
+        uint8_t : 1;
+        uint8_t stie : 1;
+        uint8_t : 1;
+        uint8_t mtie : 1;
+        uint8_t : 1;
+        uint8_t seie : 1;
+        uint8_t : 1;
+        uint8_t meie : 1;
+        uint8_t : 4;
+        uint16_t : 16;
+    };
 } RiscvCSRmie_u;
 
 /**

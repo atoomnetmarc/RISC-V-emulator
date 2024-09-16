@@ -30,9 +30,9 @@ SPDX-License-Identifier: Apache-2.0
  */
 static inline void RiscvEmulatorJALR(RiscvEmulatorState_t *state) {
     uint8_t rdnum = state->instruction.itype.rd;
-    void *rd = &state->registers.array.location[rdnum];
+    void *rd = &state->reg.x[rdnum];
     uint8_t rs1num = state->instruction.itype.rs1;
-    void *rs1 = &state->registers.array.location[rs1num];
+    void *rs1 = &state->reg.x[rs1num];
 
     int16_t imm = state->instruction.itype.imm;
 
@@ -56,7 +56,7 @@ static inline void RiscvEmulatorJALR(RiscvEmulatorState_t *state) {
 #if (RVE_E_ZICSR == 1) && (RVE_E_C != 1)
     // Check if jumptoprogramcounter is aligned.
     if ((jumptoprogramcounter & 0b11) != 0) {
-        state->trapflags.bits.instructionaddressmisaligned = 1;
+        state->trapflag.instructionaddressmisaligned = 1;
         state->csr.mtval = jumptoprogramcounter;
         return;
     }
@@ -83,7 +83,7 @@ static inline void RiscvEmulatorOpcodeJumpAndLinkRegister(RiscvEmulatorState_t *
     if (state->instruction.itype.funct3 == FUNCT3_JUMPANDLINKREGISTER_JALR) {
         RiscvEmulatorJALR(state);
     } else {
-        state->trapflags.bits.illegalinstruction = 1;
+        state->trapflag.illegalinstruction = 1;
     }
 }
 
@@ -811,19 +811,19 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state) {
     int8_t detectedUnknownInstruction = 1;
 
     uint8_t rdnum = state->instruction.rtype.rd;
-    void *rd = &state->registers.array.location[rdnum];
+    void *rd = &state->reg.x[rdnum];
     uint8_t rs1num = state->instruction.rtype.rs1;
-    void *rs1 = &state->registers.array.location[rs1num];
+    void *rs1 = &state->reg.x[rs1num];
     uint8_t rs2num = state->instruction.rtype.rs2;
-    void *rs2 = &state->registers.array.location[rs2num];
+    void *rs2 = &state->reg.x[rs2num];
 
     if (detectedUnknownInstruction == 1) {
         RiscvInstructionTypeRDecoderFunct7Funct3_u instruction_decoderhelper_rtype;
-        instruction_decoderhelper_rtype.input.funct3 = state->instruction.rtype.funct3;
-        instruction_decoderhelper_rtype.input.funct7 = state->instruction.rtype.funct7;
+        instruction_decoderhelper_rtype.funct3 = state->instruction.rtype.funct3;
+        instruction_decoderhelper_rtype.funct7 = state->instruction.rtype.funct7;
 
         detectedUnknownInstruction = -1;
-        switch (instruction_decoderhelper_rtype.output.funct7_3) {
+        switch (instruction_decoderhelper_rtype.funct7_3) {
             case FUNCT7_FUNCT3_OPERATION_ADD:
                 RiscvEmulatorADD(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
@@ -950,12 +950,12 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state) {
 #if (RVE_E_ZBB == 1)
     if (detectedUnknownInstruction == 1) {
         RiscvInstructionTypeRDecoderFunct3Rs2Funct7_u instruction_decoderhelper_rtype_Funct3Rs2Funct7;
-        instruction_decoderhelper_rtype_Funct3Rs2Funct7.input.funct3 = state->instruction.rtype.funct3;
-        instruction_decoderhelper_rtype_Funct3Rs2Funct7.input.rs2 = state->instruction.rtype.rs2;
-        instruction_decoderhelper_rtype_Funct3Rs2Funct7.input.funct7 = state->instruction.rtype.funct7;
+        instruction_decoderhelper_rtype_Funct3Rs2Funct7.funct3 = state->instruction.rtype.funct3;
+        instruction_decoderhelper_rtype_Funct3Rs2Funct7.rs2 = state->instruction.rtype.rs2;
+        instruction_decoderhelper_rtype_Funct3Rs2Funct7.funct7 = state->instruction.rtype.funct7;
 
         detectedUnknownInstruction = -1;
-        switch (instruction_decoderhelper_rtype_Funct3Rs2Funct7.output.funct3_rs2_funct7) {
+        switch (instruction_decoderhelper_rtype_Funct3Rs2Funct7.funct3_rs2_funct7) {
             case FUNCT7_RS2_FUNCT3_OPERATION_ZEXTH:
                 RiscvEmulatorZEXT_H(state, rdnum, rd, rs1num, rs1);
                 break;
@@ -968,7 +968,7 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state) {
 #endif
 
     if (detectedUnknownInstruction == 1) {
-        state->trapflags.bits.illegalinstruction = 1;
+        state->trapflag.illegalinstruction = 1;
     }
 }
 
@@ -979,9 +979,9 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state) {
     int8_t detectedUnknownInstruction = 1;
 
     uint8_t rdnum = state->instruction.itype.rd;
-    void *rd = &state->registers.array.location[rdnum];
+    void *rd = &state->reg.x[rdnum];
     uint8_t rs1num = state->instruction.itype.rs1;
-    void *rs1 = &state->registers.array.location[rs1num];
+    void *rs1 = &state->reg.x[rs1num];
 
 #if (RVE_E_ZBB == 1)
     if (detectedUnknownInstruction == 1) {
@@ -989,11 +989,11 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state) {
         if (state->instruction.itype.funct3 == FUNCT3_IMMEDIATE_FUNCTIONS_1 ||
             state->instruction.itype.funct3 == FUNCT3_IMMEDIATE_FUNCTIONS_5) {
             RiscvInstructionTypeIDecoderImmFunct3ImmFunct3_u instruction_decoderhelper_itype_functiongroup;
-            instruction_decoderhelper_itype_functiongroup.input.funct3 = state->instruction.itype.funct3;
-            instruction_decoderhelper_itype_functiongroup.input.imm = state->instruction.itype.imm;
+            instruction_decoderhelper_itype_functiongroup.funct3 = state->instruction.itype.funct3;
+            instruction_decoderhelper_itype_functiongroup.imm = state->instruction.itype.imm;
 
             detectedUnknownInstruction = -1;
-            switch (instruction_decoderhelper_itype_functiongroup.output.immfunct3) {
+            switch (instruction_decoderhelper_itype_functiongroup.immfunct3) {
                 case IMM11_0_FUNCT3_IMMEDIATE_CLZ:
                     RiscvEmulatorCLZ(state, rdnum, rd, rs1num, rs1);
                     break;
@@ -1032,11 +1032,11 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state) {
 
             RiscvInstructionTypeIDecoderImm11_7Funct3Imm11_7Funct3_u instruction_decoderhelper_itype_functions_shamt;
 
-            instruction_decoderhelper_itype_functions_shamt.input.funct3 = state->instruction.itype.funct3;
-            instruction_decoderhelper_itype_functions_shamt.input.imm11_5 = state->instruction.itypeshiftbyconstant.imm11_5;
+            instruction_decoderhelper_itype_functions_shamt.funct3 = state->instruction.itype.funct3;
+            instruction_decoderhelper_itype_functions_shamt.imm11_5 = state->instruction.itypeshiftbyconstant.imm11_5;
 
             detectedUnknownInstruction = -1;
-            switch (instruction_decoderhelper_itype_functions_shamt.output.imm11_5funct3) {
+            switch (instruction_decoderhelper_itype_functions_shamt.imm11_5funct3) {
                 case IMM11_5_FUNCT3_IMMEDIATE_SLLI:
                     RiscvEmulatorSLLI(state, rdnum, rd, rs1num, rs1, shamt);
                     break;
@@ -1101,7 +1101,7 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state) {
     }
 
     if (detectedUnknownInstruction == 1) {
-        state->trapflags.bits.illegalinstruction = 1;
+        state->trapflag.illegalinstruction = 1;
     }
 }
 
@@ -1110,9 +1110,9 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state) {
  */
 static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state) {
     uint8_t rdnum = state->instruction.itype.rd;
-    void *rd = &state->registers.array.location[rdnum];
+    void *rd = &state->reg.x[rdnum];
     uint8_t rs1num = state->instruction.stype.rs1;
-    void *rs1 = &state->registers.array.location[rs1num];
+    void *rs1 = &state->reg.x[rs1num];
 
     int16_t imm = state->instruction.itype.imm;
     uint32_t memorylocation = imm + *(uint32_t *)rs1;
@@ -1155,7 +1155,7 @@ static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state) {
             length = sizeof(uint32_t);
             break;
         default:
-            state->trapflags.bits.illegalinstruction = 1;
+            state->trapflag.illegalinstruction = 1;
             return;
     }
 
@@ -1165,7 +1165,7 @@ static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state) {
         // Only the last few bits need to be checked.
         uint8_t memorylocation8 = memorylocation & 0xFF;
         if ((memorylocation8 % length) != 0) {
-            state->trapflags.bits.loadaddressmisaligned = 1;
+            state->trapflag.loadaddressmisaligned = 1;
             state->csr.mtval = memorylocation;
         }
     }
@@ -1191,7 +1191,7 @@ static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state) {
     }
 
 #if (RVE_E_ZICSR == 1)
-    if (state->trapflags.bits.loadaddressmisaligned == 1) {
+    if (state->trapflag.loadaddressmisaligned == 1) {
         return;
     }
 #endif
@@ -1228,15 +1228,15 @@ static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state) {
  */
 static inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state) {
     // Untangle the immediate bits.
-    RiscvInstructionTypeSDecoderImm_u helper;
-    helper.input.imm4_0 = state->instruction.stype.imm4_0;
-    helper.input.imm11_5 = state->instruction.stype.imm11_5;
-    int16_t offset = helper.output.imm;
+    RiscvInstructionTypeSDecoderImm_u immdecoder;
+    immdecoder.bit.imm4_0 = state->instruction.stype.imm4_0;
+    immdecoder.bit.imm11_5 = state->instruction.stype.imm11_5;
+    int16_t offset = immdecoder.imm;
 
     uint8_t rs1num = state->instruction.stype.rs1;
-    void *rs1 = &state->registers.array.location[rs1num];
+    void *rs1 = &state->reg.x[rs1num];
     uint8_t rs2num = state->instruction.stype.rs2;
-    void *rs2 = &state->registers.array.location[rs2num];
+    void *rs2 = &state->reg.x[rs2num];
 
     uint32_t memorylocation = offset + *(uint32_t *)rs1;
 
@@ -1266,7 +1266,7 @@ static inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state) {
             length = sizeof(uint8_t);
             break;
         default:
-            state->trapflags.bits.illegalinstruction = 1;
+            state->trapflag.illegalinstruction = 1;
             return;
     }
 
@@ -1276,7 +1276,7 @@ static inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state) {
         // Only the last few bits need to be checked.
         uint8_t memorylocation8 = memorylocation & 0xFF;
         if ((memorylocation8 % length) != 0) {
-            state->trapflags.bits.storeaddressmisaligned = 1;
+            state->trapflag.storeaddressmisaligned = 1;
             state->csr.mtval = memorylocation;
         }
     }
@@ -1299,7 +1299,7 @@ static inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state) {
 #endif
 
 #if (RVE_E_ZICSR == 1)
-    if (state->trapflags.bits.storeaddressmisaligned == 1) {
+    if (state->trapflag.storeaddressmisaligned == 1) {
         return;
     }
 #endif
@@ -1516,18 +1516,18 @@ static inline void RiscvEmulatorBLTU(
 static inline void RiscvEmulatorOpcodeBranch(RiscvEmulatorState_t *state) {
     uint8_t executebranch = BRANCH_NO;
     uint8_t rs1num = state->instruction.btype.rs1;
-    void *rs1 = &state->registers.array.location[rs1num];
+    void *rs1 = &state->reg.x[rs1num];
     uint8_t rs2num = state->instruction.btype.rs2;
-    void *rs2 = &state->registers.array.location[rs2num];
+    void *rs2 = &state->reg.x[rs2num];
 
     // Untangle the immediate bits.
-    RiscvInstructionTypeBDecoderImm_u helper;
-    helper.input.imm0 = 0;
-    helper.input.imm4_1 = state->instruction.btype.imm4_1;
-    helper.input.imm10_5 = state->instruction.btype.imm10_5;
-    helper.input.imm11 = state->instruction.btype.imm11;
-    helper.input.imm12 = state->instruction.btype.imm12;
-    int16_t imm = helper.output.imm;
+    RiscvInstructionTypeBDecoderImm_u immdecoder;
+    immdecoder.bit.imm0 = 0;
+    immdecoder.bit.imm4_1 = state->instruction.btype.imm4_1;
+    immdecoder.bit.imm10_5 = state->instruction.btype.imm10_5;
+    immdecoder.bit.imm11 = state->instruction.btype.imm11;
+    immdecoder.bit.imm12 = state->instruction.btype.imm12;
+    int16_t imm = immdecoder.imm;
 
 #if (RVE_E_HOOK == 1)
     RiscvEmulatorHookContext_t hc = {0};
@@ -1555,7 +1555,7 @@ static inline void RiscvEmulatorOpcodeBranch(RiscvEmulatorState_t *state) {
             RiscvEmulatorBLTU(state, rs1num, rs1, rs2num, rs2, imm, &executebranch, &hc);
             break;
         default:
-            state->trapflags.bits.illegalinstruction = 1;
+            state->trapflag.illegalinstruction = 1;
             return;
     }
 
@@ -1565,7 +1565,7 @@ static inline void RiscvEmulatorOpcodeBranch(RiscvEmulatorState_t *state) {
 #if (RVE_E_ZICSR == 1) && (RVE_E_C != 1)
         // Check if programcounternext is aligned.
         if ((state->programcounternext & 0b11) != 0) {
-            state->trapflags.bits.instructionaddressmisaligned = 1;
+            state->trapflag.instructionaddressmisaligned = 1;
             state->csr.mtval = state->programcounternext;
         }
 #endif
@@ -1583,15 +1583,15 @@ static inline void RiscvEmulatorOpcodeBranch(RiscvEmulatorState_t *state) {
 static inline void RiscvEmulatorAUIPC(RiscvEmulatorState_t *state) {
     uint32_t upperimmediate = state->instruction.utype.imm31_12;
 
-    RiscvInstructionTypeUDecoderImm_u helper = {0};
-    helper.input.imm31_12 = upperimmediate;
-    int32_t imm = helper.output.imm;
+    RiscvInstructionTypeUDecoderImm_u immdecoder = {0};
+    immdecoder.bit.imm31_12 = upperimmediate;
+    int32_t imm = immdecoder.imm;
 
     uint8_t rdnum = state->instruction.utype.rd;
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
-    void *rd = &state->registers.array.location[rdnum];
+    void *rd = &state->reg.x[rdnum];
     RiscvEmulatorHookContext_t hc = {0};
     hc.instruction = "auipc";
     hc.hook = HOOK_BEGIN;
@@ -1603,7 +1603,7 @@ static inline void RiscvEmulatorAUIPC(RiscvEmulatorState_t *state) {
 #endif
 
     if (rdnum != 0) {
-        state->registers.array.location[rdnum] = state->programcounter + imm;
+        state->reg.x[rdnum] = state->programcounter + imm;
     }
 
 #if (RVE_E_HOOK == 1)
@@ -1616,14 +1616,14 @@ static inline void RiscvEmulatorAUIPC(RiscvEmulatorState_t *state) {
  * Load upper with immediate.
  */
 static inline void RiscvEmulatorLUI(RiscvEmulatorState_t *state) {
-    RiscvInstructionTypeUDecoderImm_u helper;
-    helper.input.imm11_0 = 0;
-    helper.input.imm31_12 = state->instruction.utype.imm31_12;
+    RiscvInstructionTypeUDecoderImm_u immdecoder;
+    immdecoder.bit.imm11_0 = 0;
+    immdecoder.bit.imm31_12 = state->instruction.utype.imm31_12;
 
     uint8_t rdnum = state->instruction.utype.rd;
-    void *rd = &state->registers.array.location[rdnum];
+    void *rd = &state->reg.x[rdnum];
 
-    uint32_t imm = helper.output.imm;
+    uint32_t imm = immdecoder.imm;
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
@@ -1651,16 +1651,16 @@ static inline void RiscvEmulatorLUI(RiscvEmulatorState_t *state) {
  */
 static inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state) {
     uint8_t rdnum = state->instruction.jtype.rd;
-    void *rd = &state->registers.array.location[rdnum];
+    void *rd = &state->reg.x[rdnum];
 
     // Untangle the immediate bits.
-    RiscvInstructionTypeJDecoderImm_u helper = {0};
-    helper.input.imm10_1 = state->instruction.jtype.imm10_1;
-    helper.input.imm11 = state->instruction.jtype.imm11;
-    helper.input.imm19_12 = state->instruction.jtype.imm19_12;
-    helper.input.imm20 = state->instruction.jtype.imm20;
+    RiscvInstructionTypeJDecoderImm_u immdecoder = {0};
+    immdecoder.bit.imm10_1 = state->instruction.jtype.imm10_1;
+    immdecoder.bit.imm11 = state->instruction.jtype.imm11;
+    immdecoder.bit.imm19_12 = state->instruction.jtype.imm19_12;
+    immdecoder.bit.imm20 = state->instruction.jtype.imm20;
 
-    uint32_t jumptoprogramcounter = state->programcounter + helper.output.imm;
+    uint32_t jumptoprogramcounter = state->programcounter + immdecoder.imm;
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
@@ -1669,7 +1669,7 @@ static inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state) {
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
     hc.rd = rd;
-    hc.imm = helper.output.imm;
+    hc.imm = immdecoder.imm;
     hc.immissigned = 1;
     hc.immname = "offset";
     RiscvEmulatorHook(state, &hc);
@@ -1677,7 +1677,7 @@ static inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state) {
 #if (RVE_E_ZICSR == 1) && (RVE_E_C != 1)
     // Check if jumptoprogramcounter is aligned.
     if ((jumptoprogramcounter & 0b11) != 0) {
-        state->trapflags.bits.instructionaddressmisaligned = 1;
+        state->trapflag.instructionaddressmisaligned = 1;
         state->csr.mtval = jumptoprogramcounter;
         return;
     }
@@ -1711,7 +1711,7 @@ static inline void RiscvEmulatorECALL(RiscvEmulatorState_t *state) {
 #endif
 
 #if (RVE_E_ZICSR == 1)
-    state->trapflags.bits.environmentcallfrommmode = 1;
+    state->trapflag.environmentcallfrommmode = 1;
 #endif
 
     RiscvEmulatorHandleECALL(state);
@@ -1731,7 +1731,7 @@ static inline void RiscvEmulatorEBREAK(RiscvEmulatorState_t *state) {
 #endif
 
 #if (RVE_E_ZICSR == 1)
-    state->trapflags.bits.breakpoint = 1;
+    state->trapflag.breakpoint = 1;
     state->csr.mtval = state->programcounter;
 #endif
 
@@ -1773,17 +1773,17 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state) {
         detectedUnknownInstruction = -1;
 
         uint8_t rdnum = state->instruction.itypecsr.rd;
-        void *rd = &state->registers.array.location[rdnum];
+        void *rd = &state->reg.x[rdnum];
 
         uint8_t rs1num = state->instruction.itypecsr.rs1;
-        void *rs1 = &state->registers.array.location[rs1num];
+        void *rs1 = &state->reg.x[rs1num];
 
         uint8_t imm = state->instruction.itypecsrimm.imm;
 
         uint16_t csrnum = state->instruction.itypecsr.csr;
         void *csr = RiscvEmulatorGetCSRAddress(state, csrnum);
 
-        if (state->trapflags.value > 0) {
+        if (state->trapflag.value > 0) {
             return;
         }
 
@@ -1815,7 +1815,7 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state) {
 #endif
 
     if (detectedUnknownInstruction == 1) {
-        state->trapflags.bits.illegalinstruction = 1;
+        state->trapflag.illegalinstruction = 1;
     }
 }
 
@@ -1880,7 +1880,7 @@ static inline void RiscvEmulatorOpcodeMiscMem(RiscvEmulatorState_t *state) {
 #endif
 
     if (detectedUnknownInstruction == 1) {
-        state->trapflags.bits.illegalinstruction = 1;
+        state->trapflag.illegalinstruction = 1;
     }
 }
 

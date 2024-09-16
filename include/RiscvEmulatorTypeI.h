@@ -83,50 +83,32 @@ typedef struct __attribute__((packed)) {
 } RiscvInstructionTypeIMiscMemt_t;
 
 /**
- * Feed imm11_5 and funct3.
- */
-typedef struct __attribute__((packed)) {
-    uint8_t funct3 : 3;
-    int16_t imm11_5 : 7;
-} RiscvInstructionTypeIDecoderImm11_7Funct3In_r;
-
-/**
- * Get combined imm11_5 and funct3.
- */
-typedef struct __attribute__((packed)) {
-    uint16_t imm11_5funct3 : 10;
-} RiscvInstructionTypeIDecoderImm11_7Funct3Out_r;
-
-/**
  * Union for combining imm11_5 and funct3 field of R-type instruction.
  */
 typedef union {
-    RiscvInstructionTypeIDecoderImm11_7Funct3In_r input;
-    RiscvInstructionTypeIDecoderImm11_7Funct3Out_r output;
+    struct __attribute__((packed)) {
+        uint8_t funct3 : 3;
+        int16_t imm11_5 : 7;
+    };
+
+    struct __attribute__((packed)) {
+        uint16_t imm11_5funct3 : 10;
+    };
 } RiscvInstructionTypeIDecoderImm11_7Funct3Imm11_7Funct3_u;
 
 #if (RVE_E_ZBB == 1)
 /**
- * Feed imm and funct3.
- */
-typedef struct __attribute__((packed)) {
-    uint8_t funct3 : 3;
-    int16_t imm : 12;
-} RiscvInstructionTypeIDecoderImmFunct3In_r;
-
-/**
- * Get combined imm and funct3.
- */
-typedef struct __attribute__((packed)) {
-    uint16_t immfunct3 : 15;
-} RiscvInstructionTypeIDecoderImmFunct3Out_r;
-
-/**
  * Union for combining imm and funct3 field of R-type instruction.
  */
 typedef union {
-    RiscvInstructionTypeIDecoderImmFunct3In_r input;
-    RiscvInstructionTypeIDecoderImmFunct3Out_r output;
+    struct __attribute__((packed)) {
+        uint8_t funct3 : 3;
+        int16_t imm : 12;
+    };
+
+    struct __attribute__((packed)) {
+        uint16_t immfunct3 : 15;
+    };
 } RiscvInstructionTypeIDecoderImmFunct3ImmFunct3_u;
 #endif
 

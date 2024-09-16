@@ -22,32 +22,32 @@ static inline void RiscvEmulatorTrap(RiscvEmulatorState_t *state) {
 #if (RVE_E_ZICSR == 1)
 
     // Instruction address misaligned
-    if (state->trapflags.bits.instructionaddressmisaligned == 1) {
+    if (state->trapflag.instructionaddressmisaligned == 1) {
         state->csr.mcause.exceptioncode = MCAUSE_EXCEPTION_CODE_INSTRUCTION_ADDRESS_MISALIGNED;
     }
 
     // Breakpoint
-    if (state->trapflags.bits.breakpoint == 1) {
+    if (state->trapflag.breakpoint == 1) {
         state->csr.mcause.exceptioncode = MCAUSE_EXCEPTION_CODE_BREAKPOINT;
     }
 
     // Load address misaligned
-    if (state->trapflags.bits.loadaddressmisaligned == 1) {
+    if (state->trapflag.loadaddressmisaligned == 1) {
         state->csr.mcause.exceptioncode = MCAUSE_EXCEPTION_CODE_LOAD_ADDRESS_MISALIGNED;
     }
 
     // Store/AMO address misaligned
-    if (state->trapflags.bits.storeaddressmisaligned == 1) {
+    if (state->trapflag.storeaddressmisaligned == 1) {
         state->csr.mcause.exceptioncode = MCAUSE_EXCEPTION_CODE_STORE_ADDRESS_MISALIGNED;
     }
 
     //  Environment call from M-mode
-    if (state->trapflags.bits.environmentcallfrommmode == 1) {
+    if (state->trapflag.environmentcallfrommmode == 1) {
         state->csr.mcause.exceptioncode = MCAUSE_EXCEPTION_CODE_ENVIRONMENT_CALL_FROM_MMODE;
     }
 
     // Illegal instruction
-    if (state->trapflags.bits.illegalinstruction == 1) {
+    if (state->trapflag.illegalinstruction == 1) {
         state->csr.mcause.exceptioncode = MCAUSE_EXCEPTION_CODE_ILLEGAL_INSTRUCTION;
         state->csr.mtval = state->instruction.value;
     }
@@ -72,11 +72,11 @@ static inline void RiscvEmulatorTrap(RiscvEmulatorState_t *state) {
     RiscvEmulatorHook(state, &hc);
 #endif
 
-    if (state->trapflags.bits.illegalinstruction == 1) {
+    if (state->trapflag.illegalinstruction == 1) {
         RiscvEmulatorIllegalInstruction(state);
     }
 
-    state->trapflags.value = 0;
+    state->trapflag.value = 0;
 }
 
 #endif

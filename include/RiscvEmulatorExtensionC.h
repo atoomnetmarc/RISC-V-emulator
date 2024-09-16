@@ -86,7 +86,7 @@ static inline void RiscvEmulatorC_LW(
 #endif
 
 #if (RVE_E_ZICSR == 1)
-    if (state->trapflags.bits.storeaddressmisaligned == 1) {
+    if (state->trapflag.storeaddressmisaligned == 1) {
         return;
     }
 #endif
@@ -132,7 +132,7 @@ static inline void RiscvEmulatorC_SW(
 #endif
 
 #if (RVE_E_ZICSR == 1)
-    if (state->trapflags.bits.storeaddressmisaligned == 1) {
+    if (state->trapflag.storeaddressmisaligned == 1) {
         return;
     }
 #endif
@@ -434,15 +434,15 @@ static inline void RiscvEmulatorC_ADDI16SP(
     const uint8_t rdnum __attribute__((unused)),
     void *rd) {
 
-    RiscvInstructionTypeCIAddi16spDecoderImm_u decoderimm = {0};
+    RiscvInstructionTypeCIAddi16spDecoderImm_u immdecoder = {0};
 
-    decoderimm.input.imm4 = state->instruction.ciaddi16sp.imm4;
-    decoderimm.input.imm5 = state->instruction.ciaddi16sp.imm5;
-    decoderimm.input.imm6 = state->instruction.ciaddi16sp.imm6;
-    decoderimm.input.imm8_7 = state->instruction.ciaddi16sp.imm8_7;
-    decoderimm.input.imm9 = state->instruction.ciaddi16sp.imm9;
+    immdecoder.bit.imm4 = state->instruction.ciaddi16sp.imm4;
+    immdecoder.bit.imm5 = state->instruction.ciaddi16sp.imm5;
+    immdecoder.bit.imm6 = state->instruction.ciaddi16sp.imm6;
+    immdecoder.bit.imm8_7 = state->instruction.ciaddi16sp.imm8_7;
+    immdecoder.bit.imm9 = state->instruction.ciaddi16sp.imm9;
 
-    int16_t nzimm = decoderimm.output.imm;
+    int16_t nzimm = immdecoder.imm;
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
@@ -478,10 +478,10 @@ static inline void RiscvEmulatorC_LUI(
     const uint8_t rdnum __attribute__((unused)),
     void *rd) {
 
-    RiscvInstructionTypeCILuiDecoderImm_u decoderimm = {0};
-    decoderimm.input.imm16_12 = state->instruction.cilui.imm16_12;
-    decoderimm.input.imm17 = state->instruction.cilui.imm17;
-    int32_t nzimm = decoderimm.output.imm;
+    RiscvInstructionTypeCILuiDecoderImm_u immdecoder = {0};
+    immdecoder.bit.imm16_12 = state->instruction.cilui.imm16_12;
+    immdecoder.bit.imm17 = state->instruction.cilui.imm17;
+    int32_t nzimm = immdecoder.imm;
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
@@ -832,7 +832,7 @@ static inline void RiscvEmulatorC_EBREAK(RiscvEmulatorState_t *state) {
 #endif
 
 #if (RVE_E_ZICSR == 1)
-    state->trapflags.bits.breakpoint = 1;
+    state->trapflag.breakpoint = 1;
     state->csr.mtval = state->programcounter;
 #endif
 
@@ -912,9 +912,9 @@ static inline void RiscvEmulatorC_SWSP(
  */
 static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
     RiscvInstructionTypeCDecoderOpcode_u decoderOpcode16;
-    decoderOpcode16.input.funct3 = state->instruction.copcode.funct3;
-    decoderOpcode16.input.op = state->instruction.copcode.op;
-    uint8_t opfunct3 = decoderOpcode16.output.opfunct3;
+    decoderOpcode16.funct3 = state->instruction.copcode.funct3;
+    decoderOpcode16.op = state->instruction.copcode.op;
+    uint8_t opfunct3 = decoderOpcode16.opfunct3;
 
     uint8_t funct3_funct2 = 0;
     uint8_t funct6_funct2 = 0;
@@ -925,44 +925,44 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
     void *rd = 0;
     void *rs1 = 0;
     void *rs2 = 0;
-    void *sp = &state->registers.symbolic.sp;
-    void *ra = &state->registers.symbolic.ra;
+    void *sp = &state->reg.sp;
+    void *ra = &state->reg.ra;
 
     // Whenever possible, combine decoding instruction bits for multiple instructions.
     switch (opfunct3) {
         case OPCODE16_ADDI4SPN: {
             RiscvInstructionTypeCIWDecoderImm_u RiscvInstructionTypeCIWDecoderImm = {0};
-            RiscvInstructionTypeCIWDecoderImm.input.imm2 = state->instruction.ciwtype.imm2;
-            RiscvInstructionTypeCIWDecoderImm.input.imm3 = state->instruction.ciwtype.imm3;
-            RiscvInstructionTypeCIWDecoderImm.input.imm5_4 = state->instruction.ciwtype.imm5_4;
-            RiscvInstructionTypeCIWDecoderImm.input.imm9_6 = state->instruction.ciwtype.imm9_6;
-            imm = RiscvInstructionTypeCIWDecoderImm.output.imm;
+            RiscvInstructionTypeCIWDecoderImm.bit.imm2 = state->instruction.ciwtype.imm2;
+            RiscvInstructionTypeCIWDecoderImm.bit.imm3 = state->instruction.ciwtype.imm3;
+            RiscvInstructionTypeCIWDecoderImm.bit.imm5_4 = state->instruction.ciwtype.imm5_4;
+            RiscvInstructionTypeCIWDecoderImm.bit.imm9_6 = state->instruction.ciwtype.imm9_6;
+            imm = RiscvInstructionTypeCIWDecoderImm.imm;
             rdnum = state->instruction.ciwtype.rdp + 8;
             break;
         }
         case OPCODE16_MISCALU: {
             RiscvInstructionTypeCBDecoderFunct3Funct2_u RiscvInstructionTypeCBDecoderFunct3Funct2;
-            RiscvInstructionTypeCBDecoderFunct3Funct2.input.funct3 = state->instruction.cbimm.funct3;
-            RiscvInstructionTypeCBDecoderFunct3Funct2.input.funct2 = state->instruction.cbimm.funct2;
-            funct3_funct2 = RiscvInstructionTypeCBDecoderFunct3Funct2.output.funct3_funct2;
+            RiscvInstructionTypeCBDecoderFunct3Funct2.funct3 = state->instruction.cbimm.funct3;
+            RiscvInstructionTypeCBDecoderFunct3Funct2.funct2 = state->instruction.cbimm.funct2;
+            funct3_funct2 = RiscvInstructionTypeCBDecoderFunct3Funct2.funct3_funct2;
 
             RiscvInstructionTypeCBImmDecoderImm_u RiscvInstructionTypeCBImmDecoderImm;
 
             if (funct3_funct2 == FUNCT3_FUNCT2_SRLI ||
                 funct3_funct2 == FUNCT3_FUNCT2_SRAI ||
                 funct3_funct2 == FUNCT3_FUNCT2_ANDI) {
-                RiscvInstructionTypeCBImmDecoderImm.input.imm4_0 = state->instruction.cbimm.imm4_0;
-                RiscvInstructionTypeCBImmDecoderImm.input.imm5 = state->instruction.cbimm.imm5;
-                imm = RiscvInstructionTypeCBImmDecoderImm.output.imm;
+                RiscvInstructionTypeCBImmDecoderImm.bit.imm4_0 = state->instruction.cbimm.imm4_0;
+                RiscvInstructionTypeCBImmDecoderImm.bit.imm5 = state->instruction.cbimm.imm5;
+                imm = RiscvInstructionTypeCBImmDecoderImm.imm;
 
                 rdnum = state->instruction.cbimm.rdp + 8;
                 break;
             }
 
             RiscvInstructionTypeCADecoderFunct6Funct2_u RiscvInstructionTypeCADecoderFunct6Funct2;
-            RiscvInstructionTypeCADecoderFunct6Funct2.input.funct6 = state->instruction.catype.funct6;
-            RiscvInstructionTypeCADecoderFunct6Funct2.input.funct2 = state->instruction.catype.funct2;
-            funct6_funct2 = RiscvInstructionTypeCADecoderFunct6Funct2.output.funct6_funct2;
+            RiscvInstructionTypeCADecoderFunct6Funct2.funct6 = state->instruction.catype.funct6;
+            RiscvInstructionTypeCADecoderFunct6Funct2.funct2 = state->instruction.catype.funct2;
+            funct6_funct2 = RiscvInstructionTypeCADecoderFunct6Funct2.funct6_funct2;
 
             if (funct6_funct2 == FUNCT6_FUNCT2_SUB ||
                 funct6_funct2 == FUNCT6_FUNCT2_XOR ||
@@ -977,12 +977,12 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
         case OPCODE16_BEQZ:
         case OPCODE16_BNEZ: {
             RiscvInstructionTypeCBDecoderImm_u RiscvInstructionTypeCBDecoderImm = {0};
-            RiscvInstructionTypeCBDecoderImm.input.imm2_1 = state->instruction.cbtype.imm2_1;
-            RiscvInstructionTypeCBDecoderImm.input.imm4_3 = state->instruction.cbtype.imm4_3;
-            RiscvInstructionTypeCBDecoderImm.input.imm5 = state->instruction.cbtype.imm5;
-            RiscvInstructionTypeCBDecoderImm.input.imm7_6 = state->instruction.cbtype.imm7_6;
-            RiscvInstructionTypeCBDecoderImm.input.imm8 = state->instruction.cbtype.imm8;
-            imm = RiscvInstructionTypeCBDecoderImm.output.imm;
+            RiscvInstructionTypeCBDecoderImm.bit.imm2_1 = state->instruction.cbtype.imm2_1;
+            RiscvInstructionTypeCBDecoderImm.bit.imm4_3 = state->instruction.cbtype.imm4_3;
+            RiscvInstructionTypeCBDecoderImm.bit.imm5 = state->instruction.cbtype.imm5;
+            RiscvInstructionTypeCBDecoderImm.bit.imm7_6 = state->instruction.cbtype.imm7_6;
+            RiscvInstructionTypeCBDecoderImm.bit.imm8 = state->instruction.cbtype.imm8;
+            imm = RiscvInstructionTypeCBDecoderImm.imm;
             rs1num = state->instruction.cbtype.rs1p + 8;
             break;
         }
@@ -990,24 +990,24 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
         case OPCODE16_LI:
         case OPCODE16_SLLI: {
             RiscvInstructionTypeCIDecoderImm_u RiscvInstructionTypeCIDecoderImm = {0};
-            RiscvInstructionTypeCIDecoderImm.input.imm4_0 = state->instruction.citype.imm4_0;
-            RiscvInstructionTypeCIDecoderImm.input.imm5 = state->instruction.citype.imm5;
-            imm = RiscvInstructionTypeCIDecoderImm.output.imm;
+            RiscvInstructionTypeCIDecoderImm.bit.imm4_0 = state->instruction.citype.imm4_0;
+            RiscvInstructionTypeCIDecoderImm.bit.imm5 = state->instruction.citype.imm5;
+            imm = RiscvInstructionTypeCIDecoderImm.imm;
             rdnum = state->instruction.citype.rd;
             break;
         }
         case OPCODE16_JAL:
         case OPCODE16_J: {
             RiscvInstructionTypeCJDecoderImm_u RiscvInstructionTypeCJDecoderImm = {0};
-            RiscvInstructionTypeCJDecoderImm.input.imm3_1 = state->instruction.cjtype.imm3_1;
-            RiscvInstructionTypeCJDecoderImm.input.imm4 = state->instruction.cjtype.imm4;
-            RiscvInstructionTypeCJDecoderImm.input.imm5 = state->instruction.cjtype.imm5;
-            RiscvInstructionTypeCJDecoderImm.input.imm6 = state->instruction.cjtype.imm6;
-            RiscvInstructionTypeCJDecoderImm.input.imm7 = state->instruction.cjtype.imm7;
-            RiscvInstructionTypeCJDecoderImm.input.imm9_8 = state->instruction.cjtype.imm9_8;
-            RiscvInstructionTypeCJDecoderImm.input.imm10 = state->instruction.cjtype.imm10;
-            RiscvInstructionTypeCJDecoderImm.input.imm11 = state->instruction.cjtype.imm11;
-            imm = RiscvInstructionTypeCJDecoderImm.output.imm;
+            RiscvInstructionTypeCJDecoderImm.bit.imm3_1 = state->instruction.cjtype.imm3_1;
+            RiscvInstructionTypeCJDecoderImm.bit.imm4 = state->instruction.cjtype.imm4;
+            RiscvInstructionTypeCJDecoderImm.bit.imm5 = state->instruction.cjtype.imm5;
+            RiscvInstructionTypeCJDecoderImm.bit.imm6 = state->instruction.cjtype.imm6;
+            RiscvInstructionTypeCJDecoderImm.bit.imm7 = state->instruction.cjtype.imm7;
+            RiscvInstructionTypeCJDecoderImm.bit.imm9_8 = state->instruction.cjtype.imm9_8;
+            RiscvInstructionTypeCJDecoderImm.bit.imm10 = state->instruction.cjtype.imm10;
+            RiscvInstructionTypeCJDecoderImm.bit.imm11 = state->instruction.cjtype.imm11;
+            imm = RiscvInstructionTypeCJDecoderImm.imm;
             break;
         }
 #if (RVE_E_F == 1)
@@ -1015,10 +1015,10 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
 #endif
         case OPCODE16_LW: {
             RiscvInstructionTypeCLDecoderImm_u RiscvInstructionTypeCLDecoderImm = {0};
-            RiscvInstructionTypeCLDecoderImm.input.imm2 = state->instruction.cltype.imm2;
-            RiscvInstructionTypeCLDecoderImm.input.imm5_3 = state->instruction.cltype.imm5_3;
-            RiscvInstructionTypeCLDecoderImm.input.imm6 = state->instruction.cltype.imm6;
-            imm = RiscvInstructionTypeCLDecoderImm.output.imm;
+            RiscvInstructionTypeCLDecoderImm.bit.imm2 = state->instruction.cltype.imm2;
+            RiscvInstructionTypeCLDecoderImm.bit.imm5_3 = state->instruction.cltype.imm5_3;
+            RiscvInstructionTypeCLDecoderImm.bit.imm6 = state->instruction.cltype.imm6;
+            imm = RiscvInstructionTypeCLDecoderImm.imm;
             rs1num = state->instruction.cltype.rs1p + 8;
             rdnum = state->instruction.cltype.rdp + 8;
             break;
@@ -1028,10 +1028,10 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
 #endif
         case OPCODE16_SW: {
             RiscvInstructionTypeCSDecoderImm_u RiscvInstructionTypeCSDecoderImm = {0};
-            RiscvInstructionTypeCSDecoderImm.input.imm2 = state->instruction.cstype.imm2;
-            RiscvInstructionTypeCSDecoderImm.input.imm5_3 = state->instruction.cstype.imm5_3;
-            RiscvInstructionTypeCSDecoderImm.input.imm6 = state->instruction.cstype.imm6;
-            imm = RiscvInstructionTypeCSDecoderImm.output.imm;
+            RiscvInstructionTypeCSDecoderImm.bit.imm2 = state->instruction.cstype.imm2;
+            RiscvInstructionTypeCSDecoderImm.bit.imm5_3 = state->instruction.cstype.imm5_3;
+            RiscvInstructionTypeCSDecoderImm.bit.imm6 = state->instruction.cstype.imm6;
+            imm = RiscvInstructionTypeCSDecoderImm.imm;
             rs1num = state->instruction.cstype.rs1p + 8;
             rs2num = state->instruction.cstype.rs2p + 8;
             break;
@@ -1041,10 +1041,10 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
 #endif
         case OPCODE16_LWSP: {
             RiscvInstructionTypeCILwspDecoderImm_u RiscvInstructionTypeCILwspDecoderImm = {0};
-            RiscvInstructionTypeCILwspDecoderImm.input.imm4_2 = state->instruction.cilwsp.imm4_2;
-            RiscvInstructionTypeCILwspDecoderImm.input.imm5 = state->instruction.cilwsp.imm5;
-            RiscvInstructionTypeCILwspDecoderImm.input.imm7_6 = state->instruction.cilwsp.imm7_6;
-            imm = RiscvInstructionTypeCILwspDecoderImm.output.imm;
+            RiscvInstructionTypeCILwspDecoderImm.bit.imm4_2 = state->instruction.cilwsp.imm4_2;
+            RiscvInstructionTypeCILwspDecoderImm.bit.imm5 = state->instruction.cilwsp.imm5;
+            RiscvInstructionTypeCILwspDecoderImm.bit.imm7_6 = state->instruction.cilwsp.imm7_6;
+            imm = RiscvInstructionTypeCILwspDecoderImm.imm;
             rdnum = state->instruction.cilwsp.rd;
             break;
         }
@@ -1053,22 +1053,22 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
 #endif
         case OPCODE16_SWSP: {
             RiscvInstructionTypeCSSDecoderImm_u RiscvInstructionTypeCSSDecoderImm = {0};
-            RiscvInstructionTypeCSSDecoderImm.input.imm5_2 = state->instruction.csstype.imm5_2;
-            RiscvInstructionTypeCSSDecoderImm.input.imm7_6 = state->instruction.csstype.imm7_6;
-            imm = RiscvInstructionTypeCSSDecoderImm.output.imm;
+            RiscvInstructionTypeCSSDecoderImm.bit.imm5_2 = state->instruction.csstype.imm5_2;
+            RiscvInstructionTypeCSSDecoderImm.bit.imm7_6 = state->instruction.csstype.imm7_6;
+            imm = RiscvInstructionTypeCSSDecoderImm.imm;
             rs2num = state->instruction.csstype.rs2;
             break;
         }
     }
 
     if (rdnum >= 0) {
-        rd = &state->registers.array.location[rdnum];
+        rd = &state->reg.x[rdnum];
     }
     if (rs1num >= 0) {
-        rs1 = &state->registers.array.location[rs1num];
+        rs1 = &state->reg.x[rs1num];
     }
     if (rs2num >= 0) {
-        rs2 = &state->registers.array.location[rs2num];
+        rs2 = &state->reg.x[rs2num];
     }
 
     switch (opfunct3) {
@@ -1076,7 +1076,7 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             if (imm != 0) {
                 RiscvEmulatorC_ADDI4SPN(state, rdnum, rd, sp, imm);
             } else {
-                state->trapflags.bits.illegalinstruction = 1;
+                state->trapflag.illegalinstruction = 1;
             }
             break;
         case OPCODE16_LW:
@@ -1096,7 +1096,7 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             break;
         case OPCODE16_LUI_ADDI16SP: {
             rdnum = state->instruction.cilui.rd;
-            rd = &state->registers.array.location[rdnum];
+            rd = &state->reg.x[rdnum];
 
             if (rdnum == 2) {
                 RiscvEmulatorC_ADDI16SP(state, rdnum, rd);
@@ -1141,7 +1141,7 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
                 break;
             }
 
-            state->trapflags.bits.illegalinstruction = 1;
+            state->trapflag.illegalinstruction = 1;
             break;
         case OPCODE16_J:
             RiscvEmulatorC_J(state, imm);
@@ -1160,9 +1160,9 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             break;
         case OPCODE16_JALR_MV_ADD:
             rdnum = state->instruction.crtype.rd;
-            rd = &state->registers.array.location[rdnum];
+            rd = &state->reg.x[rdnum];
             rs2num = state->instruction.crtype.rs2;
-            rs2 = &state->registers.array.location[rs2num];
+            rs2 = &state->reg.x[rs2num];
 
             if (state->instruction.crtype.funct4 == FUNCT4_MV) {
                 if (rs2num == 0) {
@@ -1187,34 +1187,34 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             break;
 #if (RVE_E_F == 1)
         case OPCODE16_FLW:
-            state->trapflags.bits.illegalinstruction = 1;
+            state->trapflag.illegalinstruction = 1;
             break;
         case OPCODE16_FLWSP:
-            state->trapflags.bits.illegalinstruction = 1;
+            state->trapflag.illegalinstruction = 1;
             break;
         case OPCODE16_FSW:
-            state->trapflags.bits.illegalinstruction = 1;
+            state->trapflag.illegalinstruction = 1;
             break;
         case OPCODE16_FSWSP:
-            state->trapflags.bits.illegalinstruction = 1;
+            state->trapflag.illegalinstruction = 1;
             break;
 #endif
 #if (RVE_E_D == 1)
         case OPCODE16_FLD:
-            state->trapflags.bits.illegalinstruction = 1;
+            state->trapflag.illegalinstruction = 1;
             break;
         case OPCODE16_FLDSP:
-            state->trapflags.bits.illegalinstruction = 1;
+            state->trapflag.illegalinstruction = 1;
             break;
         case OPCODE16_FSD:
-            state->trapflags.bits.illegalinstruction = 1;
+            state->trapflag.illegalinstruction = 1;
             break;
         case OPCODE16_FSDSP:
-            state->trapflags.bits.illegalinstruction = 1;
+            state->trapflag.illegalinstruction = 1;
             break;
 #endif
         default:
-            state->trapflags.bits.illegalinstruction = 1;
+            state->trapflag.illegalinstruction = 1;
             break;
     }
 }
