@@ -818,7 +818,7 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state) {
     void *rs2 = &state->reg.x[rs2num];
 
     if (detectedUnknownInstruction == 1) {
-        RiscvInstructionTypeRDecoderFunct7Funct3_u instruction_decoderhelper_rtype;
+        RiscvInstructionTypeRDecoderFunct7Funct3_u instruction_decoderhelper_rtype = {0};
         instruction_decoderhelper_rtype.funct3 = state->instruction.rtype.funct3;
         instruction_decoderhelper_rtype.funct7 = state->instruction.rtype.funct7;
 
@@ -949,7 +949,7 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state) {
 
 #if (RVE_E_ZBB == 1)
     if (detectedUnknownInstruction == 1) {
-        RiscvInstructionTypeRDecoderFunct3Rs2Funct7_u instruction_decoderhelper_rtype_Funct3Rs2Funct7;
+        RiscvInstructionTypeRDecoderFunct3Rs2Funct7_u instruction_decoderhelper_rtype_Funct3Rs2Funct7 = {0};
         instruction_decoderhelper_rtype_Funct3Rs2Funct7.funct3 = state->instruction.rtype.funct3;
         instruction_decoderhelper_rtype_Funct3Rs2Funct7.rs2 = state->instruction.rtype.rs2;
         instruction_decoderhelper_rtype_Funct3Rs2Funct7.funct7 = state->instruction.rtype.funct7;
@@ -988,7 +988,7 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state) {
         // If funct3 == 0b001 or 0b101 then a whole set of functions are encoded in imm.
         if (state->instruction.itype.funct3 == FUNCT3_IMMEDIATE_FUNCTIONS_1 ||
             state->instruction.itype.funct3 == FUNCT3_IMMEDIATE_FUNCTIONS_5) {
-            RiscvInstructionTypeIDecoderImmFunct3ImmFunct3_u instruction_decoderhelper_itype_functiongroup;
+            RiscvInstructionTypeIDecoderImmFunct3ImmFunct3_u instruction_decoderhelper_itype_functiongroup = {0};
             instruction_decoderhelper_itype_functiongroup.funct3 = state->instruction.itype.funct3;
             instruction_decoderhelper_itype_functiongroup.imm = state->instruction.itype.imm;
 
@@ -1030,7 +1030,7 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state) {
 
             uint8_t shamt = state->instruction.itypeshiftbyconstant.shamt;
 
-            RiscvInstructionTypeIDecoderImm11_7Funct3Imm11_7Funct3_u instruction_decoderhelper_itype_functions_shamt;
+            RiscvInstructionTypeIDecoderImm11_7Funct3Imm11_7Funct3_u instruction_decoderhelper_itype_functions_shamt = {0};
 
             instruction_decoderhelper_itype_functions_shamt.funct3 = state->instruction.itype.funct3;
             instruction_decoderhelper_itype_functions_shamt.imm11_5 = state->instruction.itypeshiftbyconstant.imm11_5;
@@ -1228,7 +1228,7 @@ static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state) {
  */
 static inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state) {
     // Untangle the immediate bits.
-    RiscvInstructionTypeSDecoderImm_u immdecoder;
+    RiscvInstructionTypeSDecoderImm_u immdecoder = {0};
     immdecoder.bit.imm4_0 = state->instruction.stype.imm4_0;
     immdecoder.bit.imm11_5 = state->instruction.stype.imm11_5;
     int16_t offset = immdecoder.imm;
@@ -1521,8 +1521,7 @@ static inline void RiscvEmulatorOpcodeBranch(RiscvEmulatorState_t *state) {
     void *rs2 = &state->reg.x[rs2num];
 
     // Untangle the immediate bits.
-    RiscvInstructionTypeBDecoderImm_u immdecoder;
-    immdecoder.bit.imm0 = 0;
+    RiscvInstructionTypeBDecoderImm_u immdecoder = {0};
     immdecoder.bit.imm4_1 = state->instruction.btype.imm4_1;
     immdecoder.bit.imm10_5 = state->instruction.btype.imm10_5;
     immdecoder.bit.imm11 = state->instruction.btype.imm11;
@@ -1616,7 +1615,7 @@ static inline void RiscvEmulatorAUIPC(RiscvEmulatorState_t *state) {
  * Load upper with immediate.
  */
 static inline void RiscvEmulatorLUI(RiscvEmulatorState_t *state) {
-    RiscvInstructionTypeUDecoderImm_u immdecoder;
+    RiscvInstructionTypeUDecoderImm_u immdecoder = {0};
     immdecoder.bit.imm11_0 = 0;
     immdecoder.bit.imm31_12 = state->instruction.utype.imm31_12;
 

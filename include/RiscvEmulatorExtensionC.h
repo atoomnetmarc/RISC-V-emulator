@@ -435,7 +435,6 @@ static inline void RiscvEmulatorC_ADDI16SP(
     void *rd) {
 
     RiscvInstructionTypeCIAddi16spDecoderImm_u immdecoder = {0};
-
     immdecoder.bit.imm4 = state->instruction.ciaddi16sp.imm4;
     immdecoder.bit.imm5 = state->instruction.ciaddi16sp.imm5;
     immdecoder.bit.imm6 = state->instruction.ciaddi16sp.imm6;
@@ -911,7 +910,7 @@ static inline void RiscvEmulatorC_SWSP(
  * Process compressed opcodes.
  */
 static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
-    RiscvInstructionTypeCDecoderOpcode_u decoderOpcode16;
+    RiscvInstructionTypeCDecoderOpcode_u decoderOpcode16 = {0};
     decoderOpcode16.funct3 = state->instruction.copcode.funct3;
     decoderOpcode16.op = state->instruction.copcode.op;
     uint8_t opfunct3 = decoderOpcode16.opfunct3;
@@ -941,12 +940,12 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             break;
         }
         case OPCODE16_MISCALU: {
-            RiscvInstructionTypeCBDecoderFunct3Funct2_u RiscvInstructionTypeCBDecoderFunct3Funct2;
+            RiscvInstructionTypeCBDecoderFunct3Funct2_u RiscvInstructionTypeCBDecoderFunct3Funct2 = {0};
             RiscvInstructionTypeCBDecoderFunct3Funct2.funct3 = state->instruction.cbimm.funct3;
             RiscvInstructionTypeCBDecoderFunct3Funct2.funct2 = state->instruction.cbimm.funct2;
             funct3_funct2 = RiscvInstructionTypeCBDecoderFunct3Funct2.funct3_funct2;
 
-            RiscvInstructionTypeCBImmDecoderImm_u RiscvInstructionTypeCBImmDecoderImm;
+            RiscvInstructionTypeCBImmDecoderImm_u RiscvInstructionTypeCBImmDecoderImm = {0};
 
             if (funct3_funct2 == FUNCT3_FUNCT2_SRLI ||
                 funct3_funct2 == FUNCT3_FUNCT2_SRAI ||
@@ -959,7 +958,7 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
                 break;
             }
 
-            RiscvInstructionTypeCADecoderFunct6Funct2_u RiscvInstructionTypeCADecoderFunct6Funct2;
+            RiscvInstructionTypeCADecoderFunct6Funct2_u RiscvInstructionTypeCADecoderFunct6Funct2 = {0};
             RiscvInstructionTypeCADecoderFunct6Funct2.funct6 = state->instruction.catype.funct6;
             RiscvInstructionTypeCADecoderFunct6Funct2.funct2 = state->instruction.catype.funct2;
             funct6_funct2 = RiscvInstructionTypeCADecoderFunct6Funct2.funct6_funct2;
