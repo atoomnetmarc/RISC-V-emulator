@@ -61,7 +61,7 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
 #if (RVE_E_C == 1)
     // Read 16 bits.
     state->instruction.H = 0;
-    RiscvEmulatorLoadInstruction(
+    RiscvEmulatorLoad(
         state->programcounter,
         &state->instruction.L,
         sizeof(state->instruction.L));
@@ -70,7 +70,7 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
 
     // Read another 16 bits when this is a 32-bit instruction.
     if (state->instruction.copcode.op == OPCODE16_QUADRANT_INVALID) {
-        RiscvEmulatorLoadInstruction(
+        RiscvEmulatorLoad(
             state->programcounternext,
             &state->instruction.H,
             sizeof(state->instruction.L));
@@ -81,7 +81,7 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
     }
 #else
     // Read 32 bits.
-    RiscvEmulatorLoadInstruction(state->programcounter, &state->instruction.value, sizeof(state->instruction.value));
+    RiscvEmulatorLoad(state->programcounter, &state->instruction.value, sizeof(state->instruction.value));
     state->programcounternext += sizeof(state->instruction.value);
 #endif
 

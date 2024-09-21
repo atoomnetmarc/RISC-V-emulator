@@ -57,16 +57,6 @@ The emulator needs some implementation specific code in a file called `RiscvEmul
 
 ```c
 /**
- * Loads a RISC-V instruction from the specified address.
- *
- * @param address The address in bytes of where to read the RISC-V instruction.
- * @param destination The destination address to copy the data to.
- * @param length The length in bytes of the data.
- */
-static inline void RiscvEmulatorLoadInstruction(uint32_t address, void *destination, uint8_t length) {
-}
-
-/**
  * Loads bytes from emulator to RISC-V.
  *
  * @param address The byte address in memory.

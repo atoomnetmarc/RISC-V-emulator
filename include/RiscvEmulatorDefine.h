@@ -16,17 +16,18 @@ SPDX-License-Identifier: Apache-2.0
 #define IALIGN 32
 #endif
 
-#define IO_ORIGIN  0x02000000
-#define ROM_ORIGIN 0x20000000
-#define RAM_ORIGIN 0x80000000
+#define IO_ORIGIN   0x02000000
+#define UART_ORIGIN 0x10000000
+#define ROM_ORIGIN  0x20000000
+#define RAM_ORIGIN  0x80000000
 
 #include "RiscvEmulatorDefineBType.h"
 #include "RiscvEmulatorDefineCSRMachineTrapHandling.h"
 #include "RiscvEmulatorDefineCType.h"
+#include "RiscvEmulatorDefineHook.h"
 #include "RiscvEmulatorDefineIType.h"
 #include "RiscvEmulatorDefineOpcode.h"
 #include "RiscvEmulatorDefineRType.h"
 #include "RiscvEmulatorDefineSType.h"
-#include "RiscvEmulatorDefineHook.h"
 
 #endif
