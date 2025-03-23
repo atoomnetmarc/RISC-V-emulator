@@ -1,9 +1,9 @@
 /*
-
-Copyright 2023-2024 Marc Ketel
-SPDX-License-Identifier: Apache-2.0
-
-*/
+ *
+ * Copyright 2023-2025 Marc Ketel
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ */
 
 #ifndef RiscvEmulatorExtensionM_H_
 #define RiscvEmulatorExtensionM_H_
@@ -84,7 +84,7 @@ static inline void RiscvEmulatorMULH(
         return;
     }
 
-    int64_t result = (int64_t)(*(int32_t *)rs1 * (int64_t) * (int32_t *)rs2);
+    int64_t result = (int64_t)(*(int32_t *)rs1 * (int64_t)*(int32_t *)rs2);
     *(int32_t *)rd = (result >> 32);
 
 #if (RVE_E_HOOK == 1)
@@ -123,7 +123,7 @@ static inline void RiscvEmulatorMULHSU(
         return;
     }
 
-    int64_t result = (int64_t)(*(int32_t *)rs1 * (uint64_t) * (uint32_t *)rs2);
+    int64_t result = (int64_t)(*(int32_t *)rs1 * (uint64_t)*(uint32_t *)rs2);
     *(int32_t *)rd = (result >> 32);
 
 #if (RVE_E_HOOK == 1)
@@ -162,7 +162,7 @@ static inline void RiscvEmulatorMULHU(
         return;
     }
 
-    uint64_t result = (uint64_t)(*(uint32_t *)rs1 * (uint64_t) * (uint32_t *)rs2);
+    uint64_t result = (uint64_t)(*(uint32_t *)rs1 * (uint64_t)*(uint32_t *)rs2);
     *(uint32_t *)rd = (result >> 32);
 
 #if (RVE_E_HOOK == 1)

@@ -1,9 +1,9 @@
 /*
-
-Copyright 2023-2024 Marc Ketel
-SPDX-License-Identifier: Apache-2.0
-
-*/
+ *
+ * Copyright 2023-2025 Marc Ketel
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ */
 
 #ifndef RiscvEmulatorHook_H_
 #define RiscvEmulatorHook_H_

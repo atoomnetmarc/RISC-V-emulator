@@ -1,14 +1,16 @@
 /*
-
-Copyright 2023-2024 Marc Ketel
-SPDX-License-Identifier: Apache-2.0
-
-*/
+ *
+ * Copyright 2023-2025 Marc Ketel
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ */
 
 #ifndef RiscvEmulatorTypeRegister_H_
 #define RiscvEmulatorTypeRegister_H_
 
 #include <stdint.h>
+
+#include "RiscvEmulatorDefine.h"
 
 /**
  * Union of all the ways a register can be accessed.
@@ -177,12 +179,176 @@ typedef union {
          * Temporary register.
          */
         uint32_t t6;
+#if (RVE_E_F == 1)
+        /**
+         * Floating-point register f0.
+         */
+        RiscvFloatType f0;
+
+        /**
+         * Floating-point register f1.
+         */
+        RiscvFloatType f1;
+
+        /**
+         * Floating-point register f2.
+         */
+        RiscvFloatType f2;
+
+        /**
+         * Floating-point register f3.
+         */
+        RiscvFloatType f3;
+
+        /**
+         * Floating-point register f4.
+         */
+        RiscvFloatType f4;
+
+        /**
+         * Floating-point register f5.
+         */
+        RiscvFloatType f5;
+
+        /**
+         * Floating-point register f6.
+         */
+        RiscvFloatType f6;
+
+        /**
+         * Floating-point register f7.
+         */
+        RiscvFloatType f7;
+
+        /**
+         * Floating-point register f8.
+         */
+        RiscvFloatType f8;
+
+        /**
+         * Floating-point register f9.
+         */
+        RiscvFloatType f9;
+
+        /**
+         * Floating-point register f10.
+         */
+        RiscvFloatType f10;
+
+        /**
+         * Floating-point register f11.
+         */
+        RiscvFloatType f11;
+
+        /**
+         * Floating-point register f12.
+         */
+        RiscvFloatType f12;
+
+        /**
+         * Floating-point register f13.
+         */
+        RiscvFloatType f13;
+
+        /**
+         * Floating-point register f14.
+         */
+        RiscvFloatType f14;
+
+        /**
+         * Floating-point register f15.
+         */
+        RiscvFloatType f15;
+
+        /**
+         * Floating-point register f16.
+         */
+        RiscvFloatType f16;
+
+        /**
+         * Floating-point register f17.
+         */
+        RiscvFloatType f17;
+
+        /**
+         * Floating-point register f18.
+         */
+        RiscvFloatType f18;
+
+        /**
+         * Floating-point register f19.
+         */
+        RiscvFloatType f19;
+
+        /**
+         * Floating-point register f20.
+         */
+        RiscvFloatType f20;
+
+        /**
+         * Floating-point register f21.
+         */
+        RiscvFloatType f21;
+
+        /**
+         * Floating-point register f22.
+         */
+        RiscvFloatType f22;
+
+        /**
+         * Floating-point register f23.
+         */
+        RiscvFloatType f23;
+
+        /**
+         * Floating-point register f24.
+         */
+        RiscvFloatType f24;
+
+        /**
+         * Floating-point register f25.
+         */
+        RiscvFloatType f25;
+
+        /**
+         * Floating-point register f26.
+         */
+        RiscvFloatType f26;
+
+        /**
+         * Floating-point register f27.
+         */
+        RiscvFloatType f27;
+
+        /**
+         * Floating-point register f28.
+         */
+        RiscvFloatType f28;
+
+        /**
+         * Floating-point register f29.
+         */
+        RiscvFloatType f29;
+
+        /**
+         * Floating-point register f30.
+         */
+        RiscvFloatType f30;
+
+        /**
+         * Floating-point register f31.
+         */
+        RiscvFloatType f31;
+#endif
     };
 
     /**
      * Named registers.
      */
     uint32_t x[32];
+#if (RVE_E_F == 1)
+    RiscvFloatType f[32];
+#endif
 } RiscvRegister_u;
 
 #endif
