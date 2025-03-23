@@ -53,7 +53,7 @@ static inline void RiscvEmulatorMRET(RiscvEmulatorState_t *state) {
 /**
  * Get the address of an CSR structure.
  *
- * Do not forget to update RiscvEmulatorGetRegisterSymbolicName()
+ * Do not forget to update RiscvEmulatorGetCSRName()
  */
 static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, const uint16_t csr) {
     void *address = 0;
@@ -120,6 +120,13 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
         case 0x180:
             address = &state->csr.satp;
             break;
+
+#if (RVE_E_F == 1)
+        // Floating-Point Control and Status Register
+        case 0x003:
+            address = &state->csr.fcsr;
+            break;
+#endif
 
         default:
             state->trapflag.illegalinstruction = 1;

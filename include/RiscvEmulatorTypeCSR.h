@@ -12,6 +12,7 @@
 
 #if (RVE_E_ZICSR == 1)
 
+#include "RiscvEmulatorTypeCSRFloatingPoint.h"
 #include "RiscvEmulatorTypeCSRMachineInformationRegister.h"
 #include "RiscvEmulatorTypeCSRMachineMemoryProtection.h"
 #include "RiscvEmulatorTypeCSRMachineNonMaskableInterruptHandling.h"
@@ -51,6 +52,12 @@ typedef struct __attribute__((packed)) {
 
     // Supervisor Protection and Translation
     RiscvCSRsatp_t satp;
+
+#if (RVE_E_F == 1)
+    // Floating-Point Control and Status Register
+    RiscvCSRfcsr_t fcsr;
+#endif
+
 } RiscvCSR_t;
 
 #endif

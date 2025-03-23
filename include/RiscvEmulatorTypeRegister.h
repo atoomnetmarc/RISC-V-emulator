@@ -346,10 +346,12 @@ typedef union {
     /**
      * Named registers.
      */
-    uint32_t x[32];
+    struct {
+        uint32_t x[32];
 #if (RVE_E_F == 1)
-    RiscvFloatType f[32];
+        RiscvFloatType f[32];
 #endif
+    };
 } RiscvRegister_u;
 
 #endif

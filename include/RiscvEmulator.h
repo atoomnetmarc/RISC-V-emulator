@@ -131,6 +131,17 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
                 RiscvEmulatorOpcodeAtomicMemoryOperation(state);
                 break;
 #endif
+#if (RVE_E_F == 1)
+            case OPCODE32_OPERATIONFP:
+                RiscvEmulatorOpcodeOperationFloatingPoint(state);
+                break;
+            case OPCODE32_LOADFP:
+                RiscvEmulatorOpcodeLoadFloatingPoint(state);
+                break;
+            case OPCODE32_STOREFP:
+                RiscvEmulatorOpcodeStoreFloatingPoint(state);
+                break;
+#endif
             default:
                 state->trapflag.illegalinstruction = 1;
                 break;

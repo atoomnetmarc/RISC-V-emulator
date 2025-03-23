@@ -84,6 +84,80 @@ const char *RiscvEmulatorGetRegisterSymbolicName(const uint8_t r) {
     }
 }
 
+/**
+ * Debug function for returning the symbolic name of a floating point register.
+ */
+const char *RiscvEmulatorGetFloatingPointRegisterSymbolicName(const uint8_t r) {
+    switch (r) {
+        case 0:
+            return "ft0";
+        case 1:
+            return "ft1";
+        case 2:
+            return "ft2";
+        case 3:
+            return "ft3";
+        case 4:
+            return "ft4";
+        case 5:
+            return "ft5";
+        case 6:
+            return "ft6";
+        case 7:
+            return "ft7";
+        case 8:
+            return "fs0";
+        case 9:
+            return "fs1";
+        case 10:
+            return "fa0";
+        case 11:
+            return "fa1";
+        case 12:
+            return "fa2";
+        case 13:
+            return "fa3";
+        case 14:
+            return "fa4";
+        case 15:
+            return "fa5";
+        case 16:
+            return "fa6";
+        case 17:
+            return "fa7";
+        case 18:
+            return "fs2";
+        case 19:
+            return "fs3";
+        case 20:
+            return "fs4";
+        case 21:
+            return "fs5";
+        case 22:
+            return "fs6";
+        case 23:
+            return "fs7";
+        case 24:
+            return "fs8";
+        case 25:
+            return "fs9";
+        case 26:
+            return "fs10";
+        case 27:
+            return "fs11";
+        case 28:
+            return "ft8";
+        case 29:
+            return "ft9";
+        case 30:
+            return "ft10";
+        case 31:
+            return "ft11";
+        default:
+            return "unknown";
+    }
+}
+
 #if (RVE_E_ZICSR == 1)
 /**
  * Debug function for returning the name of a CSR.
@@ -153,6 +227,13 @@ const char *RiscvEmulatorGetCSRName(const uint16_t csr) {
         case 0x180:
             name = "satp";
             break;
+
+#if (RVE_E_F == 1)
+        // Floating-Point Control and Status Register
+        case 0x003:
+            name = "fcsr";
+            break;
+#endif
 
         default:
             name = "unknown";
