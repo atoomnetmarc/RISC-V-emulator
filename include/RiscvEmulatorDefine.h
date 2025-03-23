@@ -9,14 +9,6 @@
 #define RiscvEmulatorDefine_H_
 
 #include "RiscvEmulatorConfig.h"
-#if (RVE_E_F == 1)
-#if (RVE_E_D == 1)
-typedef uint64_t RiscvFloatType;
-#else
-typedef uint32_t RiscvFloatType;
-#endif
-#endif
-
 #if (RVE_E_C == 1)
 #define IALIGN 16
 #else

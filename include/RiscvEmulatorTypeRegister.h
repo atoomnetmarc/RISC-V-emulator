@@ -11,6 +11,7 @@
 #include <stdint.h>
 
 #include "RiscvEmulatorDefine.h"
+#include "RiscvEmulatorTypeFloatingPoint.h"
 
 /**
  * Union of all the ways a register can be accessed.
