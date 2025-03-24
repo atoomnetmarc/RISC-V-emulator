@@ -10,7 +10,6 @@
 
 #include "RiscvEmulatorExtensionA.h"
 #include "RiscvEmulatorExtensionC.h"
-#include "RiscvEmulatorExtensionFD.h"
 #include "RiscvEmulatorExtensionI.h"
 #include "RiscvEmulatorExtensionM.h"
 #include "RiscvEmulatorExtensionZba.h"

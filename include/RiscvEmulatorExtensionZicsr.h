@@ -121,13 +121,6 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
             address = &state->csr.satp;
             break;
 
-#if (RVE_E_F == 1)
-        // Floating-Point Control and Status Register
-        case 0x003:
-            address = &state->csr.fcsr;
-            break;
-#endif
-
         default:
             state->trapflag.illegalinstruction = 1;
             RiscvEmulatorUnknownCSR(state);

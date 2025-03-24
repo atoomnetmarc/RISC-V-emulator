@@ -9,6 +9,7 @@
 #define RiscvEmulatorDefine_H_
 
 #include "RiscvEmulatorConfig.h"
+
 #if (RVE_E_C == 1)
 #define IALIGN 16
 #else
