@@ -1009,9 +1009,6 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             imm = RiscvInstructionTypeCJDecoderImm.imm;
             break;
         }
-#if (RVE_E_F == 1)
-        case OPCODE16_FLW:
-#endif
         case OPCODE16_LW: {
             RiscvInstructionTypeCLDecoderImm_u RiscvInstructionTypeCLDecoderImm = {0};
             RiscvInstructionTypeCLDecoderImm.bit.imm2 = state->instruction.cltype.imm2;
@@ -1022,9 +1019,6 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             rdnum = state->instruction.cltype.rdp + 8;
             break;
         }
-#if (RVE_E_F == 1)
-        case OPCODE16_FSW:
-#endif
         case OPCODE16_SW: {
             RiscvInstructionTypeCSDecoderImm_u RiscvInstructionTypeCSDecoderImm = {0};
             RiscvInstructionTypeCSDecoderImm.bit.imm2 = state->instruction.cstype.imm2;
@@ -1035,9 +1029,6 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             rs2num = state->instruction.cstype.rs2p + 8;
             break;
         }
-#if (RVE_E_F == 1)
-        case OPCODE16_FLWSP:
-#endif
         case OPCODE16_LWSP: {
             RiscvInstructionTypeCILwspDecoderImm_u RiscvInstructionTypeCILwspDecoderImm = {0};
             RiscvInstructionTypeCILwspDecoderImm.bit.imm4_2 = state->instruction.cilwsp.imm4_2;
@@ -1047,9 +1038,6 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             rdnum = state->instruction.cilwsp.rd;
             break;
         }
-#if (RVE_E_F == 1)
-        case OPCODE16_FSWSP:
-#endif
         case OPCODE16_SWSP: {
             RiscvInstructionTypeCSSDecoderImm_u RiscvInstructionTypeCSSDecoderImm = {0};
             RiscvInstructionTypeCSSDecoderImm.bit.imm5_2 = state->instruction.csstype.imm5_2;
@@ -1184,34 +1172,6 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
         case OPCODE16_SWSP:
             RiscvEmulatorC_SWSP(state, rs2num, rs2, sp, imm);
             break;
-#if (RVE_E_F == 1)
-        case OPCODE16_FLW:
-            state->trapflag.illegalinstruction = 1;
-            break;
-        case OPCODE16_FLWSP:
-            state->trapflag.illegalinstruction = 1;
-            break;
-        case OPCODE16_FSW:
-            state->trapflag.illegalinstruction = 1;
-            break;
-        case OPCODE16_FSWSP:
-            state->trapflag.illegalinstruction = 1;
-            break;
-#endif
-#if (RVE_E_D == 1)
-        case OPCODE16_FLD:
-            state->trapflag.illegalinstruction = 1;
-            break;
-        case OPCODE16_FLDSP:
-            state->trapflag.illegalinstruction = 1;
-            break;
-        case OPCODE16_FSD:
-            state->trapflag.illegalinstruction = 1;
-            break;
-        case OPCODE16_FSDSP:
-            state->trapflag.illegalinstruction = 1;
-            break;
-#endif
         default:
             state->trapflag.illegalinstruction = 1;
             break;

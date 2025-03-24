@@ -1,6 +1,11 @@
 # Status
 
-In progress.
+Done. It works for me. Goal reached. Good enough™. Feeling satisfied with the results.
+
+Maybe I will add some more extensions when I feel like it. No, I am not going to add floating point support. I tried, then disposed of the non-working code.
+> Does this spark joy? If it does, keep it. If not, dispose of it.
+>
+> [Marie Kondō (近藤麻理恵)](https://en.wikipedia.org/wiki/Marie_Kondo)
 
 # Description
 
@@ -10,28 +15,24 @@ The emulator has been written to be primarily run on 8-bit AVR microcontrollers 
 
 # Goal
 
-Try to implement [RV32GC](https://en.wikipedia.org/wiki/RISC-V#ISA_base_and_extensions). That means the base 32-bit integer instruction set RV32I and the extensions M, A, F, D, C, Zicsr and Zifencei.
-
-# Goal progress and bonus extensions
+Implement [RV32I](https://en.wikipedia.org/wiki/RISC-V#ISA_base_and_extensions) and a bunch of extensions. All while simultaneously learning from how it all works.
 
 Some extensions are work-in-progress™ and do not work yet. Others are confirmed working.
 
 Extensions are confirmed working when all instructions of that extension pass [riscv-arch-test](https://github.com/riscv-non-isa/riscv-arch-test) made by the RISC-V Foundation Architecture Test SIG using [atoomnetmarc/RISC-V-emulator-RISCOF](https://github.com/atoomnetmarc/RISC-V-emulator-RISCOF).
 
-| Description                         | Extension | Bonus                   | Working?                |
-| :--                                 | :--       | :--                     | :--                     |
-| Base Integer Instruction Set 32-bit | RV32I     |                         | :ballot_box_with_check: |
-| Integer Multiplication and Division | M         |                         | :ballot_box_with_check: |
-| Atomics                             | A         |                         | :ballot_box_with_check: |
-| Single-Precision Floating-Point     | F         |                         | :x:                     |
-| Double-Precision Floating-Point     | D         |                         | :x:                     |
-| Compressed Instructions             | C         |                         | :ballot_box_with_check: |
-| Control and Status Register Access  | Zicsr     |                         | :ballot_box_with_check: |
-| Instruction-Fetch Fence             | Zifencei  |                         | :ballot_box_with_check: |
-| Address calculation                 | Zba       | :ballot_box_with_check: | :ballot_box_with_check: |
-| Basic bit manipulation              | Zbb       | :ballot_box_with_check: | :ballot_box_with_check: |
-| Carry-less multiplication           | Zbc       | :ballot_box_with_check: | :ballot_box_with_check: |
-| Single-bit operation                | Zbs       | :ballot_box_with_check: | :ballot_box_with_check: |
+| Description                         | Extension | Working?                |
+| :--                                 | :--       | :--                     |
+| Base Integer Instruction Set 32-bit | RV32I     | :ballot_box_with_check: |
+| Integer Multiplication and Division | M         | :ballot_box_with_check: |
+| Atomics                             | A         | :ballot_box_with_check: |
+| Compressed Instructions             | C         | :ballot_box_with_check: |
+| Control and Status Register Access  | Zicsr     | :ballot_box_with_check: |
+| Instruction-Fetch Fence             | Zifencei  | :ballot_box_with_check: |
+| Address calculation                 | Zba       | :ballot_box_with_check: |
+| Basic bit manipulation              | Zbb       | :ballot_box_with_check: |
+| Carry-less multiplication           | Zbc       | :ballot_box_with_check: |
+| Single-bit operation                | Zbs       | :ballot_box_with_check: |
 
 The emulator can be configured to enable specific extensions. The list of defines and their default values are located in [include/RiscvEmulatorConfig.h](include/RiscvEmulatorConfig.h).
 
