@@ -9,15 +9,15 @@ Maybe I will add some more extensions when I feel like it. No, I am not going to
 
 # Description
 
-This my try at a RV32 RISC-V cpu emulator. I wrote it to better understand RISC-V instructions.
+This is my attempt at an RV32 RISC-V CPU emulator. I wrote it to better understand RISC-V instructions.
 
-The emulator has been written to be primarily run on 8-bit AVR microcontrollers and compiles with GCC (GNU Compiler Collection) and be as small and somewhat fast as possible. It contains no dependencies on any CPU architecture. To prove independence I also got the emulator to run on a 32-bit ATSAMD21G18A and [x86-64 Linux and Windows](https://github.com/atoomnetmarc/RISC-V-emulator-Native).
+The emulator has been written primarily to run on 8-bit AVR microcontrollers and to compile with GCC (GNU Compiler Collection), with the goal of being as small and somewhat fast as possible. It contains no dependencies on any specific CPU architecture. To prove independence, I also got the emulator running on a 32-bit ATSAMD21G18A as well as on [x86-64 Linux and Windows](https://github.com/atoomnetmarc/RISC-V-emulator-Native).
 
 # Goal
 
-Implement [RV32I](https://en.wikipedia.org/wiki/RISC-V#ISA_base_and_extensions) and a bunch of extensions. All while simultaneously learning from how it all works.
+Implement [RV32I](https://en.wikipedia.org/wiki/RISC-V#ISA_base_and_extensions) and a bunch of extensions. All while simultaneously learning how it all works.
 
-Some extensions are work-in-progress™ and do not work yet. Others are confirmed working.
+Some extensions are work in progress and do not work yet. Others are confirmed working.
 
 Extensions are confirmed working when all instructions of that extension pass [riscv-arch-test](https://github.com/riscv-non-isa/riscv-arch-test) made by the RISC-V Foundation Architecture Test SIG using [atoomnetmarc/RISC-V-emulator-RISCOF](https://github.com/atoomnetmarc/RISC-V-emulator-RISCOF).
 
@@ -49,8 +49,8 @@ As a sanity check, all combinations of extensions will be compiled. At the time 
 
 # Workings
 
-Instruction decoding is done with packed bitfield structs. When bits need to be untangled I used a union of 2 helper structs instead of trying to shift all the bits into the correct places.
-In a first pass the opcode of the instruction is processed in a `switch()` located in `RiscvEmulatorLoop()` and roughly split into their instruction groups (like R-Type, I-Type, etc..). When needed in a second nested `switch()` the instruction is decoded and the operation is executed.
+Instruction decoding is done with packed bitfield structs. When bits need to be untangled, I use a union of two helper structs instead of trying to shift all the bits into the correct places.
+In a first pass, the opcode of the instruction is processed in a `switch()` located in `RiscvEmulatorLoop()` and roughly split into its instruction groups (like R-Type, I-Type, etc.). When needed, in a second nested `switch()`, the instruction is decoded and the operation is executed.
 
 # Your implementation
 
@@ -82,8 +82,8 @@ inline void RiscvEmulatorStore(uint32_t address, const void *source, uint8_t len
 /**
  * Handles a fault where the instruction is somehow not recognized.
  *
- * Something wrong happened at the current programcounter.
- * Use a listing file of the risc-v program to better understand the wrong.
+ * Something wrong happened at the current program counter.
+ * Use a listing file of the RISC-V program to better understand the issue.
  * The failed machine instruction is found in state.instruction.value.
  */
 inline void RiscvEmulatorIllegalInstruction(RiscvEmulatorState_t *state)
@@ -132,9 +132,9 @@ int main(void)
 }
 ```
 
-I do not know if this library will stay in the same shape or form.
+I do not know if this library will remain in its current shape or form.
 
-I used this library in Microchip Studio to be able debug using debugwire and JTAG on AVR.
+I used this library in Microchip Studio to be able to debug using debugWIRE and JTAG on AVR.
 
 Use in PlatformIO, `platformio.ini`:
 ```ini
@@ -145,7 +145,7 @@ lib_deps =
 
 # Hooks
 
-Enabling hook `-D RVE_E_HOOK=1` creates the possibility to tap into the inner workings of the emulator. I added this functionality to be used in [RISC-V-emulator-Native](https://github.com/atoomnetmarc/RISC-V-emulator-Native) for debugging.
+Enabling hook `-D RVE_E_HOOK=1` creates the possibility to tap into the inner workings of the emulator. I added this functionality for use in [RISC-V-emulator-Native](https://github.com/atoomnetmarc/RISC-V-emulator-Native) for debugging.
 
 Implement your own non-weak function to start using the hook. For example:
 
