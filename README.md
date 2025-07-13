@@ -3,6 +3,7 @@
 Done. It works for me. Goal reached. Good enough™. Feeling satisfied with the results.
 
 Maybe I will add some more extensions when I feel like it. No, I am not going to add floating point support. I tried, then disposed of the non-working code.
+
 > Does this spark joy? If it does, keep it. If not, dispose of it.
 >
 > [Marie Kondō (近藤麻理恵)](https://en.wikipedia.org/wiki/Marie_Kondo)
@@ -21,20 +22,20 @@ Some extensions are work in progress and do not work yet. Others are confirmed w
 
 Extensions are confirmed working when all instructions of that extension pass [riscv-arch-test](https://github.com/riscv-non-isa/riscv-arch-test) made by the RISC-V Foundation Architecture Test SIG using [atoomnetmarc/RISC-V-emulator-RISCOF](https://github.com/atoomnetmarc/RISC-V-emulator-RISCOF).
 
-| Description                         | Extension | Working?                |
-| :--                                 | :--       | :--                     |
-| Base Integer Instruction Set 32-bit | RV32I     | :ballot_box_with_check: |
-| Integer Multiplication and Division | M         | :ballot_box_with_check: |
-| Atomics                             | A         | :ballot_box_with_check: |
-| Compressed Instructions             | C         | :ballot_box_with_check: |
-| Control and Status Register Access  | Zicsr     | :ballot_box_with_check: |
-| Instruction-Fetch Fence             | Zifencei  | :ballot_box_with_check: |
-| Address calculation                 | Zba       | :ballot_box_with_check: |
-| Basic bit manipulation              | Zbb       | :ballot_box_with_check: |
-| Carry-less multiplication           | Zbc       | :ballot_box_with_check: |
-| Single-bit operation                | Zbs       | :ballot_box_with_check: |
+| Description                         | Extension | Subset | Working?                |
+| :---------------------------------- | :-------- | ------ | :---------------------- |
+| Base Integer Instruction Set 32-bit | RV32I     |        | :ballot_box_with_check: |
+| Integer Multiplication and Division | M         |        | :ballot_box_with_check: |
+| Atomics                             | A         |        | :ballot_box_with_check: |
+| Compressed Instructions             | C         |        | :ballot_box_with_check: |
+| Address calculation                 | B         | Zba    | :ballot_box_with_check: |
+| Basic bit manipulation              | B         | Zbb    | :ballot_box_with_check: |
+| Carry-less multiplication           | B         | Zbc    | :ballot_box_with_check: |
+| Single-bit operation                | B         | Zbs    | :ballot_box_with_check: |
+| Control and Status Register Access  | Zicsr     |        | :ballot_box_with_check: |
+| Instruction-Fetch Fence             | Zifencei  |        | :ballot_box_with_check: |
 
-The emulator can be configured to enable specific extensions. The list of defines and their default values are located in [include/RiscvEmulatorConfig.h](include/RiscvEmulatorConfig.h).
+The emulator can be configured to enable specific extensions and subsets. The list of defines and their default values are located in [include/RiscvEmulatorConfig.h](include/RiscvEmulatorConfig.h).
 
 For example, to enable the `M` extension compile with `-DRVE_E_M=1`.
 
@@ -45,7 +46,7 @@ For example, to enable the `M` extension compile with `-DRVE_E_M=1`.
 
 Typically only the configuration with all extensions enabled is tested using the mentioned riscv-arch-test during development of this emulator.
 
-As a sanity check, all combinations of extensions will be compiled. At the time of writing this sentence there are 512 combinations of 9 extensions, see [platformio_isa-extension-combination_env.ini](https://github.com/atoomnetmarc/RISC-V-emulator-Native/blob/main/platformio_isa-extension-combination_env.ini). Compilation of these 512 combinations takes about 5 minutes on my fastest machine.
+As a sanity check, all combinations of extensions and subsets will be compiled. See [platformio_isa-extension-combination_env.ini](https://github.com/atoomnetmarc/RISC-V-emulator-Native/blob/main/platformio_isa-extension-combination_env.ini). Compilation of all these combinations takes about 5 minutes on my fastest machine.
 
 # Workings
 
@@ -137,6 +138,7 @@ I do not know if this library will remain in its current shape or form.
 I used this library in Microchip Studio to be able to debug using debugWIRE and JTAG on AVR.
 
 Use in PlatformIO, `platformio.ini`:
+
 ```ini
 [env:myenv]
 lib_deps =
