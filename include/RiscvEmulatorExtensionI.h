@@ -1867,9 +1867,7 @@ static inline void RiscvEmulatorOpcodeMiscMem(RiscvEmulatorState_t *state) {
 
 #if (RVE_E_ZIFENCEI == 1)
     if (detectedUnknownInstruction) {
-        if (state->instruction.itypemiscmem.rd == 0 &&
-            state->instruction.itypemiscmem.funct3 == FUNCT3_FENCEI &&
-            state->instruction.itypemiscmem.rs1 == 0) {
+        if (state->instruction.itypemiscmem.funct3 == FUNCT3_FENCEI) {
             detectedUnknownInstruction = -1;
             RiscvEmulatorFencei(state);
         }
