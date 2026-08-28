@@ -59,7 +59,7 @@ typedef union {
 #if (RVE_E_ZBA)
     RiscvInstructionTypeRShift_t rtypeshift;
 #endif
-#if (RVE_E_A == 1)
+#if ((RVE_E_ZAAMO == 1) || (RVE_E_ZALRSC == 1))
     RiscvInstructionTypeRAtomicMemoryOperation_t rtypeatomicmemoryoperation;
 #endif
     RiscvInstructionTypeI_t itype;

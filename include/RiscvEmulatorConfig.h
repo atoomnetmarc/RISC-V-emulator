@@ -20,6 +20,22 @@
 #define RVE_E_A 0
 #endif
 
+// Enable all Atomics extension subsets.
+#if (RVE_E_A == 1)
+#define RVE_E_ZAAMO  1
+#define RVE_E_ZALRSC 1
+#endif
+
+// Atomic Memory Operations extension.
+#ifndef RVE_E_ZAAMO
+#define RVE_E_ZAAMO 0
+#endif
+
+// Load-Reserved/Store-Conditional extension.
+#ifndef RVE_E_ZALRSC
+#define RVE_E_ZALRSC 0
+#endif
+
 // Compressed instructions extension.
 #ifndef RVE_E_C
 #define RVE_E_C 0

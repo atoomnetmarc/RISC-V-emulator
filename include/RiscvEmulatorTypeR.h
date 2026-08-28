@@ -53,7 +53,7 @@ typedef union {
     };
 } RiscvInstructionTypeRDecoderFunct7Funct3_u;
 
-#if (RVE_E_A == 1)
+#if ((RVE_E_ZAAMO == 1) || (RVE_E_ZALRSC == 1))
 /**
  * Atomic memory instruction.
  */

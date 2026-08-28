@@ -47,6 +47,11 @@ typedef struct
     RiscvInstruction_u instruction;
     RiscvRegister_u reg;
 
+#if (RVE_E_ZALRSC == 1)
+    uint8_t reservationvalid;
+    uint32_t reservationaddress;
+#endif
+
 #if (RVE_E_HOOK == 1)
     uint8_t hookexists;
 #endif

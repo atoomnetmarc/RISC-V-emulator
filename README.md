@@ -18,18 +18,19 @@ Some extensions are work in progress and do not work yet. Others are confirmed w
 
 Extensions are confirmed working when all instructions of that extension pass the [riscv-arch-test](https://github.com/riscv/riscv-arch-test), made by the RISC-V Foundation Architecture Test SIG, run via [atoomnetmarc/RISC-V-emulator-ACT](https://github.com/atoomnetmarc/RISC-V-emulator-ACT).
 
-| Description                         | Extension | Subset | Working?                |
-| :---------------------------------- | :-------- | ------ | :---------------------- |
-| Base Integer Instruction Set 32-bit | RV32I     |        | :ballot_box_with_check: |
-| Integer Multiplication and Division | M         |        | :ballot_box_with_check: |
-| Atomics                             | A         |        | :ballot_box_with_check: |
-| Compressed Instructions             | C         |        | :ballot_box_with_check: |
-| Address calculation                 | B         | Zba    | :ballot_box_with_check: |
-| Basic bit manipulation              | B         | Zbb    | :ballot_box_with_check: |
-| Carry-less multiplication           | B         | Zbc    | :ballot_box_with_check: |
-| Single-bit operation                | B         | Zbs    | :ballot_box_with_check: |
-| Control and Status Register Access  | Zicsr     |        | :ballot_box_with_check: |
-| Instruction-Fetch Fence             | Zifencei  |        | :ballot_box_with_check: |
+| Description                                  | Extension | Subset | Working?                |
+| :------------------------------------------- | :-------- | ------ | :---------------------- |
+| Base Integer Instruction Set 32-bit          | RV32I     |        | :ballot_box_with_check: |
+| Integer Multiplication and Division          | M         |        | :ballot_box_with_check: |
+| Atomic Memory Operations                     | A         | Zaamo  | :ballot_box_with_check: |
+| Load-Reserved/Store-Conditional Instructions | A         | Zalrsc | :ballot_box_with_check: |
+| Compressed Instructions                      | C         |        | :ballot_box_with_check: |
+| Address calculation                          | B         | Zba    | :ballot_box_with_check: |
+| Basic bit manipulation                       | B         | Zbb    | :ballot_box_with_check: |
+| Carry-less multiplication                    | B         | Zbc    | :ballot_box_with_check: |
+| Single-bit operation                         | B         | Zbs    | :ballot_box_with_check: |
+| Control and Status Register Access           | Zicsr     |        | :ballot_box_with_check: |
+| Instruction-Fetch Fence                      | Zifencei  |        | :ballot_box_with_check: |
 
 The emulator can be configured to enable specific extensions and subsets. The list of defines and their default values is located in [include/RiscvEmulatorConfig.h](include/RiscvEmulatorConfig.h).
 

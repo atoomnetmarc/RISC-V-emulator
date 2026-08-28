@@ -10,7 +10,7 @@
 
 #include "RiscvEmulatorConfig.h"
 
-#if (RVE_E_A == 1)
+#if ((RVE_E_ZAAMO == 1) || (RVE_E_ZALRSC == 1))
 
 #include <stdint.h>
 
@@ -119,6 +119,39 @@ static inline void RiscvEmulatorAMOMAXU_W(
     }
 }
 
+#if (RVE_E_ZALRSC == 1)
+/**
+ * Load-reserved: load a word and register a reservation.
+ */
+static inline void RiscvEmulatorLR_W(
+    RiscvEmulatorState_t *state,
+    void *rd,
+    uint32_t address) {
+    RiscvEmulatorLoad(address, rd, sizeof(uint32_t));
+    state->reservationvalid = 1;
+    state->reservationaddress = address;
+}
+
+/**
+ * Store-conditional: store a word only if the reservation is still valid.
+ */
+static inline void RiscvEmulatorSC_W(
+    RiscvEmulatorState_t *state,
+    void *rd,
+    const void *rs2,
+    uint32_t address) {
+    if (state->reservationvalid == 1 && state->reservationaddress == address) {
+        RiscvEmulatorStore(address, rs2, sizeof(uint32_t));
+        *(uint32_t *)rd = 0; // Success.
+    } else {
+        *(uint32_t *)rd = 1; // Failure code 1: unspecified failure.
+    }
+    // Regardless of success or failure, executing an SC invalidates any
+    // reservation held by this hart.
+    state->reservationvalid = 0;
+}
+#endif
+
 /**
  * Process atomic memory operation opcodes.
  */
@@ -137,6 +170,7 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(
     // Remember original value stored in rs2.
     uint32_t originalvaluers2 = *(uint32_t *)rs2;
 
+#if (RVE_E_ZAAMO == 1)
     uint32_t loadedvalue = 0;
     RiscvEmulatorLoad(originaladdressrs1, &loadedvalue, sizeof(uint32_t));
 
@@ -144,12 +178,34 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(
         // Place loaded value of original address in rd.
         *(uint32_t *)rd = loadedvalue;
     }
+#endif
 
     RiscvInstructionTypeRDecoderFunct5Funct3_u instruction_decoderhelper_rtypeatomicmemoryoperation = {0};
     instruction_decoderhelper_rtypeatomicmemoryoperation.funct3 = state->instruction.rtypeatomicmemoryoperation.funct3;
     instruction_decoderhelper_rtypeatomicmemoryoperation.funct5 = state->instruction.rtypeatomicmemoryoperation.funct5;
 
     switch (instruction_decoderhelper_rtypeatomicmemoryoperation.funct5_3) {
+#if (RVE_E_ZALRSC == 1)
+        case FUNCT5_FUNCT3_OPERATION_LR_W:
+            if (rdnum != 0) {
+                RiscvEmulatorLR_W(state, rd, originaladdressrs1);
+            } else {
+                // Still register the reservation when writing to x0.
+                state->reservationvalid = 1;
+                state->reservationaddress = originaladdressrs1;
+            }
+            return;
+        case FUNCT5_FUNCT3_OPERATION_SC_W:
+            if (rdnum != 0) {
+                RiscvEmulatorSC_W(state, rd, &originalvaluers2, originaladdressrs1);
+            } else {
+                // Discard the result but still perform the conditional store.
+                uint32_t result = 0;
+                RiscvEmulatorSC_W(state, &result, &originalvaluers2, originaladdressrs1);
+            }
+            return;
+#endif
+#if (RVE_E_ZAAMO == 1)
         case FUNCT5_FUNCT3_OPERATION_AMOADD_W:
             RiscvEmulatorAMOADD_W(state, &loadedvalue, &originalvaluers2);
             break;
@@ -177,12 +233,15 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(
         case FUNCT5_FUNCT3_OPERATION_AMOMAXU_W:
             RiscvEmulatorAMOMAXU_W(state, &loadedvalue, &originalvaluers2);
             break;
+#endif
         default:
             state->trapflag.illegalinstruction = 1;
             return;
     }
 
+#if (RVE_E_ZAAMO == 1)
     RiscvEmulatorStore(originaladdressrs1, &loadedvalue, sizeof(uint32_t));
+#endif
 }
 
 #endif
