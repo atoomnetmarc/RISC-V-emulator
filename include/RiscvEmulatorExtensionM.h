@@ -8,7 +8,7 @@
 #ifndef RiscvEmulatorExtensionM_H_
 #define RiscvEmulatorExtensionM_H_
 
-#if (RVE_E_M == 1)
+#if (RVE_E_ZMMUL == 1)
 
 #include <stdint.h>
 
@@ -170,6 +170,10 @@ static inline void RiscvEmulatorMULHU(
     RiscvEmulatorHook(state, &hc);
 #endif
 }
+
+#endif
+
+#if (RVE_E_M == 1)
 
 /**
  * Divide signed.

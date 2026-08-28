@@ -22,6 +22,7 @@ Extensions are confirmed working when all instructions of that extension pass th
 | :------------------------------------------- | :-------- | ------ | :---------------------- |
 | Base Integer Instruction Set 32-bit          | RV32I     |        | :ballot_box_with_check: |
 | Integer Multiplication and Division          | M         |        | :ballot_box_with_check: |
+| Multiplication subset                        | M         | Zmmul  | :ballot_box_with_check: |
 | Atomic Memory Operations                     | A         | Zaamo  | :ballot_box_with_check: |
 | Load-Reserved/Store-Conditional Instructions | A         | Zalrsc | :ballot_box_with_check: |
 | Compressed Instructions                      | C         |        | :ballot_box_with_check: |

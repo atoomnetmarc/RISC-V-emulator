@@ -15,6 +15,11 @@
 #define RVE_E_M 0
 #endif
 
+// M implies Zmmul.
+#if (RVE_E_M == 1)
+#define RVE_E_ZMMUL 1
+#endif
+
 // Atomics extension.
 #ifndef RVE_E_A
 #define RVE_E_A 0
@@ -82,6 +87,11 @@
 // Bit-Manipulation extension: Single-bit operation subset.
 #ifndef RVE_E_ZBS
 #define RVE_E_ZBS 0
+#endif
+
+// Multiplication subset of the M extension.
+#ifndef RVE_E_ZMMUL
+#define RVE_E_ZMMUL 0
 #endif
 
 // Weak function hook.

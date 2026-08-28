@@ -854,7 +854,7 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state) {
             case FUNCT7_FUNCT3_OPERATION_AND:
                 RiscvEmulatorAND(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
-#if (RVE_E_M == 1)
+#if (RVE_E_ZMMUL == 1)
             case FUNCT7_FUNCT3_OPERATION_MUL:
                 RiscvEmulatorMUL(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
@@ -867,6 +867,8 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state) {
             case FUNCT7_FUNCT3_OPERATION_MULHU:
                 RiscvEmulatorMULHU(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
+#endif
+#if (RVE_E_M == 1)
             case FUNCT7_FUNCT3_OPERATION_DIV:
                 RiscvEmulatorDIV(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
