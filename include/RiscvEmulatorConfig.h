@@ -64,6 +64,14 @@
 #define RVE_E_ZICSR 0
 #endif
 
+// Support misaligned loads and stores.
+// When enabled, misaligned loads and stores are executed instead of
+// raising a load-address-misaligned or store-address-misaligned trap.
+// Instruction address misalignment always traps, regardless of this option.
+#ifndef RVE_E_MISALIGNED
+#define RVE_E_MISALIGNED 0
+#endif
+
 // Instruction-Fetch Fence extension.
 #ifndef RVE_E_ZIFENCEI
 #define RVE_E_ZIFENCEI 0

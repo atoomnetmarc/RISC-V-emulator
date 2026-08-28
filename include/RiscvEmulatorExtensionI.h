@@ -1161,12 +1161,11 @@ static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state) {
             return;
     }
 
-#if (RVE_E_ZICSR == 1)
+#if (RVE_E_ZICSR == 1) && (RVE_E_MISALIGNED == 0)
     // Check if the load is aligned.
     if (length > 1) {
         // Only the last few bits need to be checked.
-        uint8_t memorylocation8 = memorylocation & 0xFF;
-        if ((memorylocation8 % length) != 0) {
+        if ((memorylocation & (length - 1)) != 0) {
             state->trapflag.loadaddressmisaligned = 1;
             state->csr.mtval = memorylocation;
         }
@@ -1192,7 +1191,7 @@ static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state) {
         return;
     }
 
-#if (RVE_E_ZICSR == 1)
+#if (RVE_E_ZICSR == 1) && (RVE_E_MISALIGNED == 0)
     if (state->trapflag.loadaddressmisaligned == 1) {
         return;
     }
@@ -1272,12 +1271,11 @@ static inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state) {
             return;
     }
 
-#if (RVE_E_ZICSR == 1)
+#if (RVE_E_ZICSR == 1) && (RVE_E_MISALIGNED == 0)
     // Check if the store is aligned.
     if (length > 1) {
         // Only the last few bits need to be checked.
-        uint8_t memorylocation8 = memorylocation & 0xFF;
-        if ((memorylocation8 % length) != 0) {
+        if ((memorylocation & (length - 1)) != 0) {
             state->trapflag.storeaddressmisaligned = 1;
             state->csr.mtval = memorylocation;
         }
@@ -1300,7 +1298,7 @@ static inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state) {
     RiscvEmulatorHook(state, &hc);
 #endif
 
-#if (RVE_E_ZICSR == 1)
+#if (RVE_E_ZICSR == 1) && (RVE_E_MISALIGNED == 0)
     if (state->trapflag.storeaddressmisaligned == 1) {
         return;
     }
