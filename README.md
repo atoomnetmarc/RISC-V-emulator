@@ -4,10 +4,6 @@ Done. It works for me. Goal reached. Good enough™. Feeling satisfied with the 
 
 Maybe I will add some more extensions when I feel like it. No, I am not going to add floating point support. I tried, then disposed of the non-working code.
 
-> Does this spark joy? If it does, keep it. If not, dispose of it.
->
-> [Marie Kondō (近藤麻理恵)](https://en.wikipedia.org/wiki/Marie_Kondo)
-
 # Description
 
 This is my attempt at an RV32 RISC-V CPU emulator. I wrote it to better understand RISC-V instructions.
@@ -20,7 +16,7 @@ Implement [RV32I](https://en.wikipedia.org/wiki/RISC-V#ISA_base_and_extensions) 
 
 Some extensions are work in progress and do not work yet. Others are confirmed working.
 
-Extensions are confirmed working when all instructions of that extension pass [riscv-arch-test](https://github.com/riscv-non-isa/riscv-arch-test) made by the RISC-V Foundation Architecture Test SIG using [atoomnetmarc/RISC-V-emulator-RISCOF](https://github.com/atoomnetmarc/RISC-V-emulator-RISCOF).
+Extensions are confirmed working when all instructions of that extension pass the [riscv-arch-test](https://github.com/riscv/riscv-arch-test), made by the RISC-V Foundation Architecture Test SIG, run via [atoomnetmarc/RISC-V-emulator-ACT](https://github.com/atoomnetmarc/RISC-V-emulator-ACT).
 
 | Description                         | Extension | Subset | Working?                |
 | :---------------------------------- | :-------- | ------ | :---------------------- |
@@ -35,16 +31,13 @@ Extensions are confirmed working when all instructions of that extension pass [r
 | Control and Status Register Access  | Zicsr     |        | :ballot_box_with_check: |
 | Instruction-Fetch Fence             | Zifencei  |        | :ballot_box_with_check: |
 
-The emulator can be configured to enable specific extensions and subsets. The list of defines and their default values are located in [include/RiscvEmulatorConfig.h](include/RiscvEmulatorConfig.h).
+The emulator can be configured to enable specific extensions and subsets. The list of defines and their default values is located in [include/RiscvEmulatorConfig.h](include/RiscvEmulatorConfig.h).
 
-For example, to enable the `M` extension compile with `-DRVE_E_M=1`.
-
-> [!NOTE]
-> At the time of writing this emulator needs the C-extension to pass the riscv-arch-test for Zicsr. See https://github.com/riscv-non-isa/riscv-arch-test/issues/445
+For example, to enable the `M` extension, compile with `-DRVE_E_M=1`.
 
 # Testing
 
-Typically only the configuration with all extensions enabled is tested using the mentioned riscv-arch-test during development of this emulator.
+Typically only the configuration with all extensions enabled is tested using the riscv-arch-test during development of this emulator. [Testing all combinations is possible](https://github.com/atoomnetmarc/RISC-V-emulator-ACT/blob/main/scripts/test_all.sh).
 
 As a sanity check, all combinations of extensions and subsets will be compiled. See [platformio_isa-extension-combination_env.ini](https://github.com/atoomnetmarc/RISC-V-emulator-Native/blob/main/platformio_isa-extension-combination_env.ini). Compilation of all these combinations takes about 5 minutes on my fastest machine.
 
@@ -113,7 +106,7 @@ inline void RiscvEmulatorHandleEBREAK(RiscvEmulatorState_t *state) {
 }
 ```
 
-Your own program should provide some RAM and should initialize the emulator. Then keep calling `RiscvEmulatorLoop()`. For inspiration:
+Your own program should provide some RAM, initialize the emulator, and then keep calling `RiscvEmulatorLoop()`. For inspiration:
 
 ```c
 #include <RiscvEmulator.h>
@@ -133,7 +126,7 @@ int main(void)
 }
 ```
 
-I do not know if this library will remain in its current shape or form.
+I do not know if this library will remain in its current form.
 
 I used this library in Microchip Studio to be able to debug using debugWIRE and JTAG on AVR.
 
@@ -147,7 +140,7 @@ lib_deps =
 
 # Hooks
 
-Enabling hook `-D RVE_E_HOOK=1` creates the possibility to tap into the inner workings of the emulator. I added this functionality for use in [RISC-V-emulator-Native](https://github.com/atoomnetmarc/RISC-V-emulator-Native) for debugging.
+Enabling the hook with `-D RVE_E_HOOK=1` makes it possible to tap into the inner workings of the emulator. I added this functionality for use in [RISC-V-emulator-Native](https://github.com/atoomnetmarc/RISC-V-emulator-Native) for debugging.
 
 Implement your own non-weak function to start using the hook. For example:
 
