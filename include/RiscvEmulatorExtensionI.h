@@ -22,8 +22,14 @@
 #include "RiscvEmulatorExtensionZba.h"
 #include "RiscvEmulatorExtensionZbb.h"
 #include "RiscvEmulatorExtensionZbc.h"
+#include "RiscvEmulatorExtensionZbkb.h"
+#include "RiscvEmulatorExtensionZbkx.h"
 #include "RiscvEmulatorExtensionZbs.h"
+#include "RiscvEmulatorExtensionZicond.h"
 #include "RiscvEmulatorExtensionZicsr.h"
+#include "RiscvEmulatorExtensionZihintntl.h"
+#include "RiscvEmulatorExtensionZihintpause.h"
+#include "RiscvEmulatorExtensionZimop.h"
 
 /**
  * Jump and link register.
@@ -825,6 +831,27 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state) {
         detectedUnknownInstruction = -1;
         switch (instruction_decoderhelper_rtype.funct7_3) {
             case FUNCT7_FUNCT3_OPERATION_ADD:
+#if (RVE_E_ZIHINTNTL == 1)
+                // ntl.p1/pall/s1/all are encoded as add x0, x0, x2/x3/x4/x5.
+                if (rdnum == 0 && rs1num == 0) {
+                    if (rs2num == FUNCT7_FUNCT3_RS2_NTL_P1) {
+                        RiscvEmulatorNTLP1(state);
+                        break;
+                    }
+                    if (rs2num == FUNCT7_FUNCT3_RS2_NTL_PALL) {
+                        RiscvEmulatorNTLPALL(state);
+                        break;
+                    }
+                    if (rs2num == FUNCT7_FUNCT3_RS2_NTL_S1) {
+                        RiscvEmulatorNTLS1(state);
+                        break;
+                    }
+                    if (rs2num == FUNCT7_FUNCT3_RS2_NTL_ALL) {
+                        RiscvEmulatorNTLALL(state);
+                        break;
+                    }
+                }
+#endif
                 RiscvEmulatorADD(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_SUB:
@@ -918,13 +945,15 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state) {
                 RiscvEmulatorROR(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
 #endif
-#if (RVE_E_ZBC == 1)
+#if ((RVE_E_ZBC == 1) || (RVE_E_ZBKC == 1))
             case FUNCT7_FUNCT3_OPERATION_CMUL:
                 RiscvEmulatorCLMUL(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_CMULH:
                 RiscvEmulatorCLMULH(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
+#endif
+#if (RVE_E_ZBC == 1)
             case FUNCT7_FUNCT3_OPERATION_CMULR:
                 RiscvEmulatorCLMULR(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
@@ -941,6 +970,30 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state) {
                 break;
             case FUNCT7_FUNCT3_OPERATION_BSET:
                 RiscvEmulatorBSET(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+                break;
+#endif
+#if (RVE_E_ZBKB == 1)
+            case FUNCT7_FUNCT3_OPERATION_PACK:
+                RiscvEmulatorPACK(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_PACKH:
+                RiscvEmulatorPACKH(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+                break;
+#endif
+#if (RVE_E_ZBKX == 1)
+            case FUNCT7_FUNCT3_OPERATION_XPERM8:
+                RiscvEmulatorXPERM8(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_XPERM4:
+                RiscvEmulatorXPERM4(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+                break;
+#endif
+#if (RVE_E_ZICOND == 1)
+            case FUNCT7_FUNCT3_OPERATION_CZEROEQZ:
+                RiscvEmulatorCZEROEQZ(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+                break;
+            case FUNCT7_FUNCT3_OPERATION_CZERONEZ:
+                RiscvEmulatorCZERONEZ(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
 #endif
             default:
@@ -1017,6 +1070,11 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state) {
                 case IMM11_0_FUNCT3_IMMEDIATE_REV8:
                     RiscvEmulatorREV8(state, rdnum, rd, rs1num, rs1);
                     break;
+#if (RVE_E_ZBKB == 1)
+                case IMM11_0_FUNCT3_IMMEDIATE_BREV8:
+                    RiscvEmulatorBREV8(state, rdnum, rd, rs1num, rs1);
+                    break;
+#endif
                 default:
                     detectedUnknownInstruction = 1;
                     break;
@@ -1051,6 +1109,14 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state) {
 #if (RVE_E_ZBB == 1)
                 case IMM11_5_FUNCT3_IMMEDIATE_RORI:
                     RiscvEmulatorRORI(state, rdnum, rd, rs1num, rs1, shamt);
+                    break;
+#endif
+#if (RVE_E_ZBKB == 1)
+                case IMM11_5_FUNCT3_IMMEDIATE_ZIP:
+                    RiscvEmulatorZIP(state, rdnum, rd, rs1num, rs1);
+                    break;
+                case IMM11_5_FUNCT3_IMMEDIATE_UNZIP:
+                    RiscvEmulatorUNZIP(state, rdnum, rd, rs1num, rs1);
                     break;
 #endif
 #if (RVE_E_ZBS == 1)
@@ -1754,6 +1820,11 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state) {
                     RiscvEmulatorMRET(state);
                     break;
 #endif
+#if (RVE_E_ZIHINTPAUSE == 1)
+                case FUNCT12_PAUSE:
+                    RiscvEmulatorPAUSE(state);
+                    break;
+#endif
                 case FUNCT12_ECALL:
                     RiscvEmulatorECALL(state);
                     break;
@@ -1766,6 +1837,21 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state) {
             }
         }
     }
+
+#if (RVE_E_ZIMOP == 1)
+    if (detectedUnknownInstruction == 1) {
+        // May-Be-Operation instructions are SYSTEM opcode instructions with
+        // funct3 4 and a fixed bit pattern in the upper bits. The n field
+        // selects the instruction variant but all variants behave the same.
+        if ((state->instruction.value & MASK_ZIMOP_MOPR) == PATTERN_ZIMOP_MOPR) {
+            detectedUnknownInstruction = -1;
+            RiscvEmulatorMOPR(state, state->instruction.itype.rd, &state->reg.x[state->instruction.itype.rd]);
+        } else if ((state->instruction.value & MASK_ZIMOP_MOPRR) == PATTERN_ZIMOP_MOPRR) {
+            detectedUnknownInstruction = -1;
+            RiscvEmulatorMOPRR(state, state->instruction.itype.rd, &state->reg.x[state->instruction.itype.rd]);
+        }
+    }
+#endif
 
 #if (RVE_E_ZICSR == 1)
     if (detectedUnknownInstruction == 1) {

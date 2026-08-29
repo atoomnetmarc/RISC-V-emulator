@@ -57,6 +57,7 @@ static inline void RiscvEmulatorMRET(RiscvEmulatorState_t *state) {
  */
 static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, const uint16_t csr) {
     void *address = 0;
+
     switch (csr) {
         // Machine Information Registers
         case 0xF14:
@@ -120,6 +121,31 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
         case 0x180:
             address = &state->csr.satp;
             break;
+
+            // Machine Counter Setup
+#if (RVE_E_ZICNTR == 1)
+        case 0xC00:
+            address = (uint32_t *)&state->csr.cycle;
+            break;
+        case 0xC80:
+            // The 0x?80 CSRs are the upper half of the 64-bit counter. The
+            // counters are little-endian, so the upper half is the second
+            // uint32_t of the uint64_t.
+            address = (uint32_t *)&state->csr.cycle + 1;
+            break;
+        case 0xC01:
+            address = (uint32_t *)&state->csr.time;
+            break;
+        case 0xC81:
+            address = (uint32_t *)&state->csr.time + 1;
+            break;
+        case 0xC02:
+            address = (uint32_t *)&state->csr.instret;
+            break;
+        case 0xC82:
+            address = (uint32_t *)&state->csr.instret + 1;
+            break;
+#endif
 
         default:
             state->trapflag.illegalinstruction = 1;

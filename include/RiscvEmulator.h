@@ -137,6 +137,14 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
         }
     }
 
+#if (RVE_E_ZICNTR == 1)
+    // Update the counters. Zicntr implies Zicsr, so the CSR struct always
+    // exists when this extension is enabled.
+    state->csr.cycle++;
+    state->csr.time++;
+    state->csr.instret++;
+#endif
+
     if (state->trapflag.value > 0) {
         RiscvEmulatorTrap(state);
     }

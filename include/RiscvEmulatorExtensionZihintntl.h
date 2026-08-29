@@ -1,0 +1,86 @@
+/*
+ *
+ * Copyright Marc Ketel
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ */
+
+#ifndef RiscvEmulatorExtensionZihintntl_H_
+#define RiscvEmulatorExtensionZihintntl_H_
+
+#include "RiscvEmulatorConfig.h"
+
+#if (RVE_E_ZIHINTNTL == 1)
+
+#include <stdint.h>
+
+#include "RiscvEmulatorDefine.h"
+#include "RiscvEmulatorType.h"
+
+/**
+ * Non-temporal locality hint instructions.
+ *
+ * These do nothing in this emulator because there are no caches.
+ */
+static inline void RiscvEmulatorNTLP1(
+    RiscvEmulatorState_t *state __attribute__((unused))) {
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "ntl.p1";
+    hc.hook = HOOK_BEGIN;
+    RiscvEmulatorHook(state, &hc);
+#endif
+}
+
+/**
+ * Non-temporal locality hint instruction.
+ *
+ * This does nothing in this emulator because there are no caches.
+ */
+static inline void RiscvEmulatorNTLS1(
+    RiscvEmulatorState_t *state __attribute__((unused))) {
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "ntl.s1";
+    hc.hook = HOOK_BEGIN;
+    RiscvEmulatorHook(state, &hc);
+#endif
+}
+
+/**
+ * Non-temporal locality hint instruction.
+ *
+ * This does nothing in this emulator because there are no caches.
+ */
+static inline void RiscvEmulatorNTLPALL(
+    RiscvEmulatorState_t *state __attribute__((unused))) {
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "ntl.pall";
+    hc.hook = HOOK_BEGIN;
+    RiscvEmulatorHook(state, &hc);
+#endif
+}
+
+/**
+ * Non-temporal locality hint instruction.
+ *
+ * This does nothing in this emulator because there are no caches.
+ */
+static inline void RiscvEmulatorNTLALL(
+    RiscvEmulatorState_t *state __attribute__((unused))) {
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "ntl.all";
+    hc.hook = HOOK_BEGIN;
+    RiscvEmulatorHook(state, &hc);
+#endif
+}
+
+#endif
+
+#endif

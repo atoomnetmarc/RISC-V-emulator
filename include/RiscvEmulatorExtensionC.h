@@ -15,6 +15,8 @@
 #include <stdint.h>
 
 #include "RiscvEmulatorDefine.h"
+#include "RiscvEmulatorExtensionZcb.h"
+#include "RiscvEmulatorExtensionZcmop.h"
 #include "RiscvEmulatorHook.h"
 #include "RiscvEmulatorType.h"
 
@@ -910,6 +912,16 @@ static inline void RiscvEmulatorC_SWSP(
  * Process compressed opcodes.
  */
 static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
+#if ((RVE_E_ZCMOP == 1) && (RVE_E_C == 1))
+    // c.mop instructions are quadrant 1 instructions with funct3 3 and a
+    // fixed bit pattern. The n field selects the instruction variant but all
+    // variants behave the same.
+    if ((state->instruction.L & MASK_ZCMOP_CMOP) == PATTERN_ZCMOP_CMOP) {
+        RiscvEmulatorCMOP(state);
+        return;
+    }
+#endif
+
     RiscvInstructionTypeCDecoderOpcode_u decoderOpcode16 = {0};
     decoderOpcode16.funct3 = state->instruction.copcode.funct3;
     decoderOpcode16.op = state->instruction.copcode.op;
@@ -971,8 +983,26 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
                 rs2num = state->instruction.catype.rs2p + 8;
                 break;
             }
+
+#if ((RVE_E_ZCB == 1) && (RVE_E_C == 1))
+            if ((funct6_funct2 >> 2) == FUNCT6_ZCB) {
+                rdnum = state->instruction.catype.rdp + 8;
+                rs2num = state->instruction.catype.rs2p + 8;
+                break;
+            }
+#endif
             break;
         }
+#if ((RVE_E_ZCB == 1) && (RVE_E_C == 1))
+        case OPCODE16_ZCB_LOADSTORE:
+            // Zcb reuses the quadrant 0 funct3 100 encoding space, which is
+            // only used by the floating point loads that this emulator does
+            // not implement.
+            rs1num = state->instruction.cltype.rs1p + 8;
+            rdnum = state->instruction.cltype.rdp + 8;
+            rs2num = state->instruction.cstype.rs2p + 8;
+            break;
+#endif
         case OPCODE16_BEQZ:
         case OPCODE16_BNEZ: {
             RiscvInstructionTypeCBDecoderImm_u RiscvInstructionTypeCBDecoderImm = {0};
@@ -1066,6 +1096,49 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
                 state->trapflag.illegalinstruction = 1;
             }
             break;
+#if ((RVE_E_ZCB == 1) && (RVE_E_C == 1))
+        case OPCODE16_ZCB_LOADSTORE: {
+            uint8_t offset = 0;
+
+            switch (state->instruction.cltype.imm5_3) {
+                case FUNCT3_ZCB_LBU:
+                    // c.lbu. The offset is formed as uimm[1] = encoding[5]
+                    // and uimm[0] = encoding[6].
+                    offset = state->instruction.cltype.imm2 | (state->instruction.cltype.imm6 << 1);
+                    RiscvEmulatorC_LBU(state, rdnum, rd, rs1num, rs1, offset);
+                    break;
+                case FUNCT3_ZCB_LH:
+                    // c.lhu and c.lh. The offset is formed as
+                    // uimm[1] = encoding[5].
+                    offset = state->instruction.cltype.imm6 << 1;
+                    if (state->instruction.cltype.imm2 == 0) {
+                        RiscvEmulatorC_LHU(state, rdnum, rd, rs1num, rs1, offset);
+                    } else {
+                        RiscvEmulatorC_LH(state, rdnum, rd, rs1num, rs1, offset);
+                    }
+                    break;
+                case FUNCT3_ZCB_SB:
+                    // c.sb. The offset is formed as uimm[1] = encoding[5]
+                    // and uimm[0] = encoding[6].
+                    offset = state->instruction.cltype.imm2 | (state->instruction.cltype.imm6 << 1);
+                    RiscvEmulatorC_SB(state, rs1num, rs1, rs2num, rs2, offset);
+                    break;
+                case FUNCT3_ZCB_SH:
+                    // c.sh. The offset is formed as uimm[1] = encoding[5].
+                    if (state->instruction.cltype.imm2 == 0) {
+                        offset = state->instruction.cltype.imm6 << 1;
+                        RiscvEmulatorC_SH(state, rs1num, rs1, rs2num, rs2, offset);
+                    } else {
+                        state->trapflag.illegalinstruction = 1;
+                    }
+                    break;
+                default:
+                    state->trapflag.illegalinstruction = 1;
+                    break;
+            }
+            break;
+        }
+#endif
         case OPCODE16_LW:
             RiscvEmulatorC_LW(state, rdnum, rd, rs1num, rs1, imm);
             break;
@@ -1127,6 +1200,55 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
                 RiscvEmulatorC_AND(state, rdnum, rd, rs2num, rs2);
                 break;
             }
+
+#if ((RVE_E_ZCB == 1) && (RVE_E_C == 1))
+            if ((funct6_funct2 >> 2) == FUNCT6_ZCB) {
+                if ((funct6_funct2 & 0b11) == FUNCT2_ZCB_GROUP) {
+                    switch (state->instruction.catype.rs2p) {
+                        case RS2P_ZCB_ZEXTB:
+                            RiscvEmulatorC_ZEXTB(state, rdnum, rd);
+                            break;
+                        case RS2P_ZCB_SEXTB:
+#if (RVE_E_ZBB == 1)
+                            RiscvEmulatorC_SEXTB(state, rdnum, rd);
+#else
+                            state->trapflag.illegalinstruction = 1;
+#endif
+                            break;
+                        case RS2P_ZCB_ZEXTH:
+#if (RVE_E_ZBB == 1)
+                            RiscvEmulatorC_ZEXTH(state, rdnum, rd);
+#else
+                            state->trapflag.illegalinstruction = 1;
+#endif
+                            break;
+                        case RS2P_ZCB_SEXTH:
+#if (RVE_E_ZBB == 1)
+                            RiscvEmulatorC_SEXTH(state, rdnum, rd);
+#else
+                            state->trapflag.illegalinstruction = 1;
+#endif
+                            break;
+                        case RS2P_ZCB_NOT:
+                            RiscvEmulatorC_NOT(state, rdnum, rd);
+                            break;
+                        default:
+                            state->trapflag.illegalinstruction = 1;
+                            break;
+                    }
+                    break;
+                }
+
+                if ((funct6_funct2 & 0b11) == FUNCT2_ZCB_MUL) {
+#if (RVE_E_ZMMUL == 1)
+                    RiscvEmulatorC_MUL(state, rdnum, rd, rs2num, rs2);
+#else
+                    state->trapflag.illegalinstruction = 1;
+#endif
+                    break;
+                }
+            }
+#endif
 
             state->trapflag.illegalinstruction = 1;
             break;

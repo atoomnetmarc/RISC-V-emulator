@@ -51,12 +51,20 @@
 #define RVE_E_B 0
 #endif
 
+// Zbkb shares the andn, orn, xnor, rol, ror, rori, rev8, sext.b and sext.h
+// instructions with Zbb.
+#if (RVE_E_ZBKB == 1)
+#define RVE_E_ZBB 1
+#endif
+
 // Enable all Bit-Manipulation extension subsets.
 #if (RVE_E_B == 1)
 #define RVE_E_ZBA 1
 #define RVE_E_ZBB 1
 #define RVE_E_ZBC 1
 #define RVE_E_ZBS 1
+#define RVE_E_ZBKB 1
+#define RVE_E_ZBKX 1
 #endif
 
 // Control and Status Register Access extension.
@@ -92,9 +100,75 @@
 #define RVE_E_ZBC 0
 #endif
 
+// Zbc implies Zbkc.
+#if (RVE_E_ZBC == 1)
+#define RVE_E_ZBKC 1
+#endif
+
+// Scalar crypto extension: Carry-less multiplication subset.
+#ifndef RVE_E_ZBKC
+#define RVE_E_ZBKC 0
+#endif
+
 // Bit-Manipulation extension: Single-bit operation subset.
 #ifndef RVE_E_ZBS
 #define RVE_E_ZBS 0
+#endif
+
+// Zcb implies C.
+#if (RVE_E_ZCB == 1)
+#define RVE_E_C 1
+#endif
+
+// Zicntr implies Zicsr.
+#if (RVE_E_ZICNTR == 1)
+#define RVE_E_ZICSR 1
+#endif
+
+
+// Scalar crypto extension: Byte and bit permutation subset.
+#ifndef RVE_E_ZBKX
+#define RVE_E_ZBKX 0
+#endif
+
+// Scalar crypto extension: Bit manipulation for cryptography subset.
+#ifndef RVE_E_ZBKB
+#define RVE_E_ZBKB 0
+#endif
+
+// Compressed instructions extension: additional compressed instructions subset.
+#ifndef RVE_E_ZCB
+#define RVE_E_ZCB 0
+#endif
+
+// Compressed May-Be-Operations extension.
+#ifndef RVE_E_ZCMOP
+#define RVE_E_ZCMOP 0
+#endif
+
+// Integer Conditional Operations extension.
+#ifndef RVE_E_ZICOND
+#define RVE_E_ZICOND 0
+#endif
+
+// Counter extension.
+#ifndef RVE_E_ZICNTR
+#define RVE_E_ZICNTR 0
+#endif
+
+// Non-Temporal Locality Hint extension.
+#ifndef RVE_E_ZIHINTNTL
+#define RVE_E_ZIHINTNTL 0
+#endif
+
+// Pause Hint extension.
+#ifndef RVE_E_ZIHINTPAUSE
+#define RVE_E_ZIHINTPAUSE 0
+#endif
+
+// May-Be-Operations extension.
+#ifndef RVE_E_ZIMOP
+#define RVE_E_ZIMOP 0
 #endif
 
 // Multiplication subset of the M extension.

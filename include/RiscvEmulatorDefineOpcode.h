@@ -21,6 +21,8 @@
 
 #define OPCODE16_ADDI4SPN     0b00000
 #define OPCODE16_FLD          0b00100
+// Zcb reuses the quadrant 0 funct3 100 encoding space (opfunct3 = op | funct3 << 2).
+#define OPCODE16_ZCB_LOADSTORE 0b10000
 #define OPCODE16_LW           0b01000
 #define OPCODE16_FLW          0b01100
 #define OPCODE16_FSD          0b10100

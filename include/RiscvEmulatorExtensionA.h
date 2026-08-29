@@ -170,19 +170,78 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(
     // Remember original value stored in rs2.
     uint32_t originalvaluers2 = *(uint32_t *)rs2;
 
+    // LR and SC perform their own memory operation and must not run the
+    // store at the end of this function.
+    uint8_t skipstore = 0;
+
+    RiscvInstructionTypeRDecoderFunct5Funct3_u instruction_decoderhelper_rtypeatomicmemoryoperation = {0};
+    instruction_decoderhelper_rtypeatomicmemoryoperation.funct3 = state->instruction.rtypeatomicmemoryoperation.funct3;
+    instruction_decoderhelper_rtypeatomicmemoryoperation.funct5 = state->instruction.rtypeatomicmemoryoperation.funct5;
+
+#if (RVE_E_HOOK == 1)
+    const char *instructionname = "unknown";
+    switch (state->instruction.rtypeatomicmemoryoperation.funct5) {
+        case 0b00000:
+            instructionname = "amoadd.w";
+            break;
+        case 0b00001:
+            instructionname = "amoswap.w";
+            break;
+        case 0b00010:
+            instructionname = "lr.w";
+            break;
+        case 0b00011:
+            instructionname = "sc.w";
+            break;
+        case 0b00100:
+            instructionname = "amoxor.w";
+            break;
+        case 0b01000:
+            instructionname = "amoor.w";
+            break;
+        case 0b01100:
+            instructionname = "amoand.w";
+            break;
+        case 0b10000:
+            instructionname = "amomin.w";
+            break;
+        case 0b10100:
+            instructionname = "amomax.w";
+            break;
+        case 0b11000:
+            instructionname = "amominu.w";
+            break;
+        case 0b11100:
+            instructionname = "amomaxu.w";
+            break;
+    }
+
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = instructionname;
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    hc.rs2num = rs2num;
+    hc.rs2 = rs2;
+    hc.memorylocation = originaladdressrs1;
+    hc.length = sizeof(uint32_t);
+    RiscvEmulatorHook(state, &hc);
+#endif
+
 #if (RVE_E_ZAAMO == 1)
+    // Word AMOs operate on sizeof(uint32_t) bytes.
+    uint8_t amolength = sizeof(uint32_t);
     uint32_t loadedvalue = 0;
-    RiscvEmulatorLoad(originaladdressrs1, &loadedvalue, sizeof(uint32_t));
+    RiscvEmulatorLoad(originaladdressrs1, &loadedvalue, amolength);
 
     if (rdnum != 0) {
         // Place loaded value of original address in rd.
         *(uint32_t *)rd = loadedvalue;
     }
 #endif
-
-    RiscvInstructionTypeRDecoderFunct5Funct3_u instruction_decoderhelper_rtypeatomicmemoryoperation = {0};
-    instruction_decoderhelper_rtypeatomicmemoryoperation.funct3 = state->instruction.rtypeatomicmemoryoperation.funct3;
-    instruction_decoderhelper_rtypeatomicmemoryoperation.funct5 = state->instruction.rtypeatomicmemoryoperation.funct5;
 
     switch (instruction_decoderhelper_rtypeatomicmemoryoperation.funct5_3) {
 #if (RVE_E_ZALRSC == 1)
@@ -194,7 +253,8 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(
                 state->reservationvalid = 1;
                 state->reservationaddress = originaladdressrs1;
             }
-            return;
+            skipstore = 1;
+            break;
         case FUNCT5_FUNCT3_OPERATION_SC_W:
             if (rdnum != 0) {
                 RiscvEmulatorSC_W(state, rd, &originalvaluers2, originaladdressrs1);
@@ -203,7 +263,8 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(
                 uint32_t result = 0;
                 RiscvEmulatorSC_W(state, &result, &originalvaluers2, originaladdressrs1);
             }
-            return;
+            skipstore = 1;
+            break;
 #endif
 #if (RVE_E_ZAAMO == 1)
         case FUNCT5_FUNCT3_OPERATION_AMOADD_W:
@@ -236,11 +297,22 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(
 #endif
         default:
             state->trapflag.illegalinstruction = 1;
-            return;
+            skipstore = 1;
+            break;
     }
 
 #if (RVE_E_ZAAMO == 1)
-    RiscvEmulatorStore(originaladdressrs1, &loadedvalue, sizeof(uint32_t));
+    if (skipstore == 0) {
+        RiscvEmulatorStore(originaladdressrs1, &loadedvalue, amolength);
+    }
+#else
+    // Suppress unused-variable warning in Zalrsc-only builds.
+    (void)skipstore;
+#endif
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
 #endif
 }
 

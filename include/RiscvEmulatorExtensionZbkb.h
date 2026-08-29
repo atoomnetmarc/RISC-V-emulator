@@ -1,0 +1,233 @@
+/*
+ *
+ * Copyright Marc Ketel
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ */
+
+#ifndef RiscvEmulatorExtensionZbkb_H_
+#define RiscvEmulatorExtensionZbkb_H_
+
+#include "RiscvEmulatorConfig.h"
+
+#if (RVE_E_ZBKB == 1)
+
+#include <stdint.h>
+
+#include "RiscvEmulatorDefine.h"
+#include "RiscvEmulatorType.h"
+
+/**
+ * Reverse the bits in each byte of rs1.
+ */
+static inline void RiscvEmulatorBREV8(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "brev8";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
+    uint32_t input = *(uint32_t *)rs1;
+    uint32_t output = 0;
+
+    for (uint8_t i = 0; i < 32; i++) {
+        if ((input >> i) & 1) {
+            output |= 1 << ((i & ~0x7) | (7 - (i & 0x7)));
+        }
+    }
+
+    *(uint32_t *)rd = output;
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
+}
+
+/**
+ * Pack the lower 16 bits of rs1 and rs2 into rd.
+ */
+static inline void RiscvEmulatorPACK(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint8_t rs2num __attribute__((unused)),
+    const void *rs2) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "pack";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    hc.rs2num = rs2num;
+    hc.rs2 = rs2;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
+    *(uint32_t *)rd = (*(uint32_t *)rs1 & 0xFFFF) | (*(uint32_t *)rs2 << 16);
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
+}
+
+/**
+ * Pack the lower 8 bits of rs1 and rs2 into rd.
+ */
+static inline void RiscvEmulatorPACKH(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1,
+    const uint8_t rs2num __attribute__((unused)),
+    const void *rs2) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "packh";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    hc.rs2num = rs2num;
+    hc.rs2 = rs2;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
+    *(uint32_t *)rd = (*(uint32_t *)rs1 & 0xFF) | ((*(uint32_t *)rs2 & 0xFF) << 8);
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
+}
+
+/**
+ * Interleave the lower 16 bits of rs1 into the even bit positions of rd.
+ */
+static inline void RiscvEmulatorZIP(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "zip";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
+    uint32_t input = *(uint32_t *)rs1;
+    uint32_t output = 0;
+
+    for (uint8_t i = 0; i < 16; i++) {
+        if ((input >> i) & 1) {
+            output |= 1 << (i * 2);
+        }
+        if ((input >> (i + 16)) & 1) {
+            output |= 1 << (i * 2 + 1);
+        }
+    }
+
+    *(uint32_t *)rd = output;
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
+}
+
+/**
+ * Gather the even bit positions of rs1 into the lower 16 bits of rd.
+ */
+static inline void RiscvEmulatorUNZIP(
+    RiscvEmulatorState_t *state __attribute__((unused)),
+    const uint8_t rdnum,
+    void *rd,
+    const uint8_t rs1num __attribute__((unused)),
+    const void *rs1) {
+
+#if (RVE_E_HOOK == 1)
+    state->hookexists = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "unzip";
+    hc.hook = HOOK_BEGIN;
+    hc.rdnum = rdnum;
+    hc.rd = rd;
+    hc.rs1num = rs1num;
+    hc.rs1 = rs1;
+    RiscvEmulatorHook(state, &hc);
+#endif
+
+    if (rdnum == 0) {
+        return;
+    }
+
+    uint32_t input = *(uint32_t *)rs1;
+    uint32_t output = 0;
+
+    for (uint8_t i = 0; i < 16; i++) {
+        if ((input >> (i * 2)) & 1) {
+            output |= 1 << i;
+        }
+        if ((input >> (i * 2 + 1)) & 1) {
+            output |= 1 << (i + 16);
+        }
+    }
+
+    *(uint32_t *)rd = output;
+
+#if (RVE_E_HOOK == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#endif
+}
+
+#endif
+
+#endif

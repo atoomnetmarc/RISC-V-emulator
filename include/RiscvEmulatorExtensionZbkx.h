@@ -5,24 +5,23 @@
  *
  */
 
-#ifndef RiscvEmulatorExtensionZbc_H_
-#define RiscvEmulatorExtensionZbc_H_
+#ifndef RiscvEmulatorExtensionZbkx_H_
+#define RiscvEmulatorExtensionZbkx_H_
 
 #include "RiscvEmulatorConfig.h"
 
-#if ((RVE_E_ZBC == 1) || (RVE_E_ZBKC == 1))
+#if (RVE_E_ZBKX == 1)
 
 #include <stdint.h>
-
-#include <RiscvEmulatorImplementationSpecific.h>
 
 #include "RiscvEmulatorDefine.h"
 #include "RiscvEmulatorType.h"
 
 /**
- * Carry-less multiply low-part.
+ * Permute 4-bit nibbles. Each nibble of rs2 selects a nibble of rs1.
+ * Nibbles with an index of 8 or higher become zero.
  */
-static inline void RiscvEmulatorCLMUL(
+static inline void RiscvEmulatorXPERM4(
     RiscvEmulatorState_t *state __attribute__((unused)),
     const uint8_t rdnum,
     void *rd,
@@ -34,7 +33,7 @@ static inline void RiscvEmulatorCLMUL(
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
     RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "clmul";
+    hc.instruction = "xperm4";
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
     hc.rd = rd;
@@ -49,11 +48,14 @@ static inline void RiscvEmulatorCLMUL(
         return;
     }
 
+    uint32_t input = *(uint32_t *)rs2;
+    uint32_t table = *(uint32_t *)rs1;
     uint32_t output = 0;
 
-    for (uint8_t i = 0; i < 32; i++) {
-        if ((*(uint32_t *)rs2 >> i) & 1) {
-            output ^= *(uint32_t *)rs1 << i;
+    for (uint8_t i = 0; i < 8; i++) {
+        uint8_t index = (input >> (i * 4)) & 0xF;
+        if (index < 8) {
+            output |= ((table >> (index * 4)) & 0xF) << (i * 4);
         }
     }
 
@@ -66,9 +68,10 @@ static inline void RiscvEmulatorCLMUL(
 }
 
 /**
- * Carry-less multiply high-part.
+ * Permute bytes. Each byte of rs2 selects a byte of rs1.
+ * Bytes with an index of 4 or higher become zero.
  */
-static inline void RiscvEmulatorCLMULH(
+static inline void RiscvEmulatorXPERM8(
     RiscvEmulatorState_t *state __attribute__((unused)),
     const uint8_t rdnum,
     void *rd,
@@ -80,7 +83,7 @@ static inline void RiscvEmulatorCLMULH(
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
     RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "clmulh";
+    hc.instruction = "xperm8";
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
     hc.rd = rd;
@@ -95,11 +98,14 @@ static inline void RiscvEmulatorCLMULH(
         return;
     }
 
+    uint32_t input = *(uint32_t *)rs2;
+    uint32_t table = *(uint32_t *)rs1;
     uint32_t output = 0;
 
-    for (uint8_t i = 1; i < 32; i++) {
-        if ((*(uint32_t *)rs2 >> i) & 1) {
-            output ^= *(uint32_t *)rs1 >> (32 - i);
+    for (uint8_t i = 0; i < 4; i++) {
+        uint8_t index = (input >> (i * 8)) & 0xFF;
+        if (index < 4) {
+            output |= ((table >> (index * 8)) & 0xFF) << (i * 8);
         }
     }
 
@@ -110,54 +116,6 @@ static inline void RiscvEmulatorCLMULH(
     RiscvEmulatorHook(state, &hc);
 #endif
 }
-
-#if (RVE_E_ZBC == 1)
-/**
- * Carry-less multiply reversed.
- */
-static inline void RiscvEmulatorCLMULR(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum,
-    void *rd,
-    const uint8_t rs1num __attribute__((unused)),
-    const void *rs1,
-    const uint8_t rs2num __attribute__((unused)),
-    const void *rs2) {
-
-#if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "clmulr";
-    hc.hook = HOOK_BEGIN;
-    hc.rdnum = rdnum;
-    hc.rd = rd;
-    hc.rs1num = rs1num;
-    hc.rs1 = rs1;
-    hc.rs2num = rs2num;
-    hc.rs2 = rs2;
-    RiscvEmulatorHook(state, &hc);
-#endif
-
-    if (rdnum == 0) {
-        return;
-    }
-
-    uint32_t output = 0;
-
-    for (uint8_t i = 0; i < 32; i++) {
-        if ((*(uint32_t *)rs2 >> i) & 1) {
-            output ^= *(uint32_t *)rs1 >> (32 - i - 1);
-        }
-    }
-
-    *(uint32_t *)rd = output;
-
-#if (RVE_E_HOOK == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-#endif
-}
-#endif
 
 #endif
 

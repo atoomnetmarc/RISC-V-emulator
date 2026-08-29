@@ -83,7 +83,7 @@ typedef union {
 } RiscvInstructionTypeRDecoderFunct5Funct3_u;
 #endif
 
-#if (RVE_E_ZBB == 1)
+#if ((RVE_E_ZBB == 1) || (RVE_E_ZBKB == 1))
 /**
  * Union for combining funct3, rs2 and funct7 field of R-type instruction.
  */

@@ -51,6 +51,13 @@ typedef struct __attribute__((packed)) {
 
     // Supervisor Protection and Translation
     RiscvCSRsatp_t satp;
+
+    // Machine Counter Setup
+#if (RVE_E_ZICNTR == 1)
+    uint64_t cycle;    // Machine cycle counter.
+    uint64_t time;     // Machine real-time counter.
+    uint64_t instret;  // Machine instructions-retired counter.
+#endif
 } RiscvCSR_t;
 
 #endif

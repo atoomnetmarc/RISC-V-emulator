@@ -15,7 +15,14 @@
 #include "RiscvEmulatorExtensionZba.h"
 #include "RiscvEmulatorExtensionZbb.h"
 #include "RiscvEmulatorExtensionZbc.h"
+#include "RiscvEmulatorExtensionZbkb.h"
+#include "RiscvEmulatorExtensionZbkx.h"
 #include "RiscvEmulatorExtensionZbs.h"
+#include "RiscvEmulatorExtensionZcmop.h"
+#include "RiscvEmulatorExtensionZicond.h"
 #include "RiscvEmulatorExtensionZicsr.h"
+#include "RiscvEmulatorExtensionZihintntl.h"
+#include "RiscvEmulatorExtensionZihintpause.h"
+#include "RiscvEmulatorExtensionZimop.h"
 
 #endif

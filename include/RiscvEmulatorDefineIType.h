@@ -28,6 +28,10 @@
 #if (RVE_E_ZBB == 1)
 #define IMM11_5_FUNCT3_IMMEDIATE_RORI 0b0110000101
 #endif
+#if (RVE_E_ZBKB == 1)
+#define IMM11_5_FUNCT3_IMMEDIATE_ZIP   0b0000100001
+#define IMM11_5_FUNCT3_IMMEDIATE_UNZIP 0b0000100101
+#endif
 
 #if (RVE_E_ZBB == 1)
 #define IMM11_0_FUNCT3_IMMEDIATE_CLZ   0b011000000000001
@@ -37,6 +41,9 @@
 #define IMM11_0_FUNCT3_IMMEDIATE_SEXTH 0b011000000101001
 #define IMM11_0_FUNCT3_IMMEDIATE_ORCB  0b001010000111101
 #define IMM11_0_FUNCT3_IMMEDIATE_REV8  0b011010011000101
+#endif
+#if (RVE_E_ZBKB == 1)
+#define IMM11_0_FUNCT3_IMMEDIATE_BREV8 0b011010000111101
 #endif
 
 #if (RVE_E_ZBS == 1)
@@ -61,6 +68,21 @@
 #define FUNCT3_CSR_CSRRWI 0b101
 #define FUNCT3_CSR_CSRRSI 0b110
 #define FUNCT3_CSR_CSRRCI 0b111
+#endif
+
+#if (RVE_E_ZIHINTPAUSE == 1)
+#define FUNCT12_PAUSE 0b000000010000
+#endif
+
+// Zimop. MOP.R.n and MOP.RR.n are SYSTEM opcode instructions with funct3 4
+// and a fixed bit pattern in the upper bits. The n field selects the
+// instruction variant but all variants behave the same. These masks match on
+// the fixed bits only.
+#if (RVE_E_ZIMOP == 1)
+#define MASK_ZIMOP_MOPR     0xB3C07000
+#define PATTERN_ZIMOP_MOPR  0x81C04000
+#define MASK_ZIMOP_MOPRR    0xB2007000
+#define PATTERN_ZIMOP_MOPRR 0x82004000
 #endif
 
 #define FUNCT12_ECALL  0b000000000000
