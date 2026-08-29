@@ -20,7 +20,8 @@
 #include "RiscvEmulatorType.h"
 
 /**
- * Carry-less multiply low-part.
+ * Carry-less multiply low-part: multiply rs1 and rs2 without carries, keeping the lower 32 bits of the result.
+ * rd = clmul(rs1, rs2)[31:0]
  */
 static inline void RiscvEmulatorCLMUL(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -66,7 +67,8 @@ static inline void RiscvEmulatorCLMUL(
 }
 
 /**
- * Carry-less multiply high-part.
+ * Carry-less multiply high-part: multiply rs1 and rs2 without carries, keeping the upper 32 bits of the result.
+ * rd = clmul(rs1, rs2)[63:32]
  */
 static inline void RiscvEmulatorCLMULH(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -113,7 +115,8 @@ static inline void RiscvEmulatorCLMULH(
 
 #if (RVE_E_ZBC == 1)
 /**
- * Carry-less multiply reversed.
+ * Carry-less multiply reversed: multiply rs1 and rs2 without carries, keeping bits 31 to 0 of the reversed result.
+ * rd = clmulr(rs1, rs2)
  */
 static inline void RiscvEmulatorCLMULR(
     RiscvEmulatorState_t *state __attribute__((unused)),

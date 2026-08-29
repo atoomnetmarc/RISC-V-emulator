@@ -18,8 +18,8 @@
 #include "RiscvEmulatorType.h"
 
 /**
- * Permute 4-bit nibbles. Each nibble of rs2 selects a nibble of rs1.
- * Nibbles with an index of 8 or higher become zero.
+ * Crossbar permutation of nibbles: each nibble of rs2 selects a nibble of rs1, nibbles with an index of 8 or higher become zero.
+ * rd[i] = (rs2[i] < 8) ? rs1[rs2[i]] : 0
  */
 static inline void RiscvEmulatorXPERM4(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -68,8 +68,8 @@ static inline void RiscvEmulatorXPERM4(
 }
 
 /**
- * Permute bytes. Each byte of rs2 selects a byte of rs1.
- * Bytes with an index of 4 or higher become zero.
+ * Crossbar permutation of bytes: each byte of rs2 selects a byte of rs1, bytes with an index of 4 or higher become zero.
+ * rd[i] = (rs2[i] < 4) ? rs1[rs2[i]] : 0
  */
 static inline void RiscvEmulatorXPERM8(
     RiscvEmulatorState_t *state __attribute__((unused)),

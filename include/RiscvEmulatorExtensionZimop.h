@@ -18,9 +18,8 @@
 #include "RiscvEmulatorType.h"
 
 /**
- * May-Be-Operation read instruction.
- *
- * Writes zero to rd.
+ * May-Be-Operation read: a hint instruction that reads no registers and writes zero to rd.
+ * rd = 0
  */
 static inline void RiscvEmulatorMOPR(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -50,9 +49,8 @@ static inline void RiscvEmulatorMOPR(
 }
 
 /**
- * May-Be-Operation read-register instruction.
- *
- * Writes zero to rd.
+ * May-Be-Operation read-register: a hint instruction that reads no registers and writes zero to rd.
+ * rd = 0
  */
 static inline void RiscvEmulatorMOPRR(
     RiscvEmulatorState_t *state __attribute__((unused)),

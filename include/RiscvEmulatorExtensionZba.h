@@ -17,7 +17,8 @@
 #include "RiscvEmulatorType.h"
 
 /**
- * Shift left by x and add.
+ * Shift and add: shift rs1 left by the amount in funct3 (1, 2 or 3) and add rs2.
+ * rd = rs2 + (rs1 << x)
  */
 static inline void RiscvEmulatorSHADD(
     RiscvEmulatorState_t *state,

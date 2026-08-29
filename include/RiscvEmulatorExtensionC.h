@@ -21,7 +21,8 @@
 #include "RiscvEmulatorType.h"
 
 /**
- * rd = (*sp + nzuimm)
+ * Add immediate to sp scaled by 4: add a non-zero scaled immediate to the stack pointer.
+ * rd = sp + nzuimm
  */
 static inline void RiscvEmulatorC_ADDI4SPN(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -56,7 +57,8 @@ static inline void RiscvEmulatorC_ADDI4SPN(
 }
 
 /**
- * Load word from memory to rd.
+ * Load word: load a word from rs1 plus the offset.
+ * rd = memory[rs1 + offset]
  */
 static inline void RiscvEmulatorC_LW(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -102,7 +104,8 @@ static inline void RiscvEmulatorC_LW(
 }
 
 /**
- * Store word in rs2 to memory.
+ * Store word: store a word to rs1 plus the offset.
+ * memory[rs1 + offset] = rs2
  */
 static inline void RiscvEmulatorC_SW(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -148,6 +151,7 @@ static inline void RiscvEmulatorC_SW(
 }
 
 /**
+ * Add immediate: add a non-zero sign-extended immediate to rd.
  * rd = rd + nzimm
  */
 static inline void RiscvEmulatorC_ADDI(
@@ -183,7 +187,8 @@ static inline void RiscvEmulatorC_ADDI(
 }
 
 /**
- * pc += offset
+ * Jump and link: jump to the program counter offset by the immediate and store the return address in ra.
+ * ra = pc + 2; pc += offset
  */
 static inline void RiscvEmulatorC_JAL(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -212,7 +217,8 @@ static inline void RiscvEmulatorC_JAL(
 }
 
 /**
- * pc += rs1
+ * Jump and link register: jump to rs1, clearing the least significant bit, and store the return address in ra.
+ * ra = pc + 2; pc = rs1 & ~1
  */
 static inline void RiscvEmulatorC_JALR(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -242,6 +248,7 @@ static inline void RiscvEmulatorC_JALR(
 }
 
 /**
+ * Jump: jump to the program counter offset by the immediate.
  * pc += offset
  */
 static inline void RiscvEmulatorC_J(
@@ -269,7 +276,8 @@ static inline void RiscvEmulatorC_J(
 }
 
 /**
- * pc += rs1
+ * Jump register: jump to rs1, clearing the least significant bit.
+ * pc = rs1 & ~1
  */
 static inline void RiscvEmulatorC_JR(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -295,7 +303,8 @@ static inline void RiscvEmulatorC_JR(
 }
 
 /**
- * Branch if rs1 == 0
+ * Branch if equal zero: branch if rs1 equals zero.
+ * if (rs1 == 0) pc += offset
  */
 static inline void RiscvEmulatorC_BEQZ(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -328,7 +337,8 @@ static inline void RiscvEmulatorC_BEQZ(
 }
 
 /**
- * Branch if rs1 != 0
+ * Branch if not equal zero: branch if rs1 does not equal zero.
+ * if (rs1 != 0) pc += offset
  */
 static inline void RiscvEmulatorC_BNEZ(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -361,7 +371,8 @@ static inline void RiscvEmulatorC_BNEZ(
 }
 
 /**
- * Logical shift left: rd = rs1 << shamt
+ * Shift left logical immediate: shift rd left by shamt.
+ * rd = rd << shamt
  */
 static inline void RiscvEmulatorC_SLLI(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -395,6 +406,7 @@ static inline void RiscvEmulatorC_SLLI(
 }
 
 /**
+ * Load immediate: place the sign-extended immediate in rd.
  * rd = imm
  */
 static inline void RiscvEmulatorC_LI(
@@ -429,7 +441,8 @@ static inline void RiscvEmulatorC_LI(
 }
 
 /**
- * sp += imm*16
+ * Add immediate to sp scaled by 16: add a non-zero scaled immediate to the stack pointer.
+ * rd = rd + nzimm
  */
 static inline void RiscvEmulatorC_ADDI16SP(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -472,7 +485,8 @@ static inline void RiscvEmulatorC_ADDI16SP(
 }
 
 /**
- * Load upper with immediate.
+ * Load upper immediate: place the non-zero sign-extended upper immediate in rd.
+ * rd = nzimm
  */
 static inline void RiscvEmulatorC_LUI(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -510,7 +524,8 @@ static inline void RiscvEmulatorC_LUI(
 }
 
 /**
- * Logical shift right: rd = rd >> shamt
+ * Shift right logical immediate: shift rd right by shamt, filling with zeros.
+ * rd = rd >> shamt
  */
 static inline void RiscvEmulatorC_SRLI(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -544,7 +559,8 @@ static inline void RiscvEmulatorC_SRLI(
 }
 
 /**
- * Arithmetic shift right: rd = rs1 >> shamt
+ * Shift right arithmetic immediate: shift rd right by shamt, preserving the sign bit.
+ * rd = rd >> shamt
  */
 static inline void RiscvEmulatorC_SRAI(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -578,7 +594,8 @@ static inline void RiscvEmulatorC_SRAI(
 }
 
 /**
- * rd = rd & imm.
+ * And immediate: and rd with the sign-extended immediate.
+ * rd = rd & imm
  */
 static inline void RiscvEmulatorC_ANDI(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -612,7 +629,8 @@ static inline void RiscvEmulatorC_ANDI(
 }
 
 /**
- * rd = rd - rs2.
+ * Subtract: subtract rs2 from rd.
+ * rd = rd - rs2
  */
 static inline void RiscvEmulatorC_SUB(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -646,7 +664,8 @@ static inline void RiscvEmulatorC_SUB(
 }
 
 /**
- * Exclusive or: rd = rd ^ rs2
+ * Exclusive or: xor rd and rs2.
+ * rd = rd ^ rs2
  */
 static inline void RiscvEmulatorC_XOR(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -680,7 +699,8 @@ static inline void RiscvEmulatorC_XOR(
 }
 
 /**
- * Exclusive or: rd = rd | rs2
+ * Or: or rd and rs2.
+ * rd = rd | rs2
  */
 static inline void RiscvEmulatorC_OR(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -714,7 +734,8 @@ static inline void RiscvEmulatorC_OR(
 }
 
 /**
- * Exclusive or: rd = rd & rs2
+ * And: and rd and rs2.
+ * rd = rd & rs2
  */
 static inline void RiscvEmulatorC_AND(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -748,7 +769,8 @@ static inline void RiscvEmulatorC_AND(
 }
 
 /**
- * Load memorylocation (*sp + offset) into rd.
+ * Load word from stack: load a word from sp plus the offset.
+ * rd = memory[sp + offset]
  */
 static inline void RiscvEmulatorC_LWSP(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -786,6 +808,7 @@ static inline void RiscvEmulatorC_LWSP(
 }
 
 /**
+ * Move: copy rs2 to rd.
  * rd = rs2
  */
 static inline void RiscvEmulatorC_MV(
@@ -820,7 +843,8 @@ static inline void RiscvEmulatorC_MV(
 }
 
 /**
- * Cause control to be transferred back to a debugging environment.
+ * Environment break: cause control to be transferred back to a debugging environment.
+ * raise breakpoint exception
  */
 static inline void RiscvEmulatorC_EBREAK(RiscvEmulatorState_t *state) {
 
@@ -841,6 +865,7 @@ static inline void RiscvEmulatorC_EBREAK(RiscvEmulatorState_t *state) {
 }
 
 /**
+ * Add: add rd and rs2.
  * rd = rd + rs2
  */
 static inline void RiscvEmulatorC_ADD(
@@ -875,7 +900,8 @@ static inline void RiscvEmulatorC_ADD(
 }
 
 /**
- * Store rs2 to memorylocation (*sp + offset)
+ * Store word to stack: store a word to sp plus the offset.
+ * memory[sp + offset] = rs2
  */
 static inline void RiscvEmulatorC_SWSP(
     RiscvEmulatorState_t *state __attribute__((unused)),

@@ -18,9 +18,8 @@
 #include "RiscvEmulatorType.h"
 
 /**
- * Non-temporal locality hint instructions.
- *
- * These do nothing in this emulator because there are no caches.
+ * Non-temporal locality hint: the following instruction accesses memory with program-order locality.
+ * This does nothing in this emulator because there are no caches.
  */
 static inline void RiscvEmulatorNTLP1(
     RiscvEmulatorState_t *state __attribute__((unused))) {
@@ -34,8 +33,7 @@ static inline void RiscvEmulatorNTLP1(
 }
 
 /**
- * Non-temporal locality hint instruction.
- *
+ * Non-temporal locality hint: the following instruction accesses memory with inner-shareable locality.
  * This does nothing in this emulator because there are no caches.
  */
 static inline void RiscvEmulatorNTLS1(
@@ -50,8 +48,7 @@ static inline void RiscvEmulatorNTLS1(
 }
 
 /**
- * Non-temporal locality hint instruction.
- *
+ * Non-temporal locality hint: the following instruction accesses memory with outer-shareable locality.
  * This does nothing in this emulator because there are no caches.
  */
 static inline void RiscvEmulatorNTLPALL(
@@ -66,8 +63,7 @@ static inline void RiscvEmulatorNTLPALL(
 }
 
 /**
- * Non-temporal locality hint instruction.
- *
+ * Non-temporal locality hint: the following instruction accesses memory with full-shareable locality.
  * This does nothing in this emulator because there are no caches.
  */
 static inline void RiscvEmulatorNTLALL(

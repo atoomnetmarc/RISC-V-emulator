@@ -18,7 +18,8 @@
 #include "RiscvEmulatorType.h"
 
 /**
- * Reverse the bits in each byte of rs1.
+ * Reverse bits in bytes: reverse the bits in each byte of rs1.
+ * rd = brev8(rs1)
  */
 static inline void RiscvEmulatorBREV8(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -61,7 +62,8 @@ static inline void RiscvEmulatorBREV8(
 }
 
 /**
- * Pack the lower 16 bits of rs1 and rs2 into rd.
+ * Pack halfwords: pack the lower halfword of rs1 and the lower halfword of rs2 into rd.
+ * rd = (rs1 & 0xFFFF) | (rs2 << 16)
  */
 static inline void RiscvEmulatorPACK(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -99,7 +101,8 @@ static inline void RiscvEmulatorPACK(
 }
 
 /**
- * Pack the lower 8 bits of rs1 and rs2 into rd.
+ * Pack bytes: pack the lower byte of rs1 and the lower byte of rs2 into rd.
+ * rd = (rs1 & 0xFF) | ((rs2 & 0xFF) << 8)
  */
 static inline void RiscvEmulatorPACKH(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -137,7 +140,8 @@ static inline void RiscvEmulatorPACKH(
 }
 
 /**
- * Interleave the lower 16 bits of rs1 into the even bit positions of rd.
+ * Zip: interleave the upper and lower halfwords of rs1 into the even and odd bit positions of rd.
+ * rd = zip(rs1)
  */
 static inline void RiscvEmulatorZIP(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -183,7 +187,8 @@ static inline void RiscvEmulatorZIP(
 }
 
 /**
- * Gather the even bit positions of rs1 into the lower 16 bits of rd.
+ * Unzip: gather the even bit positions of rs1 into the lower halfword of rd and the odd bit positions into the upper halfword.
+ * rd = unzip(rs1)
  */
 static inline void RiscvEmulatorUNZIP(
     RiscvEmulatorState_t *state __attribute__((unused)),

@@ -18,8 +18,7 @@
 #include "RiscvEmulatorType.h"
 
 /**
- * Pause hint instruction.
- *
+ * Pause: a hint that the hart should pause until an interrupt or another event occurs.
  * This does nothing in this emulator because there is no pipeline to stall.
  */
 static inline void RiscvEmulatorPAUSE(

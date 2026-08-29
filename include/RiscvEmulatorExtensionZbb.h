@@ -18,7 +18,8 @@
 #include "RiscvEmulatorType.h"
 
 /**
- * AND with inverted operand.
+ * And with inverted operand: and rs1 with the bitwise inverse of rs2.
+ * rd = rs1 & ~rs2
  */
 static inline void RiscvEmulatorANDN(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -56,7 +57,8 @@ static inline void RiscvEmulatorANDN(
 }
 
 /**
- * OR with inverted operand.
+ * Or with inverted operand: or rs1 with the bitwise inverse of rs2.
+ * rd = rs1 | ~rs2
  */
 static inline void RiscvEmulatorORN(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -94,7 +96,8 @@ static inline void RiscvEmulatorORN(
 }
 
 /**
- * Exclusive NOR.
+ * Exclusive nor: xor rs1 and rs2, then invert the result.
+ * rd = ~(rs1 ^ rs2)
  */
 static inline void RiscvEmulatorXNOR(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -132,7 +135,8 @@ static inline void RiscvEmulatorXNOR(
 }
 
 /**
- * Count leading zero bits.
+ * Count leading zeros: count the number of leading zero bits in rs1.
+ * rd = countleadingzeros(rs1)
  */
 static inline void RiscvEmulatorCLZ(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -175,7 +179,8 @@ static inline void RiscvEmulatorCLZ(
 }
 
 /**
- * Count trailing zero bits.
+ * Count trailing zeros: count the number of trailing zero bits in rs1.
+ * rd = counttrailingzeros(rs1)
  */
 static inline void RiscvEmulatorCTZ(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -218,7 +223,8 @@ static inline void RiscvEmulatorCTZ(
 }
 
 /**
- * Count set bits.
+ * Count population: count the number of set bits in rs1.
+ * rd = populationcount(rs1)
  */
 static inline void RiscvEmulatorCPOP(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -260,7 +266,8 @@ static inline void RiscvEmulatorCPOP(
 }
 
 /**
- * Maximum.
+ * Maximum: take the larger of rs1 and rs2 as signed integers.
+ * rd = (rs1 > rs2) ? rs1 : rs2
  */
 static inline void RiscvEmulatorMAX(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -302,7 +309,8 @@ static inline void RiscvEmulatorMAX(
 }
 
 /**
- * Unsigned maximum.
+ * Maximum unsigned: take the larger of rs1 and rs2 as unsigned integers.
+ * rd = (rs1 > rs2) ? rs1 : rs2
  */
 static inline void RiscvEmulatorMAXU(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -344,7 +352,8 @@ static inline void RiscvEmulatorMAXU(
 }
 
 /**
- * Minimum.
+ * Minimum: take the smaller of rs1 and rs2 as signed integers.
+ * rd = (rs1 < rs2) ? rs1 : rs2
  */
 static inline void RiscvEmulatorMIN(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -386,7 +395,8 @@ static inline void RiscvEmulatorMIN(
 }
 
 /**
- * Unsigned minimum.
+ * Minimum unsigned: take the smaller of rs1 and rs2 as unsigned integers.
+ * rd = (rs1 < rs2) ? rs1 : rs2
  */
 static inline void RiscvEmulatorMINU(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -428,7 +438,8 @@ static inline void RiscvEmulatorMINU(
 }
 
 /**
- * Sign-extend byte.
+ * Sign-extend byte: take the least significant byte of rs1 and sign-extend it to XLEN bits.
+ * rd = signext(rs1[7:0])
  */
 static inline void RiscvEmulatorSEXT_B(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -462,7 +473,8 @@ static inline void RiscvEmulatorSEXT_B(
 }
 
 /**
- * Sign-extend halfword.
+ * Sign-extend halfword: take the least significant halfword of rs1 and sign-extend it to XLEN bits.
+ * rd = signext(rs1[15:0])
  */
 static inline void RiscvEmulatorSEXT_H(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -496,7 +508,8 @@ static inline void RiscvEmulatorSEXT_H(
 }
 
 /**
- * Zero-extend halfword.
+ * Zero-extend halfword: take the least significant halfword of rs1 and zero-extend it to XLEN bits.
+ * rd = zeroext(rs1[15:0])
  */
 static inline void RiscvEmulatorZEXT_H(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -530,7 +543,8 @@ static inline void RiscvEmulatorZEXT_H(
 }
 
 /**
- * Rotate left.
+ * Rotate left: rotate rs1 left by the amount in the low 5 bits of rs2.
+ * rd = rotl(rs1, rs2)
  */
 static inline void RiscvEmulatorROL(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -570,7 +584,8 @@ static inline void RiscvEmulatorROL(
 }
 
 /**
- * Rotate right.
+ * Rotate right: rotate rs1 right by the amount in the low 5 bits of rs2.
+ * rd = rotr(rs1, rs2)
  */
 static inline void RiscvEmulatorROR(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -610,7 +625,8 @@ static inline void RiscvEmulatorROR(
 }
 
 /**
- * Rotate right.
+ * Rotate right immediate: rotate rs1 right by shamt.
+ * rd = rotr(rs1, shamt)
  */
 static inline void RiscvEmulatorRORI(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -650,7 +666,8 @@ static inline void RiscvEmulatorRORI(
 }
 
 /**
- * Bitwise OR-Combine, byte granule.
+ * Or combine byte: set each byte of rd to 0xff if the corresponding byte of rs1 is non-zero, or 0x00 otherwise.
+ * rd[i] = (rs1[i] == 0) ? 0x00 : 0xff
  */
 static inline void RiscvEmulatorORC_B(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -690,7 +707,8 @@ static inline void RiscvEmulatorORC_B(
 }
 
 /**
- * Byte-reverse register.
+ * Reverse byte: reverse the byte order of rs1.
+ * rd = bytereversal(rs1)
  */
 static inline void RiscvEmulatorREV8(
     RiscvEmulatorState_t *state __attribute__((unused)),

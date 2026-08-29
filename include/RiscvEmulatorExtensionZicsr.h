@@ -21,7 +21,8 @@
 #include "RiscvEmulatorType.h"
 
 /**
- * Return from machine mode.
+ * Machine return: return from a trap in machine mode by restoring mstatus and jumping to mepc.
+ * pc = mepc
  */
 static inline void RiscvEmulatorMRET(RiscvEmulatorState_t *state) {
 #if (RVE_E_HOOK == 1)
@@ -156,7 +157,8 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
 }
 
 /**
- * Atomic read and write CSR.
+ * Control and status register write: atomically swap the CSR with rs1, reading the old value into rd.
+ * t = csr; csr = rs1; rd = t
  */
 static inline void RiscvEmulatorCSRRW(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -197,7 +199,8 @@ static inline void RiscvEmulatorCSRRW(
 }
 
 /**
- * Atomic read and write CSR, immediate.
+ * Control and status register write immediate: atomically swap the CSR with the zero-extended immediate, reading the old value into rd.
+ * t = csr; csr = uimm; rd = t
  */
 static inline void RiscvEmulatorCSRRWI(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -236,7 +239,8 @@ static inline void RiscvEmulatorCSRRWI(
 }
 
 /**
- * Atomic read and set bits in CSR.
+ * Control and status register set: atomically read the CSR into rd and set the bits of rs1 in the CSR.
+ * t = csr; csr = csr | rs1; rd = t
  */
 static inline void RiscvEmulatorCSRRS(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -279,7 +283,8 @@ static inline void RiscvEmulatorCSRRS(
 }
 
 /**
- * Atomic read and set bits in CSR, immediate.
+ * Control and status register set immediate: atomically read the CSR into rd and set the bits of the zero-extended immediate in the CSR.
+ * t = csr; csr = csr | uimm; rd = t
  */
 static inline void RiscvEmulatorCSRRSI(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -320,7 +325,8 @@ static inline void RiscvEmulatorCSRRSI(
 }
 
 /**
- * Atomic read and clear bits in CSR.
+ * Control and status register clear: atomically read the CSR into rd and clear the bits of rs1 in the CSR.
+ * t = csr; csr = csr & ~rs1; rd = t
  */
 static inline void RiscvEmulatorCSRRC(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -363,7 +369,8 @@ static inline void RiscvEmulatorCSRRC(
 }
 
 /**
- * Atomic read and clear bits in CSR, immediate.
+ * Control and status register clear immediate: atomically read the CSR into rd and clear the bits of the zero-extended immediate in the CSR.
+ * t = csr; csr = csr & ~uimm; rd = t
  */
 static inline void RiscvEmulatorCSRRCI(
     RiscvEmulatorState_t *state __attribute__((unused)),

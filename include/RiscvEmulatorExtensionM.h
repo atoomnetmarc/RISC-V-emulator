@@ -17,7 +17,8 @@
 #include "RiscvEmulatorType.h"
 
 /**
- * Multiply signed or unsigned.
+ * Multiply: multiply the lower 32 bits of rs1 and rs2, keeping the lower 32 bits of the result.
+ * rd = (rs1 * rs2)[31:0]
  */
 static inline void RiscvEmulatorMUL(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -55,7 +56,8 @@ static inline void RiscvEmulatorMUL(
 }
 
 /**
- * Multiply signed, return 32 bit MSB of resulting 64-bit value.
+ * Multiply high signed: multiply rs1 and rs2 as signed integers, keeping the upper 32 bits of the 64-bit result.
+ * rd = (rs1 *s rs2)[63:32]
  */
 static inline void RiscvEmulatorMULH(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -94,7 +96,8 @@ static inline void RiscvEmulatorMULH(
 }
 
 /**
- * Multiply signed rs1 and unsigned rs2, return 32 bit MSB of resulting unsigned 64-bit value.
+ * Multiply high signed unsigned: multiply rs1 as signed and rs2 as unsigned, keeping the upper 32 bits of the 64-bit result.
+ * rd = (rs1 *s rs2)[63:32]
  */
 static inline void RiscvEmulatorMULHSU(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -133,7 +136,8 @@ static inline void RiscvEmulatorMULHSU(
 }
 
 /**
- * Multiply unsigned, return 32 bit MSB of resulting unsigned 64-bit value.
+ * Multiply high unsigned: multiply rs1 and rs2 as unsigned integers, keeping the upper 32 bits of the 64-bit result.
+ * rd = (rs1 *u rs2)[63:32]
  */
 static inline void RiscvEmulatorMULHU(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -176,7 +180,8 @@ static inline void RiscvEmulatorMULHU(
 #if (RVE_E_M == 1)
 
 /**
- * Divide signed.
+ * Divide signed: divide rs1 by rs2 as signed integers.
+ * rd = rs1 /s rs2
  */
 static inline void RiscvEmulatorDIV(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -222,7 +227,8 @@ static inline void RiscvEmulatorDIV(
 }
 
 /**
- * Divide unsigned.
+ * Divide unsigned: divide rs1 by rs2 as unsigned integers.
+ * rd = rs1 /u rs2
  */
 static inline void RiscvEmulatorDIVU(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -265,7 +271,8 @@ static inline void RiscvEmulatorDIVU(
 }
 
 /**
- * Remainder signed.
+ * Remainder signed: take the remainder of rs1 divided by rs2 as signed integers.
+ * rd = rs1 %s rs2
  */
 static inline void RiscvEmulatorREM(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -311,7 +318,8 @@ static inline void RiscvEmulatorREM(
 }
 
 /**
- * Remainder unsigned.
+ * Remainder unsigned: take the remainder of rs1 divided by rs2 as unsigned integers.
+ * rd = rs1 %u rs2
  */
 static inline void RiscvEmulatorREMU(
     RiscvEmulatorState_t *state __attribute__((unused)),

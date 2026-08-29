@@ -32,7 +32,8 @@
 #include "RiscvEmulatorExtensionZimop.h"
 
 /**
- * Jump and link register.
+ * Jump and link register: jump to rs1 plus the sign-extended offset, clearing the least significant bit, and store the return address in rd.
+ * rd = pc + 4; pc = (rs1 + imm) & ~1
  */
 static inline void RiscvEmulatorJALR(RiscvEmulatorState_t *state) {
     uint8_t rdnum = state->instruction.itype.rd;
@@ -94,7 +95,8 @@ static inline void RiscvEmulatorOpcodeJumpAndLinkRegister(RiscvEmulatorState_t *
 }
 
 /**
- * Add: rd = rs1 + rs2
+ * Add: add rs1 and rs2.
+ * rd = rs1 + rs2
  */
 static inline void RiscvEmulatorADD(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -132,7 +134,8 @@ static inline void RiscvEmulatorADD(
 }
 
 /**
- * Add: rd = rs1 + imm
+ * Add immediate: add rs1 and the sign-extended immediate.
+ * rd = rs1 + imm
  */
 static inline void RiscvEmulatorADDI(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -170,7 +173,8 @@ static inline void RiscvEmulatorADDI(
 }
 
 /**
- * Subtract: rd = rs1 - rs2
+ * Subtract: subtract rs2 from rs1.
+ * rd = rs1 - rs2
  */
 static inline void RiscvEmulatorSUB(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -208,7 +212,8 @@ static inline void RiscvEmulatorSUB(
 }
 
 /**
- * Logical shift left: rd = rs1 << (rs2 & 0b11111)
+ * Shift left logical: shift rs1 left by the amount in the low 5 bits of rs2.
+ * rd = rs1 << (rs2 & 0b11111)
  */
 static inline void RiscvEmulatorSLL(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -246,7 +251,8 @@ static inline void RiscvEmulatorSLL(
 }
 
 /**
- * Logical shift left: rd = rs1 << (shamt & 0b11111)
+ * Shift left logical immediate: shift rs1 left by shamt.
+ * rd = rs1 << (shamt & 0b11111)
  */
 static inline void RiscvEmulatorSLLI(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -284,7 +290,8 @@ static inline void RiscvEmulatorSLLI(
 }
 
 /**
- * Signed compare: rd = (rs1 < rs2)
+ * Set less than: compare rs1 and rs2 as signed integers.
+ * rd = (rs1 < rs2)
  */
 static inline void RiscvEmulatorSLT(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -322,7 +329,8 @@ static inline void RiscvEmulatorSLT(
 }
 
 /**
- * Signed compare: rd = (rs1 < imm)
+ * Set less than immediate: compare rs1 with the sign-extended immediate as signed integers.
+ * rd = (rs1 < imm)
  */
 static inline void RiscvEmulatorSLTI(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -359,7 +367,8 @@ static inline void RiscvEmulatorSLTI(
 }
 
 /**
- * Unsigned compare: rd = (rs1 < rs2)
+ * Set less than unsigned: compare rs1 and rs2 as unsigned integers.
+ * rd = (rs1 < rs2)
  */
 static inline void RiscvEmulatorSLTU(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -397,7 +406,8 @@ static inline void RiscvEmulatorSLTU(
 }
 
 /**
- * Unsigned compare: rd = (rs1 < imm)
+ * Set less than unsigned immediate: compare rs1 with the sign-extended immediate as unsigned integers.
+ * rd = (rs1 < imm)
  */
 static inline void RiscvEmulatorSLTIU(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -434,7 +444,8 @@ static inline void RiscvEmulatorSLTIU(
 }
 
 /**
- * Exclusive or: rd = rs1 ^ rs2
+ * Exclusive or: xor rs1 and rs2.
+ * rd = rs1 ^ rs2
  */
 static inline void RiscvEmulatorXOR(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -472,7 +483,8 @@ static inline void RiscvEmulatorXOR(
 }
 
 /**
- * Exclusive or: rd = rs1 ^ imm
+ * Exclusive or immediate: xor rs1 with the sign-extended immediate.
+ * rd = rs1 ^ imm
  */
 static inline void RiscvEmulatorXORI(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -509,7 +521,8 @@ static inline void RiscvEmulatorXORI(
 }
 
 /**
- * Logical shift right: rd = rs1 >> (rs2 & 0b11111)
+ * Shift right logical: shift rs1 right by the amount in the low 5 bits of rs2, filling with zeros.
+ * rd = rs1 >> (rs2 & 0b11111)
  */
 static inline void RiscvEmulatorSRL(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -547,7 +560,8 @@ static inline void RiscvEmulatorSRL(
 }
 
 /**
- * Logical shift right: rd = rs1 >> (shamt & 0b11111)
+ * Shift right logical immediate: shift rs1 right by shamt, filling with zeros.
+ * rd = rs1 >> (shamt & 0b11111)
  */
 static inline void RiscvEmulatorSRLI(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -585,7 +599,8 @@ static inline void RiscvEmulatorSRLI(
 }
 
 /**
- * Arithmetic shift right: rd = rs1 >> (rs2 & 0b11111)
+ * Shift right arithmetic: shift rs1 right by the amount in the low 5 bits of rs2, preserving the sign bit.
+ * rd = rs1 >> (rs2 & 0b11111)
  */
 static inline void RiscvEmulatorSRA(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -623,7 +638,8 @@ static inline void RiscvEmulatorSRA(
 }
 
 /**
- * Arithmetic shift right: rd = rs1 >> (shamt & 0b11111)
+ * Shift right arithmetic immediate: shift rs1 right by shamt, preserving the sign bit.
+ * rd = rs1 >> (shamt & 0b11111)
  */
 static inline void RiscvEmulatorSRAI(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -661,7 +677,8 @@ static inline void RiscvEmulatorSRAI(
 }
 
 /**
- * Boolean or: rd = rs1 | rs2
+ * Or: or rs1 and rs2.
+ * rd = rs1 | rs2
  */
 static inline void RiscvEmulatorOR(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -699,7 +716,8 @@ static inline void RiscvEmulatorOR(
 }
 
 /**
- * Boolean or: rd = rs1 | imm
+ * Or immediate: or rs1 with the sign-extended immediate.
+ * rd = rs1 | imm
  */
 static inline void RiscvEmulatorORI(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -736,7 +754,8 @@ static inline void RiscvEmulatorORI(
 }
 
 /**
- * Boolean and: rd = rs1 & rs2
+ * And: and rs1 and rs2.
+ * rd = rs1 & rs2
  */
 static inline void RiscvEmulatorAND(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -774,7 +793,8 @@ static inline void RiscvEmulatorAND(
 }
 
 /**
- * Boolean and: rd = rs1 & imm
+ * And immediate: and rs1 with the sign-extended immediate.
+ * rd = rs1 & imm
  */
 static inline void RiscvEmulatorANDI(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -1379,7 +1399,8 @@ static inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state) {
 }
 
 /**
- * Branch if equal.
+ * Branch if equal: branch if rs1 equals rs2.
+ * if (rs1 == rs2) pc += offset
  */
 static inline void RiscvEmulatorBEQ(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -1412,7 +1433,8 @@ static inline void RiscvEmulatorBEQ(
 }
 
 /**
- * Branch if not equal.
+ * Branch if not equal: branch if rs1 does not equal rs2.
+ * if (rs1 != rs2) pc += offset
  */
 static inline void RiscvEmulatorBNE(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -1445,7 +1467,8 @@ static inline void RiscvEmulatorBNE(
 }
 
 /**
- * Branch if greater than or equal.
+ * Branch if greater than or equal: branch if rs1 is greater than or equal to rs2 as signed integers.
+ * if (rs1 >= rs2) pc += offset
  */
 static inline void RiscvEmulatorBGE(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -1478,7 +1501,8 @@ static inline void RiscvEmulatorBGE(
 }
 
 /**
- * Branch if greater than or equal unsigned.
+ * Branch if greater than or equal unsigned: branch if rs1 is greater than or equal to rs2 as unsigned integers.
+ * if (rs1 >= rs2) pc += offset
  */
 static inline void RiscvEmulatorBGEU(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -1511,7 +1535,8 @@ static inline void RiscvEmulatorBGEU(
 }
 
 /**
- * Branch if less than.
+ * Branch if less than: branch if rs1 is less than rs2 as signed integers.
+ * if (rs1 < rs2) pc += offset
  */
 static inline void RiscvEmulatorBLT(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -1544,7 +1569,8 @@ static inline void RiscvEmulatorBLT(
 }
 
 /**
- * Branch if less than unsigned.
+ * Branch if less than unsigned: branch if rs1 is less than rs2 as unsigned integers.
+ * if (rs1 < rs2) pc += offset
  */
 static inline void RiscvEmulatorBLTU(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -1643,7 +1669,8 @@ static inline void RiscvEmulatorOpcodeBranch(RiscvEmulatorState_t *state) {
 }
 
 /**
- * Add upper immediate to program counter.
+ * Add upper immediate to program counter: add the 20-bit upper immediate shifted left by 12 to the program counter.
+ * rd = pc + (imm[31:12] << 12)
  */
 static inline void RiscvEmulatorAUIPC(RiscvEmulatorState_t *state) {
     uint32_t upperimmediate = state->instruction.utype.imm31_12;
@@ -1678,7 +1705,8 @@ static inline void RiscvEmulatorAUIPC(RiscvEmulatorState_t *state) {
 }
 
 /**
- * Load upper with immediate.
+ * Load upper immediate: place the 20-bit upper immediate in the most significant bits of rd.
+ * rd = imm[31:12] << 12
  */
 static inline void RiscvEmulatorLUI(RiscvEmulatorState_t *state) {
     RiscvInstructionTypeUDecoderImm_u immdecoder = {0};
@@ -1712,7 +1740,8 @@ static inline void RiscvEmulatorLUI(RiscvEmulatorState_t *state) {
 }
 
 /**
- * Jump and link.
+ * Jump and link: jump to the program counter offset by the immediate and store the return address in rd.
+ * rd = pc + 4; pc += offset
  */
 static inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state) {
     uint8_t rdnum = state->instruction.jtype.rd;
@@ -1763,7 +1792,8 @@ static inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state) {
 }
 
 /**
- * Make a service request to the execution environment.
+ * Environment call: make a service request to the execution environment.
+ * raise environment-call-from-M-mode exception
  */
 static inline void RiscvEmulatorECALL(RiscvEmulatorState_t *state) {
 
@@ -1783,7 +1813,8 @@ static inline void RiscvEmulatorECALL(RiscvEmulatorState_t *state) {
 }
 
 /**
- * Cause control to be transferred back to a debugging environment.
+ * Environment break: cause control to be transferred back to a debugging environment.
+ * raise breakpoint exception
  */
 static inline void RiscvEmulatorEBREAK(RiscvEmulatorState_t *state) {
 
@@ -1905,8 +1936,7 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state) {
 }
 
 /**
- * Excutes the fence instuction.
- *
+ * Fence: order device I/O and memory accesses as observed by other RISC-V harts and external devices.
  * This does nothing in this emulator because all memory access is always completely processed.
  */
 static inline void RiscvEmulatorFence(
@@ -1922,8 +1952,7 @@ static inline void RiscvEmulatorFence(
 
 #if (RVE_E_ZIFENCEI == 1)
 /**
- * Excutes the fencei instuction.
- *
+ * Fence instruction: synchronize the instruction and data streams.
  * This does nothing in this emulator because all memory access is always completely processed.
  */
 static inline void RiscvEmulatorFencei(

@@ -21,7 +21,8 @@
 #include "RiscvEmulatorType.h"
 
 /**
- * Load a byte, zero extended.
+ * Load byte: load a byte from rs1 plus the offset, zero-extended.
+ * rd = zeroext(memory[rs1 + offset])
  */
 static inline void RiscvEmulatorC_LBU(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -65,7 +66,8 @@ static inline void RiscvEmulatorC_LBU(
 }
 
 /**
- * Load a halfword, zero extended.
+ * Load halfword: load a halfword from rs1 plus the offset, zero-extended.
+ * rd = zeroext(memory[rs1 + offset])
  */
 static inline void RiscvEmulatorC_LHU(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -109,7 +111,8 @@ static inline void RiscvEmulatorC_LHU(
 }
 
 /**
- * Load a halfword, sign extended.
+ * Load halfword: load a halfword from rs1 plus the offset, sign-extended.
+ * rd = signext(memory[rs1 + offset])
  */
 static inline void RiscvEmulatorC_LH(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -159,7 +162,8 @@ static inline void RiscvEmulatorC_LH(
 }
 
 /**
- * Store the least significant byte.
+ * Store byte: store the least significant byte of rs2 to rs1 plus the offset.
+ * memory[rs1 + offset] = rs2[7:0]
  */
 static inline void RiscvEmulatorC_SB(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -199,7 +203,8 @@ static inline void RiscvEmulatorC_SB(
 }
 
 /**
- * Store the least significant halfword.
+ * Store halfword: store the least significant halfword of rs2 to rs1 plus the offset.
+ * memory[rs1 + offset] = rs2[15:0]
  */
 static inline void RiscvEmulatorC_SH(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -239,7 +244,8 @@ static inline void RiscvEmulatorC_SH(
 }
 
 /**
- * Zero extend the least significant byte of rd.
+ * Zero-extend byte: zero-extend the least significant byte of rd to XLEN bits.
+ * rd = zeroext(rd[7:0])
  */
 static inline void RiscvEmulatorC_ZEXTB(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -265,7 +271,8 @@ static inline void RiscvEmulatorC_ZEXTB(
 }
 
 /**
- * Sign extend the least significant byte of rd.
+ * Sign-extend byte: sign-extend the least significant byte of rd to XLEN bits.
+ * rd = signext(rd[7:0])
  */
 static inline void RiscvEmulatorC_SEXTB(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -295,7 +302,8 @@ static inline void RiscvEmulatorC_SEXTB(
 }
 
 /**
- * Zero extend the least significant halfword of rd.
+ * Zero-extend halfword: zero-extend the least significant halfword of rd to XLEN bits.
+ * rd = zeroext(rd[15:0])
  */
 static inline void RiscvEmulatorC_ZEXTH(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -321,7 +329,8 @@ static inline void RiscvEmulatorC_ZEXTH(
 }
 
 /**
- * Sign extend the least significant halfword of rd.
+ * Sign-extend halfword: sign-extend the least significant halfword of rd to XLEN bits.
+ * rd = signext(rd[15:0])
  */
 static inline void RiscvEmulatorC_SEXTH(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -351,7 +360,8 @@ static inline void RiscvEmulatorC_SEXTH(
 }
 
 /**
- * Not rd.
+ * Not: invert all bits of rd.
+ * rd = ~rd
  */
 static inline void RiscvEmulatorC_NOT(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -377,7 +387,8 @@ static inline void RiscvEmulatorC_NOT(
 }
 
 /**
- * Multiply rd and rs2.
+ * Multiply: multiply rd and rs2, keeping the lower 32 bits of the result.
+ * rd = (rd * rs2)[31:0]
  */
 static inline void RiscvEmulatorC_MUL(
     RiscvEmulatorState_t *state __attribute__((unused)),

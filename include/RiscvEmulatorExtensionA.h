@@ -22,7 +22,8 @@
 #include "RiscvEmulatorExtensionI.h"
 
 /**
- * Add rd and rs2.
+ * Atomic add: atomically load the word in rd and write back the sum of rd and rs2.
+ * rd = rd + rs2
  */
 static inline void RiscvEmulatorAMOADD_W(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -32,7 +33,8 @@ static inline void RiscvEmulatorAMOADD_W(
 }
 
 /**
- * Swap rd and rs2.
+ * Atomic swap: atomically load the word in rd and write back rs2.
+ * rd = rs2
  */
 static inline void RiscvEmulatorAMOSWAP_W(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -42,7 +44,8 @@ static inline void RiscvEmulatorAMOSWAP_W(
 }
 
 /**
- * XOR rd and rs2.
+ * Atomic xor: atomically load the word in rd and write back the xor of rd and rs2.
+ * rd = rd ^ rs2
  */
 static inline void RiscvEmulatorAMOXOR_W(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -52,7 +55,8 @@ static inline void RiscvEmulatorAMOXOR_W(
 }
 
 /**
- * OR rd and rs2.
+ * Atomic or: atomically load the word in rd and write back the or of rd and rs2.
+ * rd = rd | rs2
  */
 static inline void RiscvEmulatorAMOOR_W(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -62,7 +66,8 @@ static inline void RiscvEmulatorAMOOR_W(
 }
 
 /**
- * AND rd and rs2.
+ * Atomic and: atomically load the word in rd and write back the and of rd and rs2.
+ * rd = rd & rs2
  */
 static inline void RiscvEmulatorAMOAND_W(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -72,7 +77,8 @@ static inline void RiscvEmulatorAMOAND_W(
 }
 
 /**
- * If rs2 < rd, set rd to rs2.
+ * Signed minimum: atomically load the word in rd and write back the smaller of rd and rs2.
+ * rd = (rs2 < rd) ? rs2 : rd
  */
 static inline void RiscvEmulatorAMOMIN_W(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -84,7 +90,8 @@ static inline void RiscvEmulatorAMOMIN_W(
 }
 
 /**
- * If rs2 > rd, set rd to rs2.
+ * Signed maximum: atomically load the word in rd and write back the larger of rd and rs2.
+ * rd = (rs2 > rd) ? rs2 : rd
  */
 static inline void RiscvEmulatorAMOMAX_W(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -96,7 +103,8 @@ static inline void RiscvEmulatorAMOMAX_W(
 }
 
 /**
- * If rs2 < rd, set rd to rs2.
+ * Unsigned minimum: atomically load the word in rd and write back the smaller of rd and rs2 as unsigned integers.
+ * rd = (rs2 < rd) ? rs2 : rd
  */
 static inline void RiscvEmulatorAMOMINU_W(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -108,7 +116,8 @@ static inline void RiscvEmulatorAMOMINU_W(
 }
 
 /**
- * If rs2 > rd, set rd to rs2.
+ * Unsigned maximum: atomically load the word in rd and write back the larger of rd and rs2 as unsigned integers.
+ * rd = (rs2 > rd) ? rs2 : rd
  */
 static inline void RiscvEmulatorAMOMAXU_W(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -121,7 +130,8 @@ static inline void RiscvEmulatorAMOMAXU_W(
 
 #if (RVE_E_ZALRSC == 1)
 /**
- * Load-reserved: load a word and register a reservation.
+ * Load-reserved: load a word and register a reservation on the address.
+ * rd = memory[address]; reservation = address
  */
 static inline void RiscvEmulatorLR_W(
     RiscvEmulatorState_t *state,
@@ -133,7 +143,8 @@ static inline void RiscvEmulatorLR_W(
 }
 
 /**
- * Store-conditional: store a word only if the reservation is still valid.
+ * Store-conditional: store a word only if the reservation on the address is still valid, writing a success code of zero to rd.
+ * if (reservation == address) memory[address] = rs2; rd = 0 else rd = 1
  */
 static inline void RiscvEmulatorSC_W(
     RiscvEmulatorState_t *state,

@@ -20,7 +20,8 @@
 #include "RiscvEmulatorType.h"
 
 /**
- * Single-Bit Clear.
+ * Single-bit clear: clear the bit of rs1 at the index in the low 5 bits of rs2.
+ * rd = rs1 & ~(1 << (rs2 & 31))
  */
 static inline void RiscvEmulatorBCLR(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -59,7 +60,8 @@ static inline void RiscvEmulatorBCLR(
 }
 
 /**
- * Single-Bit Clear.
+ * Single-bit clear immediate: clear the bit of rs1 at index shamt.
+ * rd = rs1 & ~(1 << (shamt & 31))
  */
 static inline void RiscvEmulatorBCLRI(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -98,7 +100,8 @@ static inline void RiscvEmulatorBCLRI(
 }
 
 /**
- * Single-Bit Extract.
+ * Single-bit extract: extract the bit of rs1 at the index in the low 5 bits of rs2.
+ * rd = (rs1 >> (rs2 & 31)) & 1
  */
 static inline void RiscvEmulatorBEXT(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -137,7 +140,8 @@ static inline void RiscvEmulatorBEXT(
 }
 
 /**
- * Single-Bit Extract.
+ * Single-bit extract immediate: extract the bit of rs1 at index shamt.
+ * rd = (rs1 >> (shamt & 31)) & 1
  */
 static inline void RiscvEmulatorBEXTI(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -176,7 +180,8 @@ static inline void RiscvEmulatorBEXTI(
 }
 
 /**
- * Single-Bit Invert.
+ * Single-bit invert: invert the bit of rs1 at the index in the low 5 bits of rs2.
+ * rd = rs1 ^ (1 << (rs2 & 31))
  */
 static inline void RiscvEmulatorBINV(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -215,7 +220,8 @@ static inline void RiscvEmulatorBINV(
 }
 
 /**
- * Single-Bit Invert.
+ * Single-bit invert immediate: invert the bit of rs1 at index shamt.
+ * rd = rs1 ^ (1 << (shamt & 31))
  */
 static inline void RiscvEmulatorBINVI(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -254,7 +260,8 @@ static inline void RiscvEmulatorBINVI(
 }
 
 /**
- * Single-Bit Set.
+ * Single-bit set: set the bit of rs1 at the index in the low 5 bits of rs2.
+ * rd = rs1 | (1 << (rs2 & 31))
  */
 static inline void RiscvEmulatorBSET(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -293,7 +300,8 @@ static inline void RiscvEmulatorBSET(
 }
 
 /**
- * Single-Bit Set.
+ * Single-bit set immediate: set the bit of rs1 at index shamt.
+ * rd = rs1 | (1 << (shamt & 31))
  */
 static inline void RiscvEmulatorBSETI(
     RiscvEmulatorState_t *state __attribute__((unused)),

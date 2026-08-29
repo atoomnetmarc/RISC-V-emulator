@@ -19,8 +19,7 @@
 #include "RiscvEmulatorType.h"
 
 /**
- * Compressed May-Be-Operation hint instruction.
- *
+ * Compressed May-Be-Operation: a hint instruction that performs no operation.
  * This does nothing in this emulator.
  */
 static inline void RiscvEmulatorCMOP(

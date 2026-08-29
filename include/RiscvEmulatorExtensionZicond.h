@@ -18,7 +18,8 @@
 #include "RiscvEmulatorType.h"
 
 /**
- * rd = (rs2 == 0) ? 0 : rs1.
+ * Conditional zero if equal zero: write zero to rd if rs2 equals zero, otherwise copy rs1.
+ * rd = (rs2 == 0) ? 0 : rs1
  */
 static inline void RiscvEmulatorCZEROEQZ(
     RiscvEmulatorState_t *state __attribute__((unused)),
@@ -60,7 +61,8 @@ static inline void RiscvEmulatorCZEROEQZ(
 }
 
 /**
- * rd = (rs2 != 0) ? 0 : rs1.
+ * Conditional zero if not equal zero: write zero to rd if rs2 does not equal zero, otherwise copy rs1.
+ * rd = (rs2 != 0) ? 0 : rs1
  */
 static inline void RiscvEmulatorCZERONEZ(
     RiscvEmulatorState_t *state __attribute__((unused)),
