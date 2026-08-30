@@ -48,10 +48,10 @@ static inline void RiscvEmulatorCZEROEQZ(
         return;
     }
 
-    if (*(uint32_t *)rs2 == 0) {
+    if (*(const uint32_t *)rs2 == 0) {
         *(uint32_t *)rd = 0;
     } else {
-        *(uint32_t *)rd = *(uint32_t *)rs1;
+        *(uint32_t *)rd = *(const uint32_t *)rs1;
     }
 
 #if (RVE_E_HOOK == 1)
@@ -91,10 +91,10 @@ static inline void RiscvEmulatorCZERONEZ(
         return;
     }
 
-    if (*(uint32_t *)rs2 != 0) {
+    if (*(const uint32_t *)rs2 != 0) {
         *(uint32_t *)rd = 0;
     } else {
-        *(uint32_t *)rd = *(uint32_t *)rs1;
+        *(uint32_t *)rd = *(const uint32_t *)rs1;
     }
 
 #if (RVE_E_HOOK == 1)

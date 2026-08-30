@@ -48,7 +48,7 @@ static inline void RiscvEmulatorC_ADDI4SPN(
         return;
     }
 
-    *(int32_t *)rd = *(int32_t *)sp + nzuimm;
+    *(int32_t *)rd = *(const int32_t *)sp + nzuimm;
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -70,7 +70,7 @@ static inline void RiscvEmulatorC_LW(
 
     uint8_t length = sizeof(uint32_t);
 
-    uint32_t memorylocation = *(int32_t *)rs1 + offset;
+    uint32_t memorylocation = *(const uint32_t *)rs1 + offset;
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
@@ -117,7 +117,7 @@ static inline void RiscvEmulatorC_SW(
 
     uint8_t length = sizeof(uint32_t);
 
-    uint32_t memorylocation = *(int32_t *)rs1 + offset;
+    uint32_t memorylocation = *(const uint32_t *)rs1 + offset;
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
@@ -167,7 +167,7 @@ static inline void RiscvEmulatorC_ADDI(
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
     hc.rd = rd;
-    hc.imm = nzimm;
+    hc.imm = (uint32_t)nzimm;
     hc.immlength = sizeof(nzimm);
     hc.immissigned = 1;
     hc.immname = "nzimm";
@@ -200,7 +200,7 @@ static inline void RiscvEmulatorC_JAL(
     RiscvEmulatorHookContext_t hc = {0};
     hc.instruction = "c.jal";
     hc.hook = HOOK_BEGIN;
-    hc.imm = offset;
+    hc.imm = (uint32_t)offset;
     hc.immlength = sizeof(offset);
     hc.immissigned = 1;
     hc.immname = "offset";
@@ -208,7 +208,7 @@ static inline void RiscvEmulatorC_JAL(
 #endif
 
     *(uint32_t *)ra = state->programcounter + 2;
-    state->programcounternext = state->programcounter + offset;
+    state->programcounternext = state->programcounter + (uint32_t)offset;
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -236,7 +236,7 @@ static inline void RiscvEmulatorC_JALR(
     RiscvEmulatorHook(state, &hc);
 #endif
 
-    uint32_t originalvaluers1 = *(int32_t *)rs1;
+    uint32_t originalvaluers1 = *(const uint32_t *)rs1;
 
     *(uint32_t *)ra = state->programcounter + 2;
     state->programcounternext = (originalvaluers1 & (UINT32_MAX - 1));
@@ -260,14 +260,14 @@ static inline void RiscvEmulatorC_J(
     RiscvEmulatorHookContext_t hc = {0};
     hc.instruction = "c.j";
     hc.hook = HOOK_BEGIN;
-    hc.imm = offset;
+    hc.imm = (uint32_t)offset;
     hc.immlength = sizeof(offset);
     hc.immissigned = 1;
     hc.immname = "offset";
     RiscvEmulatorHook(state, &hc);
 #endif
 
-    state->programcounternext = state->programcounter + offset;
+    state->programcounternext = state->programcounter + (uint32_t)offset;
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -294,7 +294,7 @@ static inline void RiscvEmulatorC_JR(
     RiscvEmulatorHook(state, &hc);
 #endif
 
-    state->programcounternext = *(int32_t *)rs1 & (UINT32_MAX - 1);
+    state->programcounternext = *(const uint32_t *)rs1 & (UINT32_MAX - 1);
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -319,15 +319,15 @@ static inline void RiscvEmulatorC_BEQZ(
     hc.hook = HOOK_BEGIN;
     hc.rs1num = rs1num;
     hc.rs1 = rs1;
-    hc.imm = imm;
+    hc.imm = (uint32_t)imm;
     hc.immlength = sizeof(imm);
     hc.immissigned = 1;
     hc.immname = "offset";
     RiscvEmulatorHook(state, &hc);
 #endif
 
-    if (*(int32_t *)rs1 == 0) {
-        state->programcounternext = state->programcounter + imm;
+    if (*(const int32_t *)rs1 == 0) {
+        state->programcounternext = state->programcounter + (uint32_t)imm;
     };
 
 #if (RVE_E_HOOK == 1)
@@ -353,15 +353,15 @@ static inline void RiscvEmulatorC_BNEZ(
     hc.hook = HOOK_BEGIN;
     hc.rs1num = rs1num;
     hc.rs1 = rs1;
-    hc.imm = imm;
+    hc.imm = (uint32_t)imm;
     hc.immlength = sizeof(imm);
     hc.immissigned = 1;
     hc.immname = "offset";
     RiscvEmulatorHook(state, &hc);
 #endif
 
-    if (*(int32_t *)rs1 != 0) {
-        state->programcounternext = state->programcounter + imm;
+    if (*(const int32_t *)rs1 != 0) {
+        state->programcounternext = state->programcounter + (uint32_t)imm;
     };
 
 #if (RVE_E_HOOK == 1)
@@ -422,7 +422,7 @@ static inline void RiscvEmulatorC_LI(
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
     hc.rd = rd;
-    hc.imm = imm;
+    hc.imm = (uint32_t)imm;
     hc.immlength = sizeof(imm);
     hc.immissigned = 1;
     RiscvEmulatorHook(state, &hc);
@@ -465,7 +465,7 @@ static inline void RiscvEmulatorC_ADDI16SP(
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
     hc.rd = rd;
-    hc.imm = nzimm;
+    hc.imm = (uint32_t)nzimm;
     hc.immissigned = 1;
     hc.immlength = sizeof(nzimm);
     hc.immname = "nzimm";
@@ -505,7 +505,7 @@ static inline void RiscvEmulatorC_LUI(
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
     hc.rd = rd;
-    hc.imm = nzimm;
+    hc.imm = (uint32_t)nzimm;
     hc.immissigned = 1;
     hc.immname = "nzimm";
     RiscvEmulatorHook(state, &hc);
@@ -610,7 +610,7 @@ static inline void RiscvEmulatorC_ANDI(
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
     hc.rd = rd;
-    hc.imm = imm;
+    hc.imm = (uint32_t)imm;
     hc.immlength = sizeof(imm);
     hc.immissigned = 1;
     RiscvEmulatorHook(state, &hc);
@@ -655,7 +655,7 @@ static inline void RiscvEmulatorC_SUB(
         return;
     }
 
-    *(int32_t *)rd = *(int32_t *)rd - *(int32_t *)rs2;
+    *(int32_t *)rd = *(int32_t *)rd - *(const int32_t *)rs2;
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -690,7 +690,7 @@ static inline void RiscvEmulatorC_XOR(
         return;
     }
 
-    *(uint32_t *)rd = *(uint32_t *)rd ^ *(uint32_t *)rs2;
+    *(uint32_t *)rd = *(uint32_t *)rd ^ *(const uint32_t *)rs2;
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -725,7 +725,7 @@ static inline void RiscvEmulatorC_OR(
         return;
     }
 
-    *(uint32_t *)rd = *(uint32_t *)rd | *(uint32_t *)rs2;
+    *(uint32_t *)rd = *(uint32_t *)rd | *(const uint32_t *)rs2;
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -760,7 +760,7 @@ static inline void RiscvEmulatorC_AND(
         return;
     }
 
-    *(uint32_t *)rd = *(uint32_t *)rd & *(uint32_t *)rs2;
+    *(uint32_t *)rd = *(uint32_t *)rd & *(const uint32_t *)rs2;
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -779,7 +779,7 @@ static inline void RiscvEmulatorC_LWSP(
     void *sp,
     const uint8_t offset) {
 
-    uint32_t memorylocation = *(int32_t *)sp + offset;
+    uint32_t memorylocation = *(const uint32_t *)sp + offset;
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
@@ -834,7 +834,7 @@ static inline void RiscvEmulatorC_MV(
         return;
     }
 
-    *(int32_t *)rd = *(int32_t *)rs2;
+    *(int32_t *)rd = *(const int32_t *)rs2;
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -891,7 +891,7 @@ static inline void RiscvEmulatorC_ADD(
         return;
     }
 
-    *(int32_t *)rd = *(int32_t *)rd + *(int32_t *)rs2;
+    *(int32_t *)rd = *(int32_t *)rd + *(const int32_t *)rs2;
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -910,7 +910,7 @@ static inline void RiscvEmulatorC_SWSP(
     void *sp,
     const uint8_t offset) {
 
-    uint32_t memorylocation = *(int32_t *)sp + offset;
+    uint32_t memorylocation = *(const uint32_t *)sp + offset;
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
@@ -955,9 +955,9 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
 
     uint8_t funct3_funct2 = 0;
     uint8_t funct6_funct2 = 0;
-    int8_t rdnum = -1;
-    int8_t rs1num = -1;
-    int8_t rs2num = -1;
+    uint8_t rdnum = 0xFF;
+    uint8_t rs1num = 0xFF;
+    uint8_t rs2num = 0xFF;
     uint32_t imm = 0;
     void *rd = 0;
     void *rs1 = 0;
@@ -990,7 +990,7 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
                 funct3_funct2 == FUNCT3_FUNCT2_ANDI) {
                 RiscvInstructionTypeCBImmDecoderImm.bit.imm4_0 = state->instruction.cbimm.imm4_0;
                 RiscvInstructionTypeCBImmDecoderImm.bit.imm5 = state->instruction.cbimm.imm5;
-                imm = RiscvInstructionTypeCBImmDecoderImm.imm;
+                imm = (uint32_t)RiscvInstructionTypeCBImmDecoderImm.imm;
 
                 rdnum = state->instruction.cbimm.rdp + 8;
                 break;
@@ -1037,7 +1037,7 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             RiscvInstructionTypeCBDecoderImm.bit.imm5 = state->instruction.cbtype.imm5;
             RiscvInstructionTypeCBDecoderImm.bit.imm7_6 = state->instruction.cbtype.imm7_6;
             RiscvInstructionTypeCBDecoderImm.bit.imm8 = state->instruction.cbtype.imm8;
-            imm = RiscvInstructionTypeCBDecoderImm.imm;
+            imm = (uint32_t)RiscvInstructionTypeCBDecoderImm.imm;
             rs1num = state->instruction.cbtype.rs1p + 8;
             break;
         }
@@ -1047,7 +1047,7 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             RiscvInstructionTypeCIDecoderImm_u RiscvInstructionTypeCIDecoderImm = {0};
             RiscvInstructionTypeCIDecoderImm.bit.imm4_0 = state->instruction.citype.imm4_0;
             RiscvInstructionTypeCIDecoderImm.bit.imm5 = state->instruction.citype.imm5;
-            imm = RiscvInstructionTypeCIDecoderImm.imm;
+            imm = (uint32_t)RiscvInstructionTypeCIDecoderImm.imm;
             rdnum = state->instruction.citype.rd;
             break;
         }
@@ -1062,7 +1062,7 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             RiscvInstructionTypeCJDecoderImm.bit.imm9_8 = state->instruction.cjtype.imm9_8;
             RiscvInstructionTypeCJDecoderImm.bit.imm10 = state->instruction.cjtype.imm10;
             RiscvInstructionTypeCJDecoderImm.bit.imm11 = state->instruction.cjtype.imm11;
-            imm = RiscvInstructionTypeCJDecoderImm.imm;
+            imm = (uint32_t)RiscvInstructionTypeCJDecoderImm.imm;
             break;
         }
         case OPCODE16_LW: {
@@ -1104,20 +1104,20 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
         }
     }
 
-    if (rdnum >= 0) {
+    if (rdnum != 0xFF) {
         rd = &state->reg.x[rdnum];
     }
-    if (rs1num >= 0) {
+    if (rs1num != 0xFF) {
         rs1 = &state->reg.x[rs1num];
     }
-    if (rs2num >= 0) {
+    if (rs2num != 0xFF) {
         rs2 = &state->reg.x[rs2num];
     }
 
     switch (opfunct3) {
         case OPCODE16_ADDI4SPN:
             if (imm != 0) {
-                RiscvEmulatorC_ADDI4SPN(state, rdnum, rd, sp, imm);
+                RiscvEmulatorC_ADDI4SPN(state, rdnum, rd, sp, (uint16_t)imm);
             } else {
                 state->trapflag.illegalinstruction = 1;
             }
@@ -1130,13 +1130,13 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
                 case FUNCT3_ZCB_LBU:
                     // c.lbu. The offset is formed as uimm[1] = encoding[5]
                     // and uimm[0] = encoding[6].
-                    offset = state->instruction.cltype.imm2 | (state->instruction.cltype.imm6 << 1);
+                    offset = (uint8_t)(state->instruction.cltype.imm2 | (state->instruction.cltype.imm6 << 1));
                     RiscvEmulatorC_LBU(state, rdnum, rd, rs1num, rs1, offset);
                     break;
                 case FUNCT3_ZCB_LH:
                     // c.lhu and c.lh. The offset is formed as
                     // uimm[1] = encoding[5].
-                    offset = state->instruction.cltype.imm6 << 1;
+                    offset = (uint8_t)(state->instruction.cltype.imm6 << 1);
                     if (state->instruction.cltype.imm2 == 0) {
                         RiscvEmulatorC_LHU(state, rdnum, rd, rs1num, rs1, offset);
                     } else {
@@ -1146,13 +1146,13 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
                 case FUNCT3_ZCB_SB:
                     // c.sb. The offset is formed as uimm[1] = encoding[5]
                     // and uimm[0] = encoding[6].
-                    offset = state->instruction.cltype.imm2 | (state->instruction.cltype.imm6 << 1);
+                    offset = (uint8_t)(state->instruction.cltype.imm2 | (state->instruction.cltype.imm6 << 1));
                     RiscvEmulatorC_SB(state, rs1num, rs1, rs2num, rs2, offset);
                     break;
                 case FUNCT3_ZCB_SH:
                     // c.sh. The offset is formed as uimm[1] = encoding[5].
                     if (state->instruction.cltype.imm2 == 0) {
-                        offset = state->instruction.cltype.imm6 << 1;
+                        offset = (uint8_t)(state->instruction.cltype.imm6 << 1);
                         RiscvEmulatorC_SH(state, rs1num, rs1, rs2num, rs2, offset);
                     } else {
                         state->trapflag.illegalinstruction = 1;
@@ -1166,19 +1166,19 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
         }
 #endif
         case OPCODE16_LW:
-            RiscvEmulatorC_LW(state, rdnum, rd, rs1num, rs1, imm);
+            RiscvEmulatorC_LW(state, rdnum, rd, rs1num, rs1, (uint8_t)imm);
             break;
         case OPCODE16_SW:
-            RiscvEmulatorC_SW(state, rs1num, rs1, rs2num, rs2, imm);
+            RiscvEmulatorC_SW(state, rs1num, rs1, rs2num, rs2, (uint8_t)imm);
             break;
         case OPCODE16_ADDI:
-            RiscvEmulatorC_ADDI(state, rdnum, rd, imm);
+            RiscvEmulatorC_ADDI(state, rdnum, rd, (int8_t)imm);
             break;
         case OPCODE16_JAL:
-            RiscvEmulatorC_JAL(state, ra, imm);
+            RiscvEmulatorC_JAL(state, ra, (int16_t)imm);
             break;
         case OPCODE16_LI:
-            RiscvEmulatorC_LI(state, rdnum, rd, imm);
+            RiscvEmulatorC_LI(state, rdnum, rd, (int8_t)imm);
             break;
         case OPCODE16_LUI_ADDI16SP: {
             rdnum = state->instruction.cilui.rd;
@@ -1193,17 +1193,17 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
         }
         case OPCODE16_MISCALU:
             if (funct3_funct2 == FUNCT3_FUNCT2_SRLI) {
-                RiscvEmulatorC_SRLI(state, rdnum, rd, imm);
+                RiscvEmulatorC_SRLI(state, rdnum, rd, (uint8_t)imm);
                 break;
             }
 
             if (funct3_funct2 == FUNCT3_FUNCT2_SRAI) {
-                RiscvEmulatorC_SRAI(state, rdnum, rd, imm);
+                RiscvEmulatorC_SRAI(state, rdnum, rd, (uint8_t)imm);
                 break;
             }
 
             if (funct3_funct2 == FUNCT3_FUNCT2_ANDI) {
-                RiscvEmulatorC_ANDI(state, rdnum, rd, imm);
+                RiscvEmulatorC_ANDI(state, rdnum, rd, (int8_t)imm);
                 break;
             }
 
@@ -1279,19 +1279,19 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             state->trapflag.illegalinstruction = 1;
             break;
         case OPCODE16_J:
-            RiscvEmulatorC_J(state, imm);
+            RiscvEmulatorC_J(state, (int16_t)imm);
             break;
         case OPCODE16_BEQZ:
-            RiscvEmulatorC_BEQZ(state, rs1num, rs1, imm);
+            RiscvEmulatorC_BEQZ(state, rs1num, rs1, (int16_t)imm);
             break;
         case OPCODE16_BNEZ:
-            RiscvEmulatorC_BNEZ(state, rs1num, rs1, imm);
+            RiscvEmulatorC_BNEZ(state, rs1num, rs1, (int16_t)imm);
             break;
         case OPCODE16_SLLI:
-            RiscvEmulatorC_SLLI(state, rdnum, rd, imm);
+            RiscvEmulatorC_SLLI(state, rdnum, rd, (uint8_t)imm);
             break;
         case OPCODE16_LWSP:
-            RiscvEmulatorC_LWSP(state, rdnum, rd, sp, imm);
+            RiscvEmulatorC_LWSP(state, rdnum, rd, sp, (uint8_t)imm);
             break;
         case OPCODE16_JALR_MV_ADD:
             rdnum = state->instruction.crtype.rd;
@@ -1318,7 +1318,7 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             }
             break;
         case OPCODE16_SWSP:
-            RiscvEmulatorC_SWSP(state, rs2num, rs2, sp, imm);
+            RiscvEmulatorC_SWSP(state, rs2num, rs2, sp, (uint8_t)imm);
             break;
         default:
             state->trapflag.illegalinstruction = 1;

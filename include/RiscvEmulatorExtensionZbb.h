@@ -48,7 +48,7 @@ static inline void RiscvEmulatorANDN(
         return;
     }
 
-    *(uint32_t *)rd = *(uint32_t *)rs1 & ~*(uint32_t *)rs2;
+    *(uint32_t *)rd = *(const uint32_t *)rs1 & ~*(const uint32_t *)rs2;
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -87,7 +87,7 @@ static inline void RiscvEmulatorORN(
         return;
     }
 
-    *(uint32_t *)rd = *(uint32_t *)rs1 | ~*(uint32_t *)rs2;
+    *(uint32_t *)rd = *(const uint32_t *)rs1 | ~*(const uint32_t *)rs2;
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -126,7 +126,7 @@ static inline void RiscvEmulatorXNOR(
         return;
     }
 
-    *(uint32_t *)rd = ~(*(uint32_t *)rs1 ^ *(uint32_t *)rs2);
+    *(uint32_t *)rd = ~(*(const uint32_t *)rs1 ^ *(const uint32_t *)rs2);
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -164,8 +164,8 @@ static inline void RiscvEmulatorCLZ(
     uint8_t leadingzeros = 32;
 
     for (int8_t i = 31; i >= 0; i--) {
-        if (*(uint32_t *)rs1 & (1 << i)) {
-            leadingzeros = 31 - i;
+        if (*(const uint32_t *)rs1 & (1 << i)) {
+            leadingzeros = (uint8_t)(31 - i);
             break;
         }
     }
@@ -208,8 +208,8 @@ static inline void RiscvEmulatorCTZ(
     uint8_t trailingzeros = 32;
 
     for (int8_t i = 0; i <= 31; i++) {
-        if (*(uint32_t *)rs1 & (1 << i)) {
-            trailingzeros = i;
+        if (*(const uint32_t *)rs1 & (1 << i)) {
+            trailingzeros = (uint8_t)i;
             break;
         }
     }
@@ -252,7 +252,7 @@ static inline void RiscvEmulatorCPOP(
     uint8_t setbits = 0;
 
     for (int8_t i = 0; i <= 31; i++) {
-        if (*(uint32_t *)rs1 & (1 << i)) {
+        if (*(const uint32_t *)rs1 & (1 << i)) {
             setbits++;
         }
     }
@@ -296,10 +296,10 @@ static inline void RiscvEmulatorMAX(
         return;
     }
 
-    if (*(int32_t *)rs1 > *(int32_t *)rs2) {
-        *(int32_t *)rd = *(int32_t *)rs1;
+    if (*(const int32_t *)rs1 > *(const int32_t *)rs2) {
+        *(int32_t *)rd = *(const int32_t *)rs1;
     } else {
-        *(int32_t *)rd = *(int32_t *)rs2;
+        *(int32_t *)rd = *(const int32_t *)rs2;
     }
 
 #if (RVE_E_HOOK == 1)
@@ -339,10 +339,10 @@ static inline void RiscvEmulatorMAXU(
         return;
     }
 
-    if (*(uint32_t *)rs1 > *(uint32_t *)rs2) {
-        *(uint32_t *)rd = *(uint32_t *)rs1;
+    if (*(const uint32_t *)rs1 > *(const uint32_t *)rs2) {
+        *(uint32_t *)rd = *(const uint32_t *)rs1;
     } else {
-        *(uint32_t *)rd = *(uint32_t *)rs2;
+        *(uint32_t *)rd = *(const uint32_t *)rs2;
     }
 
 #if (RVE_E_HOOK == 1)
@@ -382,10 +382,10 @@ static inline void RiscvEmulatorMIN(
         return;
     }
 
-    if (*(int32_t *)rs1 < *(int32_t *)rs2) {
-        *(int32_t *)rd = *(int32_t *)rs1;
+    if (*(const int32_t *)rs1 < *(const int32_t *)rs2) {
+        *(int32_t *)rd = *(const int32_t *)rs1;
     } else {
-        *(int32_t *)rd = *(int32_t *)rs2;
+        *(int32_t *)rd = *(const int32_t *)rs2;
     }
 
 #if (RVE_E_HOOK == 1)
@@ -425,10 +425,10 @@ static inline void RiscvEmulatorMINU(
         return;
     }
 
-    if (*(uint32_t *)rs1 < *(uint32_t *)rs2) {
-        *(uint32_t *)rd = *(uint32_t *)rs1;
+    if (*(const uint32_t *)rs1 < *(const uint32_t *)rs2) {
+        *(uint32_t *)rd = *(const uint32_t *)rs1;
     } else {
-        *(uint32_t *)rd = *(uint32_t *)rs2;
+        *(uint32_t *)rd = *(const uint32_t *)rs2;
     }
 
 #if (RVE_E_HOOK == 1)
@@ -464,7 +464,7 @@ static inline void RiscvEmulatorSEXT_B(
         return;
     }
 
-    *(int32_t *)rd = *(int8_t *)rs1;
+    *(int32_t *)rd = *(const int8_t *)rs1;
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -499,7 +499,7 @@ static inline void RiscvEmulatorSEXT_H(
         return;
     }
 
-    *(int32_t *)rd = *(int16_t *)rs1;
+    *(int32_t *)rd = *(const int16_t *)rs1;
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -534,7 +534,7 @@ static inline void RiscvEmulatorZEXT_H(
         return;
     }
 
-    *(uint32_t *)rd = *(uint16_t *)rs1;
+    *(uint32_t *)rd = *(const uint16_t *)rs1;
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -574,8 +574,8 @@ static inline void RiscvEmulatorROL(
     }
 
     *(uint32_t *)rd =
-        *(uint32_t *)rs1 << *(uint32_t *)rs2 |
-        *(uint32_t *)rs1 >> (32 - *(uint32_t *)rs2);
+        *(const uint32_t *)rs1 << *(const uint32_t *)rs2 |
+        *(const uint32_t *)rs1 >> (32 - *(const uint32_t *)rs2);
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -615,8 +615,8 @@ static inline void RiscvEmulatorROR(
     }
 
     *(uint32_t *)rd =
-        *(uint32_t *)rs1 >> *(uint32_t *)rs2 |
-        *(uint32_t *)rs1 << (32 - *(uint32_t *)rs2);
+        *(const uint32_t *)rs1 >> *(const uint32_t *)rs2 |
+        *(const uint32_t *)rs1 << (32 - *(const uint32_t *)rs2);
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -656,8 +656,8 @@ static inline void RiscvEmulatorRORI(
     }
 
     *(uint32_t *)rd =
-        *(uint32_t *)rs1 >> shamt |
-        *(uint32_t *)rs1 << (32 - shamt);
+        *(const uint32_t *)rs1 >> shamt |
+        *(const uint32_t *)rs1 << (32 - shamt);
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -693,7 +693,7 @@ static inline void RiscvEmulatorORC_B(
     }
 
     for (uint8_t i = 0; i <= 3; i++) {
-        if (((uint8_t *)rs1)[i] == 0) {
+        if (((const uint8_t *)rs1)[i] == 0) {
             ((uint8_t *)rd)[i] = 0;
         } else {
             ((uint8_t *)rd)[i] = UINT8_MAX;
@@ -736,7 +736,7 @@ static inline void RiscvEmulatorREV8(
     uint32_t temp = 0;
 
     for (uint8_t i = 0; i <= 3; i++) {
-        ((uint8_t *)&temp)[i] = ((uint8_t *)rs1)[3 - i];
+        ((uint8_t *)&temp)[i] = ((const uint8_t *)rs1)[3 - i];
     }
 
     *(uint32_t *)rd = temp;

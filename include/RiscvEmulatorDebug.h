@@ -10,6 +10,15 @@
 
 #include <stdint.h>
 
+#include "RiscvEmulatorConfig.h"
+
+/*
+ * Prototypes for the debug helpers.
+ */
+const char *RiscvEmulatorGetRegisterSymbolicName(const uint8_t r);
+const char *RiscvEmulatorGetCSRName(const uint16_t csr);
+const char *RiscvEmulatorGetMcauseException(const uint8_t interrupt, const uint32_t exceptioncode);
+
 /**
  * Debug function for returning the symbolic name of a register.
  */

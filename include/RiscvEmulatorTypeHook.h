@@ -23,8 +23,8 @@ typedef struct {
     uint8_t rdnum;
     const void *rd;
     uint16_t csrnum;
-    const void *csr;
-    char *immname;
+    void *csr;
+    const char *immname;
     uint8_t immlength;
     uint8_t immissigned;
     uint32_t imm;

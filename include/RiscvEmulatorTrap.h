@@ -58,10 +58,10 @@ static inline void RiscvEmulatorTrap(RiscvEmulatorState_t *state) {
     state->csr.mepc = state->programcounter;
 
     // Jump to trap handler.
-    state->programcounternext = state->csr.mtvec.base << 2;
+    state->programcounternext = (uint32_t)state->csr.mtvec.base << 2;
     // For mode 1, add some offset based on exceptioncode.
     if (state->csr.mtvec.mode == 1) {
-        state->programcounternext = 4 * state->csr.mcause.exceptioncode;
+        state->programcounternext = (uint32_t)(4 * state->csr.mcause.exceptioncode);
     }
 #endif
 

@@ -47,7 +47,7 @@ static inline void RiscvEmulatorMUL(
         return;
     }
 
-    *(uint32_t *)rd = (*(uint32_t *)rs1 * *(uint32_t *)rs2);
+    *(uint32_t *)rd = (*(const uint32_t *)rs1 * *(const uint32_t *)rs2);
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -86,7 +86,7 @@ static inline void RiscvEmulatorMULH(
         return;
     }
 
-    int64_t result = (int64_t)(*(int32_t *)rs1 * (int64_t)*(int32_t *)rs2);
+    int64_t result = (int64_t)(*(const int32_t *)rs1 * (int64_t)*(const int32_t *)rs2);
     *(int32_t *)rd = (result >> 32);
 
 #if (RVE_E_HOOK == 1)
@@ -126,7 +126,7 @@ static inline void RiscvEmulatorMULHSU(
         return;
     }
 
-    int64_t result = (int64_t)(*(int32_t *)rs1 * (uint64_t)*(uint32_t *)rs2);
+    int64_t result = (int64_t)*(const int32_t *)rs1 * (int64_t)(uint64_t)*(const uint32_t *)rs2;
     *(int32_t *)rd = (result >> 32);
 
 #if (RVE_E_HOOK == 1)
@@ -166,7 +166,7 @@ static inline void RiscvEmulatorMULHU(
         return;
     }
 
-    uint64_t result = (uint64_t)(*(uint32_t *)rs1 * (uint64_t)*(uint32_t *)rs2);
+    uint64_t result = (uint64_t)(*(const uint32_t *)rs1 * (uint64_t)*(const uint32_t *)rs2);
     *(uint32_t *)rd = (result >> 32);
 
 #if (RVE_E_HOOK == 1)
@@ -210,14 +210,14 @@ static inline void RiscvEmulatorDIV(
         return;
     }
 
-    if (*(int32_t *)rs2 == 0) {
+    if (*(const int32_t *)rs2 == 0) {
         // Division by zero.
         *(int32_t *)rd = -1;
-    } else if (*(int32_t *)rs1 == INT32_MIN && *(int32_t *)rs2 == -1) {
+    } else if (*(const int32_t *)rs1 == INT32_MIN && *(const int32_t *)rs2 == -1) {
         // Overflow.
         *(int32_t *)rd = INT32_MIN;
     } else {
-        *(int32_t *)rd = (*(int32_t *)rs1 / *(int32_t *)rs2);
+        *(int32_t *)rd = (*(const int32_t *)rs1 / *(const int32_t *)rs2);
     }
 
 #if (RVE_E_HOOK == 1)
@@ -257,11 +257,11 @@ static inline void RiscvEmulatorDIVU(
         return;
     }
 
-    if (*(uint32_t *)rs2 == 0) {
+    if (*(const uint32_t *)rs2 == 0) {
         // Division by zero.
         *(uint32_t *)rd = UINT32_MAX;
     } else {
-        *(uint32_t *)rd = (*(uint32_t *)rs1 / *(uint32_t *)rs2);
+        *(uint32_t *)rd = (*(const uint32_t *)rs1 / *(const uint32_t *)rs2);
     }
 
 #if (RVE_E_HOOK == 1)
@@ -301,14 +301,14 @@ static inline void RiscvEmulatorREM(
         return;
     }
 
-    if (*(int32_t *)rs2 == 0) {
+    if (*(const int32_t *)rs2 == 0) {
         // Division by zero.
-        *(int32_t *)rd = *(int32_t *)rs1;
-    } else if (*(int32_t *)rs1 == INT32_MIN && *(int32_t *)rs2 == -1) {
+        *(int32_t *)rd = *(const int32_t *)rs1;
+    } else if (*(const int32_t *)rs1 == INT32_MIN && *(const int32_t *)rs2 == -1) {
         // Overflow.
         *(int32_t *)rd = 0;
     } else {
-        *(int32_t *)rd = (*(int32_t *)rs1 % *(int32_t *)rs2);
+        *(int32_t *)rd = (*(const int32_t *)rs1 % *(const int32_t *)rs2);
     }
 
 #if (RVE_E_HOOK == 1)
@@ -348,11 +348,11 @@ static inline void RiscvEmulatorREMU(
         return;
     }
 
-    if (*(uint32_t *)rs2 == 0) {
+    if (*(const uint32_t *)rs2 == 0) {
         // Division by zero.
-        *(uint32_t *)rd = *(uint32_t *)rs1;
+        *(uint32_t *)rd = *(const uint32_t *)rs1;
     } else {
-        *(uint32_t *)rd = (*(uint32_t *)rs1 % *(uint32_t *)rs2);
+        *(uint32_t *)rd = (*(const uint32_t *)rs1 % *(const uint32_t *)rs2);
     }
 
 #if (RVE_E_HOOK == 1)

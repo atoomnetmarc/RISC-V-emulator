@@ -48,8 +48,8 @@ static inline void RiscvEmulatorXPERM4(
         return;
     }
 
-    uint32_t input = *(uint32_t *)rs2;
-    uint32_t table = *(uint32_t *)rs1;
+    uint32_t input = *(const uint32_t *)rs2;
+    uint32_t table = *(const uint32_t *)rs1;
     uint32_t output = 0;
 
     for (uint8_t i = 0; i < 8; i++) {
@@ -98,8 +98,8 @@ static inline void RiscvEmulatorXPERM8(
         return;
     }
 
-    uint32_t input = *(uint32_t *)rs2;
-    uint32_t table = *(uint32_t *)rs1;
+    uint32_t input = *(const uint32_t *)rs2;
+    uint32_t table = *(const uint32_t *)rs1;
     uint32_t output = 0;
 
     for (uint8_t i = 0; i < 4; i++) {

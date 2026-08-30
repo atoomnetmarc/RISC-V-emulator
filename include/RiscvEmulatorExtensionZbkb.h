@@ -44,7 +44,7 @@ static inline void RiscvEmulatorBREV8(
         return;
     }
 
-    uint32_t input = *(uint32_t *)rs1;
+    uint32_t input = *(const uint32_t *)rs1;
     uint32_t output = 0;
 
     for (uint8_t i = 0; i < 32; i++) {
@@ -92,7 +92,7 @@ static inline void RiscvEmulatorPACK(
         return;
     }
 
-    *(uint32_t *)rd = (*(uint32_t *)rs1 & 0xFFFF) | (*(uint32_t *)rs2 << 16);
+    *(uint32_t *)rd = (*(const uint32_t *)rs1 & 0xFFFF) | (*(const uint32_t *)rs2 << 16);
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -131,7 +131,7 @@ static inline void RiscvEmulatorPACKH(
         return;
     }
 
-    *(uint32_t *)rd = (*(uint32_t *)rs1 & 0xFF) | ((*(uint32_t *)rs2 & 0xFF) << 8);
+    *(uint32_t *)rd = (*(const uint32_t *)rs1 & 0xFF) | ((*(const uint32_t *)rs2 & 0xFF) << 8);
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -166,7 +166,7 @@ static inline void RiscvEmulatorZIP(
         return;
     }
 
-    uint32_t input = *(uint32_t *)rs1;
+    uint32_t input = *(const uint32_t *)rs1;
     uint32_t output = 0;
 
     for (uint8_t i = 0; i < 16; i++) {
@@ -213,7 +213,7 @@ static inline void RiscvEmulatorUNZIP(
         return;
     }
 
-    uint32_t input = *(uint32_t *)rs1;
+    uint32_t input = *(const uint32_t *)rs1;
     uint32_t output = 0;
 
     for (uint8_t i = 0; i < 16; i++) {

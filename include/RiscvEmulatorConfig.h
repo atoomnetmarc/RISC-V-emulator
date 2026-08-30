@@ -9,26 +9,17 @@
 #define RiscvEmulatorConfig_H_
 
 // Sort extension and subsets the same as: https://gcc.gnu.org/onlinedocs/gcc/RISC-V-Options.html
+//
+// All extension macros are given a default of 0 here.
 
 // Integer Multiplication and Division extension.
 #ifndef RVE_E_M
 #define RVE_E_M 0
 #endif
 
-// M implies Zmmul.
-#if (RVE_E_M == 1)
-#define RVE_E_ZMMUL 1
-#endif
-
 // Atomics extension.
 #ifndef RVE_E_A
 #define RVE_E_A 0
-#endif
-
-// Enable all Atomics extension subsets.
-#if (RVE_E_A == 1)
-#define RVE_E_ZAAMO  1
-#define RVE_E_ZALRSC 1
 #endif
 
 // Atomic Memory Operations extension.
@@ -49,22 +40,6 @@
 // Bit-Manipulation extension.
 #ifndef RVE_E_B
 #define RVE_E_B 0
-#endif
-
-// Zbkb shares the andn, orn, xnor, rol, ror, rori, rev8, sext.b and sext.h
-// instructions with Zbb.
-#if (RVE_E_ZBKB == 1)
-#define RVE_E_ZBB 1
-#endif
-
-// Enable all Bit-Manipulation extension subsets.
-#if (RVE_E_B == 1)
-#define RVE_E_ZBA 1
-#define RVE_E_ZBB 1
-#define RVE_E_ZBC 1
-#define RVE_E_ZBS 1
-#define RVE_E_ZBKB 1
-#define RVE_E_ZBKX 1
 #endif
 
 // Control and Status Register Access extension.
@@ -100,11 +75,6 @@
 #define RVE_E_ZBC 0
 #endif
 
-// Zbc implies Zbkc.
-#if (RVE_E_ZBC == 1)
-#define RVE_E_ZBKC 1
-#endif
-
 // Scalar crypto extension: Carry-less multiplication subset.
 #ifndef RVE_E_ZBKC
 #define RVE_E_ZBKC 0
@@ -114,17 +84,6 @@
 #ifndef RVE_E_ZBS
 #define RVE_E_ZBS 0
 #endif
-
-// Zcb implies C.
-#if (RVE_E_ZCB == 1)
-#define RVE_E_C 1
-#endif
-
-// Zicntr implies Zicsr.
-#if (RVE_E_ZICNTR == 1)
-#define RVE_E_ZICSR 1
-#endif
-
 
 // Scalar crypto extension: Byte and bit permutation subset.
 #ifndef RVE_E_ZBKX
@@ -179,6 +138,64 @@
 // Weak function hook.
 #ifndef RVE_E_HOOK
 #define RVE_E_HOOK 0
+#endif
+
+// ---------------------------------------------------------------------------
+// Implication blocks.
+
+// M implies Zmmul.
+#if (RVE_E_M == 1)
+#undef RVE_E_ZMMUL
+#define RVE_E_ZMMUL 1
+#endif
+
+// Enable all Atomics extension subsets.
+#if (RVE_E_A == 1)
+#undef RVE_E_ZAAMO
+#define RVE_E_ZAAMO 1
+#undef RVE_E_ZALRSC
+#define RVE_E_ZALRSC 1
+#endif
+
+// Zbkb shares the andn, orn, xnor, rol, ror, rori, rev8, sext.b and sext.h
+// instructions with Zbb.
+#if (RVE_E_ZBKB == 1)
+#undef RVE_E_ZBB
+#define RVE_E_ZBB 1
+#endif
+
+// Enable all Bit-Manipulation extension subsets.
+#if (RVE_E_B == 1)
+#undef RVE_E_ZBA
+#define RVE_E_ZBA 1
+#undef RVE_E_ZBB
+#define RVE_E_ZBB 1
+#undef RVE_E_ZBC
+#define RVE_E_ZBC 1
+#undef RVE_E_ZBS
+#define RVE_E_ZBS 1
+#undef RVE_E_ZBKB
+#define RVE_E_ZBKB 1
+#undef RVE_E_ZBKX
+#define RVE_E_ZBKX 1
+#endif
+
+// Zbc implies Zbkc.
+#if (RVE_E_ZBC == 1)
+#undef RVE_E_ZBKC
+#define RVE_E_ZBKC 1
+#endif
+
+// Zcb implies C.
+#if (RVE_E_ZCB == 1)
+#undef RVE_E_C
+#define RVE_E_C 1
+#endif
+
+// Zicntr implies Zicsr.
+#if (RVE_E_ZICNTR == 1)
+#undef RVE_E_ZICSR
+#define RVE_E_ZICSR 1
 #endif
 
 #endif

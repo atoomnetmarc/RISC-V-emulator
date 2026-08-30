@@ -88,7 +88,7 @@ typedef struct __attribute__((packed)) {
 typedef union {
     struct __attribute__((packed)) {
         uint8_t funct3 : 3;
-        int16_t imm11_5 : 7;
+        uint16_t imm11_5 : 7;
     };
 
     struct __attribute__((packed)) {

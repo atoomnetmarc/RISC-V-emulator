@@ -53,8 +53,8 @@ static inline void RiscvEmulatorCLMUL(
     uint32_t output = 0;
 
     for (uint8_t i = 0; i < 32; i++) {
-        if ((*(uint32_t *)rs2 >> i) & 1) {
-            output ^= *(uint32_t *)rs1 << i;
+        if ((*(const uint32_t *)rs2 >> i) & 1) {
+            output ^= *(const uint32_t *)rs1 << i;
         }
     }
 
@@ -100,8 +100,8 @@ static inline void RiscvEmulatorCLMULH(
     uint32_t output = 0;
 
     for (uint8_t i = 1; i < 32; i++) {
-        if ((*(uint32_t *)rs2 >> i) & 1) {
-            output ^= *(uint32_t *)rs1 >> (32 - i);
+        if ((*(const uint32_t *)rs2 >> i) & 1) {
+            output ^= *(const uint32_t *)rs1 >> (32 - i);
         }
     }
 
@@ -148,8 +148,8 @@ static inline void RiscvEmulatorCLMULR(
     uint32_t output = 0;
 
     for (uint8_t i = 0; i < 32; i++) {
-        if ((*(uint32_t *)rs2 >> i) & 1) {
-            output ^= *(uint32_t *)rs1 >> (32 - i - 1);
+        if ((*(const uint32_t *)rs2 >> i) & 1) {
+            output ^= *(const uint32_t *)rs1 >> (32 - i - 1);
         }
     }
 

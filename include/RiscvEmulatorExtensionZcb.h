@@ -34,7 +34,7 @@ static inline void RiscvEmulatorC_LBU(
 
     uint8_t length = sizeof(uint8_t);
 
-    uint32_t memorylocation = *(int32_t *)rs1 + offset;
+    uint32_t memorylocation = *(const uint32_t *)rs1 + offset;
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
@@ -79,7 +79,7 @@ static inline void RiscvEmulatorC_LHU(
 
     uint8_t length = sizeof(uint16_t);
 
-    uint32_t memorylocation = *(int32_t *)rs1 + offset;
+    uint32_t memorylocation = *(const uint32_t *)rs1 + offset;
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
@@ -124,7 +124,7 @@ static inline void RiscvEmulatorC_LH(
 
     uint8_t length = sizeof(uint16_t);
 
-    uint32_t memorylocation = *(int32_t *)rs1 + offset;
+    uint32_t memorylocation = *(const uint32_t *)rs1 + offset;
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
@@ -175,7 +175,7 @@ static inline void RiscvEmulatorC_SB(
 
     uint8_t length = sizeof(uint8_t);
 
-    uint32_t memorylocation = *(int32_t *)rs1 + offset;
+    uint32_t memorylocation = *(const uint32_t *)rs1 + offset;
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
@@ -216,7 +216,7 @@ static inline void RiscvEmulatorC_SH(
 
     uint8_t length = sizeof(uint16_t);
 
-    uint32_t memorylocation = *(int32_t *)rs1 + offset;
+    uint32_t memorylocation = *(const uint32_t *)rs1 + offset;
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
@@ -409,7 +409,7 @@ static inline void RiscvEmulatorC_MUL(
     RiscvEmulatorHook(state, &hc);
 #endif
 
-    *(uint32_t *)rd = *(uint32_t *)rd * *(uint32_t *)rs2;
+    *(uint32_t *)rd = *(uint32_t *)rd * *(const uint32_t *)rs2;
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;

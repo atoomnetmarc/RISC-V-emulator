@@ -19,6 +19,10 @@
 /**
  * Generic hook function.
  */
+void RiscvEmulatorHook(
+    const RiscvEmulatorState_t *state,
+    const RiscvEmulatorHookContext_t *context);
+
 __attribute__((weak)) void RiscvEmulatorHook(
     const RiscvEmulatorState_t *state,
     const RiscvEmulatorHookContext_t *context) {

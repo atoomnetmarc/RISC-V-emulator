@@ -29,7 +29,7 @@ static inline void RiscvEmulatorAMOADD_W(
     RiscvEmulatorState_t *state __attribute__((unused)),
     void *rd,
     const void *rs2) {
-    *(int32_t *)rd = *(int32_t *)rd + *(int32_t *)rs2;
+    *(int32_t *)rd = *(int32_t *)rd + *(const int32_t *)rs2;
 }
 
 /**
@@ -40,7 +40,7 @@ static inline void RiscvEmulatorAMOSWAP_W(
     RiscvEmulatorState_t *state __attribute__((unused)),
     void *rd,
     const void *rs2) {
-    *(int32_t *)rd = *(int32_t *)rs2;
+    *(int32_t *)rd = *(const int32_t *)rs2;
 }
 
 /**
@@ -51,7 +51,7 @@ static inline void RiscvEmulatorAMOXOR_W(
     RiscvEmulatorState_t *state __attribute__((unused)),
     void *rd,
     const void *rs2) {
-    *(uint32_t *)rd = *(uint32_t *)rd ^ *(uint32_t *)rs2;
+    *(uint32_t *)rd = *(uint32_t *)rd ^ *(const uint32_t *)rs2;
 }
 
 /**
@@ -62,7 +62,7 @@ static inline void RiscvEmulatorAMOOR_W(
     RiscvEmulatorState_t *state __attribute__((unused)),
     void *rd,
     const void *rs2) {
-    *(int32_t *)rd = *(int32_t *)rd | *(int32_t *)rs2;
+    *(int32_t *)rd = *(int32_t *)rd | *(const int32_t *)rs2;
 }
 
 /**
@@ -73,7 +73,7 @@ static inline void RiscvEmulatorAMOAND_W(
     RiscvEmulatorState_t *state __attribute__((unused)),
     void *rd,
     const void *rs2) {
-    *(int32_t *)rd = *(int32_t *)rd & *(int32_t *)rs2;
+    *(int32_t *)rd = *(int32_t *)rd & *(const int32_t *)rs2;
 }
 
 /**
@@ -84,8 +84,8 @@ static inline void RiscvEmulatorAMOMIN_W(
     RiscvEmulatorState_t *state __attribute__((unused)),
     void *rd,
     const void *rs2) {
-    if (*(int32_t *)rs2 < *(int32_t *)rd) {
-        *(int32_t *)rd = *(int32_t *)rs2;
+    if (*(const int32_t *)rs2 < *(int32_t *)rd) {
+        *(int32_t *)rd = *(const int32_t *)rs2;
     }
 }
 
@@ -97,8 +97,8 @@ static inline void RiscvEmulatorAMOMAX_W(
     RiscvEmulatorState_t *state __attribute__((unused)),
     void *rd,
     const void *rs2) {
-    if (*(int32_t *)rs2 > *(int32_t *)rd) {
-        *(int32_t *)rd = *(int32_t *)rs2;
+    if (*(const int32_t *)rs2 > *(int32_t *)rd) {
+        *(int32_t *)rd = *(const int32_t *)rs2;
     }
 }
 
@@ -110,8 +110,8 @@ static inline void RiscvEmulatorAMOMINU_W(
     RiscvEmulatorState_t *state __attribute__((unused)),
     void *rd,
     const void *rs2) {
-    if (*(uint32_t *)rs2 < *(uint32_t *)rd) {
-        *(uint32_t *)rd = *(uint32_t *)rs2;
+    if (*(const uint32_t *)rs2 < *(uint32_t *)rd) {
+        *(uint32_t *)rd = *(const uint32_t *)rs2;
     }
 }
 
@@ -123,8 +123,8 @@ static inline void RiscvEmulatorAMOMAXU_W(
     RiscvEmulatorState_t *state __attribute__((unused)),
     void *rd,
     const void *rs2) {
-    if (*(uint32_t *)rs2 > *(uint32_t *)rd) {
-        *(uint32_t *)rd = *(uint32_t *)rs2;
+    if (*(const uint32_t *)rs2 > *(uint32_t *)rd) {
+        *(uint32_t *)rd = *(const uint32_t *)rs2;
     }
 }
 
@@ -176,10 +176,10 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(
     void *rs2 = &state->reg.x[rs2num];
 
     // Remember original address stored in rs1.
-    uint32_t originaladdressrs1 = *(uint32_t *)rs1;
+    uint32_t originaladdressrs1 = *(const uint32_t *)rs1;
 
     // Remember original value stored in rs2.
-    uint32_t originalvaluers2 = *(uint32_t *)rs2;
+    uint32_t originalvaluers2 = *(const uint32_t *)rs2;
 
     // LR and SC perform their own memory operation and must not run the
     // store at the end of this function.

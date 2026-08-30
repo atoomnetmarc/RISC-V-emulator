@@ -43,7 +43,8 @@ static inline void RiscvEmulatorJALR(RiscvEmulatorState_t *state) {
 
     int16_t imm = state->instruction.itype.imm;
 
-    uint32_t jumptoprogramcounter = (*(uint32_t *)rs1 + imm) & (UINT32_MAX - 1);
+    uint32_t immu = (uint32_t)imm;
+    uint32_t jumptoprogramcounter = (*(const uint32_t *)rs1 + immu) & (UINT32_MAX - 1);
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
@@ -54,7 +55,7 @@ static inline void RiscvEmulatorJALR(RiscvEmulatorState_t *state) {
     hc.rd = rd;
     hc.rs1num = rs1num;
     hc.rs1 = rs1;
-    hc.imm = imm;
+    hc.imm = (uint32_t)imm;
     hc.immissigned = 1;
     hc.immname = "offset";
     RiscvEmulatorHook(state, &hc);
@@ -125,7 +126,7 @@ static inline void RiscvEmulatorADD(
         return;
     }
 
-    *(int32_t *)rd = *(int32_t *)rs1 + *(int32_t *)rs2;
+    *(int32_t *)rd = *(const int32_t *)rs1 + *(const int32_t *)rs2;
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -154,7 +155,7 @@ static inline void RiscvEmulatorADDI(
     hc.rd = rd;
     hc.rs1num = rs1num;
     hc.rs1 = rs1;
-    hc.imm = imm;
+    hc.imm = (uint32_t)imm;
     hc.immissigned = 1;
     hc.immlength = sizeof(imm);
     RiscvEmulatorHook(state, &hc);
@@ -164,7 +165,7 @@ static inline void RiscvEmulatorADDI(
         return;
     }
 
-    *(int32_t *)rd = *(int32_t *)rs1 + imm;
+    *(int32_t *)rd = *(const int32_t *)rs1 + imm;
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -203,7 +204,7 @@ static inline void RiscvEmulatorSUB(
         return;
     }
 
-    *(int32_t *)rd = *(int32_t *)rs1 - *(int32_t *)rs2;
+    *(int32_t *)rd = *(const int32_t *)rs1 - *(const int32_t *)rs2;
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -242,7 +243,7 @@ static inline void RiscvEmulatorSLL(
         return;
     }
 
-    *(uint32_t *)rd = *(uint32_t *)rs1 << (*(uint32_t *)rs2 & 0b11111);
+    *(uint32_t *)rd = *(const uint32_t *)rs1 << (*(const uint32_t *)rs2 & 0b11111);
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -281,7 +282,7 @@ static inline void RiscvEmulatorSLLI(
         return;
     }
 
-    *(uint32_t *)rd = *(uint32_t *)rs1 << (shamt & 0b11111);
+    *(uint32_t *)rd = *(const uint32_t *)rs1 << (shamt & 0b11111);
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -320,7 +321,7 @@ static inline void RiscvEmulatorSLT(
         return;
     }
 
-    *(int32_t *)rd = (*(int32_t *)rs1 < *(int32_t *)rs2);
+    *(int32_t *)rd = (*(const int32_t *)rs1 < *(const int32_t *)rs2);
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -349,7 +350,7 @@ static inline void RiscvEmulatorSLTI(
     hc.rd = rd;
     hc.rs1num = rs1num;
     hc.rs1 = rs1;
-    hc.imm = imm;
+    hc.imm = (uint32_t)imm;
     hc.immlength = (sizeof(imm));
     RiscvEmulatorHook(state, &hc);
 #endif
@@ -358,7 +359,7 @@ static inline void RiscvEmulatorSLTI(
         return;
     }
 
-    *(int32_t *)rd = (*(int32_t *)rs1 < imm);
+    *(int32_t *)rd = (*(const int32_t *)rs1 < imm);
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -397,7 +398,7 @@ static inline void RiscvEmulatorSLTU(
         return;
     }
 
-    *(uint32_t *)rd = (*(uint32_t *)rs1 < *(uint32_t *)rs2);
+    *(uint32_t *)rd = (*(const uint32_t *)rs1 < *(const uint32_t *)rs2);
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -426,7 +427,7 @@ static inline void RiscvEmulatorSLTIU(
     hc.rd = rd;
     hc.rs1num = rs1num;
     hc.rs1 = rs1;
-    hc.imm = imm;
+    hc.imm = (uint32_t)imm;
     hc.immlength = (sizeof(imm));
     RiscvEmulatorHook(state, &hc);
 #endif
@@ -435,7 +436,7 @@ static inline void RiscvEmulatorSLTIU(
         return;
     }
 
-    *(uint32_t *)rd = (*(uint32_t *)rs1 < imm);
+    *(uint32_t *)rd = (*(const uint32_t *)rs1 < imm);
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -474,7 +475,7 @@ static inline void RiscvEmulatorXOR(
         return;
     }
 
-    *(uint32_t *)rd = *(uint32_t *)rs1 ^ *(uint32_t *)rs2;
+    *(uint32_t *)rd = *(const uint32_t *)rs1 ^ *(const uint32_t *)rs2;
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -503,7 +504,7 @@ static inline void RiscvEmulatorXORI(
     hc.rd = rd;
     hc.rs1num = rs1num;
     hc.rs1 = rs1;
-    hc.imm = imm;
+    hc.imm = (uint32_t)imm;
     hc.immlength = (sizeof(imm));
     RiscvEmulatorHook(state, &hc);
 #endif
@@ -512,7 +513,7 @@ static inline void RiscvEmulatorXORI(
         return;
     }
 
-    *(uint32_t *)rd = *(uint32_t *)rs1 ^ imm;
+    *(uint32_t *)rd = *(const uint32_t *)rs1 ^ imm;
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -551,7 +552,7 @@ static inline void RiscvEmulatorSRL(
         return;
     }
 
-    *(uint32_t *)rd = *(uint32_t *)rs1 >> (*(uint32_t *)rs2 & 0b11111);
+    *(uint32_t *)rd = *(const uint32_t *)rs1 >> (*(const uint32_t *)rs2 & 0b11111);
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -590,7 +591,7 @@ static inline void RiscvEmulatorSRLI(
         return;
     }
 
-    *(uint32_t *)rd = *(uint32_t *)rs1 >> (shamt & 0b11111);
+    *(uint32_t *)rd = *(const uint32_t *)rs1 >> (shamt & 0b11111);
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -629,7 +630,7 @@ static inline void RiscvEmulatorSRA(
         return;
     }
 
-    *(int32_t *)rd = *(int32_t *)rs1 >> (*(uint32_t *)rs2 & 0b11111);
+    *(int32_t *)rd = *(const int32_t *)rs1 >> (*(const uint32_t *)rs2 & 0b11111);
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -668,7 +669,7 @@ static inline void RiscvEmulatorSRAI(
         return;
     }
 
-    *(int32_t *)rd = *(int32_t *)rs1 >> (shamt & 0b11111);
+    *(int32_t *)rd = *(const int32_t *)rs1 >> (shamt & 0b11111);
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -707,7 +708,7 @@ static inline void RiscvEmulatorOR(
         return;
     }
 
-    *(int32_t *)rd = *(int32_t *)rs1 | *(int32_t *)rs2;
+    *(int32_t *)rd = *(const int32_t *)rs1 | *(const int32_t *)rs2;
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -736,7 +737,7 @@ static inline void RiscvEmulatorORI(
     hc.rd = rd;
     hc.rs1num = rs1num;
     hc.rs1 = rs1;
-    hc.imm = imm;
+    hc.imm = (uint32_t)imm;
     hc.immlength = (sizeof(imm));
     RiscvEmulatorHook(state, &hc);
 #endif
@@ -745,7 +746,7 @@ static inline void RiscvEmulatorORI(
         return;
     }
 
-    *(int32_t *)rd = *(int32_t *)rs1 | imm;
+    *(int32_t *)rd = *(const int32_t *)rs1 | imm;
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -784,7 +785,7 @@ static inline void RiscvEmulatorAND(
         return;
     }
 
-    *(int32_t *)rd = *(int32_t *)rs1 & *(int32_t *)rs2;
+    *(int32_t *)rd = *(const int32_t *)rs1 & *(const int32_t *)rs2;
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -813,7 +814,7 @@ static inline void RiscvEmulatorANDI(
     hc.rd = rd;
     hc.rs1num = rs1num;
     hc.rs1 = rs1;
-    hc.imm = imm;
+    hc.imm = (uint32_t)imm;
     hc.immlength = (sizeof(imm));
     RiscvEmulatorHook(state, &hc);
 #endif
@@ -822,7 +823,7 @@ static inline void RiscvEmulatorANDI(
         return;
     }
 
-    *(int32_t *)rd = *(int32_t *)rs1 & imm;
+    *(int32_t *)rd = *(const int32_t *)rs1 & imm;
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -1171,10 +1172,10 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state) {
                 RiscvEmulatorSLTI(state, rdnum, rd, rs1num, rs1, imm);
                 break;
             case FUNCT3_IMMEDIATE_SLTIU:
-                RiscvEmulatorSLTIU(state, rdnum, rd, rs1num, rs1, imm);
+                RiscvEmulatorSLTIU(state, rdnum, rd, rs1num, rs1, (uint32_t)imm);
                 break;
             case FUNCT3_IMMEDIATE_XORI:
-                RiscvEmulatorXORI(state, rdnum, rd, rs1num, rs1, imm);
+                RiscvEmulatorXORI(state, rdnum, rd, rs1num, rs1, (uint32_t)imm);
                 break;
             case FUNCT3_IMMEDIATE_ORI:
                 RiscvEmulatorORI(state, rdnum, rd, rs1num, rs1, imm);
@@ -1203,7 +1204,7 @@ static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state) {
     void *rs1 = &state->reg.x[rs1num];
 
     int16_t imm = state->instruction.itype.imm;
-    uint32_t memorylocation = imm + *(uint32_t *)rs1;
+    uint32_t memorylocation = (uint32_t)imm + *(const uint32_t *)rs1;
 
 #if (RVE_E_HOOK == 1)
     RiscvEmulatorHookContext_t hc = {0};
@@ -1265,7 +1266,7 @@ static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state) {
     hc.rd = rd;
     hc.rs1num = rs1num;
     hc.rs1 = rs1;
-    hc.imm = imm;
+    hc.imm = (uint32_t)imm;
     hc.immlength = (sizeof(imm));
     hc.immname = "offset";
     hc.memorylocation = memorylocation;
@@ -1325,7 +1326,7 @@ static inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state) {
     uint8_t rs2num = state->instruction.stype.rs2;
     void *rs2 = &state->reg.x[rs2num];
 
-    uint32_t memorylocation = offset + *(uint32_t *)rs1;
+    uint32_t memorylocation = (uint32_t)offset + *(const uint32_t *)rs1;
 
 #if (RVE_E_HOOK == 1)
     RiscvEmulatorHookContext_t hc = {0};
@@ -1375,7 +1376,7 @@ static inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state) {
     hc.rs1 = rs1;
     hc.rs2num = rs2num;
     hc.rs2 = rs2;
-    hc.imm = offset;
+    hc.imm = (uint32_t)offset;
     hc.immname = "offset";
     hc.immlength = sizeof(offset);
     hc.immissigned = 1;
@@ -1420,14 +1421,14 @@ static inline void RiscvEmulatorBEQ(
     hc->rs1 = rs1;
     hc->rs2num = rs2num;
     hc->rs2 = rs2;
-    hc->imm = imm;
+    hc->imm = (uint32_t)imm;
     hc->immissigned = 1;
     hc->immlength = sizeof(imm);
     hc->immname = "offset";
     RiscvEmulatorHook(state, hc);
 #endif
 
-    if (*(int32_t *)rs1 == *(int32_t *)rs2) {
+    if (*(const int32_t *)rs1 == *(const int32_t *)rs2) {
         *executebranch = BRANCH_YES;
     }
 }
@@ -1454,14 +1455,14 @@ static inline void RiscvEmulatorBNE(
     hc->rs1 = rs1;
     hc->rs2num = rs2num;
     hc->rs2 = rs2;
-    hc->imm = imm;
+    hc->imm = (uint32_t)imm;
     hc->immissigned = 1;
     hc->immlength = sizeof(imm);
     hc->immname = "offset";
     RiscvEmulatorHook(state, hc);
 #endif
 
-    if (*(int32_t *)rs1 != *(int32_t *)rs2) {
+    if (*(const int32_t *)rs1 != *(const int32_t *)rs2) {
         *executebranch = BRANCH_YES;
     }
 }
@@ -1488,14 +1489,14 @@ static inline void RiscvEmulatorBGE(
     hc->rs1 = rs1;
     hc->rs2num = rs2num;
     hc->rs2 = rs2;
-    hc->imm = imm;
+    hc->imm = (uint32_t)imm;
     hc->immissigned = 1;
     hc->immlength = sizeof(imm);
     hc->immname = "offset";
     RiscvEmulatorHook(state, hc);
 #endif
 
-    if (*(int32_t *)rs1 >= *(int32_t *)rs2) {
+    if (*(const int32_t *)rs1 >= *(const int32_t *)rs2) {
         *executebranch = BRANCH_YES;
     }
 }
@@ -1522,14 +1523,14 @@ static inline void RiscvEmulatorBGEU(
     hc->rs1 = rs1;
     hc->rs2num = rs2num;
     hc->rs2 = rs2;
-    hc->imm = imm;
+    hc->imm = (uint32_t)imm;
     hc->immissigned = 1;
     hc->immlength = sizeof(imm);
     hc->immname = "offset";
     RiscvEmulatorHook(state, hc);
 #endif
 
-    if (*(uint32_t *)rs1 >= *(uint32_t *)rs2) {
+    if (*(const uint32_t *)rs1 >= *(const uint32_t *)rs2) {
         *executebranch = BRANCH_YES;
     }
 }
@@ -1556,14 +1557,14 @@ static inline void RiscvEmulatorBLT(
     hc->rs1 = rs1;
     hc->rs2num = rs2num;
     hc->rs2 = rs2;
-    hc->imm = imm;
+    hc->imm = (uint32_t)imm;
     hc->immissigned = 1;
     hc->immlength = sizeof(imm);
     hc->immname = "offset";
     RiscvEmulatorHook(state, hc);
 #endif
 
-    if (*(int32_t *)rs1 < *(int32_t *)rs2) {
+    if (*(const int32_t *)rs1 < *(const int32_t *)rs2) {
         *executebranch = BRANCH_YES;
     }
 }
@@ -1590,14 +1591,14 @@ static inline void RiscvEmulatorBLTU(
     hc->rs1 = rs1;
     hc->rs2num = rs2num;
     hc->rs2 = rs2;
-    hc->imm = imm;
+    hc->imm = (uint32_t)imm;
     hc->immissigned = 1;
     hc->immlength = sizeof(imm);
     hc->immname = "offset";
     RiscvEmulatorHook(state, hc);
 #endif
 
-    if (*(uint32_t *)rs1 < *(uint32_t *)rs2) {
+    if (*(const uint32_t *)rs1 < *(const uint32_t *)rs2) {
         *executebranch = BRANCH_YES;
     }
 }
@@ -1651,7 +1652,8 @@ static inline void RiscvEmulatorOpcodeBranch(RiscvEmulatorState_t *state) {
     }
 
     if (executebranch == BRANCH_YES) {
-        state->programcounternext = state->programcounter + imm;
+        uint32_t immu = (uint32_t)imm;
+        state->programcounternext = state->programcounter + immu;
 
 #if (RVE_E_ZICSR == 1) && (RVE_E_C != 1)
         // Check if programcounternext is aligned.
@@ -1676,8 +1678,8 @@ static inline void RiscvEmulatorAUIPC(RiscvEmulatorState_t *state) {
     uint32_t upperimmediate = state->instruction.utype.imm31_12;
 
     RiscvInstructionTypeUDecoderImm_u immdecoder = {0};
-    immdecoder.bit.imm31_12 = upperimmediate;
-    int32_t imm = immdecoder.imm;
+    immdecoder.bit.imm31_12 = upperimmediate & 0xFFFFFu;
+    int32_t imm = (int32_t)immdecoder.imm;
 
     uint8_t rdnum = state->instruction.utype.rd;
 
@@ -1690,12 +1692,12 @@ static inline void RiscvEmulatorAUIPC(RiscvEmulatorState_t *state) {
     hc.rdnum = rdnum;
     hc.rd = rd;
     hc.upperimmediate = upperimmediate;
-    hc.imm = imm;
+    hc.imm = (uint32_t)imm;
     RiscvEmulatorHook(state, &hc);
 #endif
 
     if (rdnum != 0) {
-        state->reg.x[rdnum] = state->programcounter + imm;
+        state->reg.x[rdnum] = state->programcounter + (uint32_t)imm;
     }
 
 #if (RVE_E_HOOK == 1)
@@ -1725,7 +1727,7 @@ static inline void RiscvEmulatorLUI(RiscvEmulatorState_t *state) {
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
     hc.rd = rd;
-    hc.imm = imm;
+    hc.imm = (uint32_t)imm;
     RiscvEmulatorHook(state, &hc);
 #endif
 
@@ -1754,7 +1756,8 @@ static inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state) {
     immdecoder.bit.imm19_12 = state->instruction.jtype.imm19_12;
     immdecoder.bit.imm20 = state->instruction.jtype.imm20;
 
-    uint32_t jumptoprogramcounter = state->programcounter + immdecoder.imm;
+    uint32_t immu = (uint32_t)immdecoder.imm;
+    uint32_t jumptoprogramcounter = state->programcounter + immu;
 
 #if (RVE_E_HOOK == 1)
     state->hookexists = 1;
@@ -1763,7 +1766,7 @@ static inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state) {
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
     hc.rd = rd;
-    hc.imm = immdecoder.imm;
+    hc.imm = (uint32_t)immdecoder.imm;
     hc.immissigned = 1;
     hc.immname = "offset";
     RiscvEmulatorHook(state, &hc);
@@ -1971,7 +1974,7 @@ static inline void RiscvEmulatorFencei(
  * Process miscellaneous memory opcodes.
  */
 static inline void RiscvEmulatorOpcodeMiscMem(RiscvEmulatorState_t *state) {
-    uint8_t detectedUnknownInstruction = 1;
+    int8_t detectedUnknownInstruction = 1;
 
     if (detectedUnknownInstruction) {
         if (state->instruction.itypemiscmem.funct3 == FUNCT3_FENCE) {
