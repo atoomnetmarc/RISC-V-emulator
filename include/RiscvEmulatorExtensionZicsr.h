@@ -126,25 +126,25 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
             // Machine Counter Setup
 #if (RVE_E_ZICNTR == 1)
         case 0xC00:
-            address = (uint32_t *)&state->csr.cycle;
+            address = (uint32_t *)(uintptr_t)&state->csr.cycle;
             break;
         case 0xC80:
             // The 0x?80 CSRs are the upper half of the 64-bit counter. The
             // counters are little-endian, so the upper half is the second
             // uint32_t of the uint64_t.
-            address = (uint32_t *)&state->csr.cycle + 1;
+            address = (uint32_t *)(uintptr_t)&state->csr.cycle + 1;
             break;
         case 0xC01:
-            address = (uint32_t *)&state->csr.time;
+            address = (uint32_t *)(uintptr_t)&state->csr.time;
             break;
         case 0xC81:
-            address = (uint32_t *)&state->csr.time + 1;
+            address = (uint32_t *)(uintptr_t)&state->csr.time + 1;
             break;
         case 0xC02:
-            address = (uint32_t *)&state->csr.instret;
+            address = (uint32_t *)(uintptr_t)&state->csr.instret;
             break;
         case 0xC82:
-            address = (uint32_t *)&state->csr.instret + 1;
+            address = (uint32_t *)(uintptr_t)&state->csr.instret + 1;
             break;
 #endif
 
