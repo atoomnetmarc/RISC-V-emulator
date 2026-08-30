@@ -1059,13 +1059,15 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state) {
     uint8_t rs1num = state->instruction.itype.rs1;
     void *rs1 = &state->reg.x[rs1num];
 
+    uint8_t funct3 = state->instruction.itype.funct3;
+
 #if (RVE_E_ZBB == 1)
     if (detectedUnknownInstruction == 1) {
         // If funct3 == 0b001 or 0b101 then a whole set of functions are encoded in imm.
-        if (state->instruction.itype.funct3 == FUNCT3_IMMEDIATE_FUNCTIONS_1 ||
-            state->instruction.itype.funct3 == FUNCT3_IMMEDIATE_FUNCTIONS_5) {
+        if (funct3 == FUNCT3_IMMEDIATE_FUNCTIONS_1 ||
+            funct3 == FUNCT3_IMMEDIATE_FUNCTIONS_5) {
             RiscvInstructionTypeIDecoderImmFunct3ImmFunct3_u instruction_decoderhelper_itype_functiongroup = {0};
-            instruction_decoderhelper_itype_functiongroup.funct3 = state->instruction.itype.funct3;
+            instruction_decoderhelper_itype_functiongroup.funct3 = funct3;
             instruction_decoderhelper_itype_functiongroup.imm = state->instruction.itype.imm;
 
             detectedUnknownInstruction = -1;
@@ -1106,14 +1108,14 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state) {
 
     if (detectedUnknownInstruction == 1) {
         // If funct3 == 0b001 or 0b101 then a whole set of functions are encoded in parts of imm.
-        if (state->instruction.itype.funct3 == FUNCT3_IMMEDIATE_FUNCTIONS_1 ||
-            state->instruction.itype.funct3 == FUNCT3_IMMEDIATE_FUNCTIONS_5) {
+        if (funct3 == FUNCT3_IMMEDIATE_FUNCTIONS_1 ||
+            funct3 == FUNCT3_IMMEDIATE_FUNCTIONS_5) {
 
             uint8_t shamt = state->instruction.itypeshiftbyconstant.shamt;
 
             RiscvInstructionTypeIDecoderImm11_7Funct3Imm11_7Funct3_u instruction_decoderhelper_itype_functions_shamt = {0};
 
-            instruction_decoderhelper_itype_functions_shamt.funct3 = state->instruction.itype.funct3;
+            instruction_decoderhelper_itype_functions_shamt.funct3 = funct3;
             instruction_decoderhelper_itype_functions_shamt.imm11_5 = state->instruction.itypeshiftbyconstant.imm11_5;
 
             detectedUnknownInstruction = -1;
@@ -1164,7 +1166,7 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state) {
     if (detectedUnknownInstruction == 1) {
         detectedUnknownInstruction = -1;
         int16_t imm = state->instruction.itype.imm;
-        switch (state->instruction.itype.funct3) {
+        switch (funct3) {
             case FUNCT3_IMMEDIATE_ADDI:
                 RiscvEmulatorADDI(state, rdnum, rd, rs1num, rs1, imm);
                 break;
@@ -1211,8 +1213,10 @@ static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state) {
     hc.instruction = "unknown";
 #endif
 
+    uint8_t funct3 = state->instruction.itype.funct3;
+
     uint8_t length = 0;
-    switch (state->instruction.itype.funct3) {
+    switch (funct3) {
         case FUNCT3_LOAD_LB:
 #if (RVE_E_HOOK == 1)
             hc.instruction = "lb";
@@ -1287,7 +1291,7 @@ static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state) {
     uint32_t value = 0;
     RiscvEmulatorLoad(memorylocation, &value, length);
 
-    switch (state->instruction.itype.funct3) {
+    switch (funct3) {
         case FUNCT3_LOAD_LB:
             *(int32_t *)rd = (int8_t)value;
             break;
