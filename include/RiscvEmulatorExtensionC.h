@@ -955,9 +955,9 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
 
     uint8_t funct3_funct2 = 0;
     uint8_t funct6_funct2 = 0;
-    uint8_t rdnum = 0xFF;
-    uint8_t rs1num = 0xFF;
-    uint8_t rs2num = 0xFF;
+    int8_t rdnum = -1;
+    int8_t rs1num = -1;
+    int8_t rs2num = -1;
     uint32_t imm = 0;
     void *rd = 0;
     void *rs1 = 0;
@@ -974,7 +974,7 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             RiscvInstructionTypeCIWDecoderImm.bit.imm5_4 = state->instruction.ciwtype.imm5_4;
             RiscvInstructionTypeCIWDecoderImm.bit.imm9_6 = state->instruction.ciwtype.imm9_6;
             imm = RiscvInstructionTypeCIWDecoderImm.imm;
-            rdnum = state->instruction.ciwtype.rdp + 8;
+            rdnum = (int8_t)(state->instruction.ciwtype.rdp + 8);
             break;
         }
         case OPCODE16_MISCALU: {
@@ -992,7 +992,7 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
                 RiscvInstructionTypeCBImmDecoderImm.bit.imm5 = state->instruction.cbimm.imm5;
                 imm = (uint32_t)RiscvInstructionTypeCBImmDecoderImm.imm;
 
-                rdnum = state->instruction.cbimm.rdp + 8;
+                rdnum = (int8_t)(state->instruction.cbimm.rdp + 8);
                 break;
             }
 
@@ -1005,15 +1005,15 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
                 funct6_funct2 == FUNCT6_FUNCT2_XOR ||
                 funct6_funct2 == FUNCT6_FUNCT2_OR ||
                 funct6_funct2 == FUNCT6_FUNCT2_AND) {
-                rdnum = state->instruction.catype.rdp + 8;
-                rs2num = state->instruction.catype.rs2p + 8;
+                rdnum = (int8_t)(state->instruction.catype.rdp + 8);
+                rs2num = (int8_t)(state->instruction.catype.rs2p + 8);
                 break;
             }
 
 #if ((RVE_E_ZCB == 1) && (RVE_E_C == 1))
             if ((funct6_funct2 >> 2) == FUNCT6_ZCB) {
-                rdnum = state->instruction.catype.rdp + 8;
-                rs2num = state->instruction.catype.rs2p + 8;
+                rdnum = (int8_t)(state->instruction.catype.rdp + 8);
+                rs2num = (int8_t)(state->instruction.catype.rs2p + 8);
                 break;
             }
 #endif
@@ -1048,7 +1048,7 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             RiscvInstructionTypeCIDecoderImm.bit.imm4_0 = state->instruction.citype.imm4_0;
             RiscvInstructionTypeCIDecoderImm.bit.imm5 = state->instruction.citype.imm5;
             imm = (uint32_t)RiscvInstructionTypeCIDecoderImm.imm;
-            rdnum = state->instruction.citype.rd;
+            rdnum = (int8_t)state->instruction.citype.rd;
             break;
         }
         case OPCODE16_JAL:
@@ -1071,8 +1071,8 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             RiscvInstructionTypeCLDecoderImm.bit.imm5_3 = state->instruction.cltype.imm5_3;
             RiscvInstructionTypeCLDecoderImm.bit.imm6 = state->instruction.cltype.imm6;
             imm = RiscvInstructionTypeCLDecoderImm.imm;
-            rs1num = state->instruction.cltype.rs1p + 8;
-            rdnum = state->instruction.cltype.rdp + 8;
+            rs1num = (int8_t)(state->instruction.cltype.rs1p + 8);
+            rdnum = (int8_t)(state->instruction.cltype.rdp + 8);
             break;
         }
         case OPCODE16_SW: {
@@ -1081,8 +1081,8 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             RiscvInstructionTypeCSDecoderImm.bit.imm5_3 = state->instruction.cstype.imm5_3;
             RiscvInstructionTypeCSDecoderImm.bit.imm6 = state->instruction.cstype.imm6;
             imm = RiscvInstructionTypeCSDecoderImm.imm;
-            rs1num = state->instruction.cstype.rs1p + 8;
-            rs2num = state->instruction.cstype.rs2p + 8;
+            rs1num = (int8_t)(state->instruction.cstype.rs1p + 8);
+            rs2num = (int8_t)(state->instruction.cstype.rs2p + 8);
             break;
         }
         case OPCODE16_LWSP: {
@@ -1091,7 +1091,7 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             RiscvInstructionTypeCILwspDecoderImm.bit.imm5 = state->instruction.cilwsp.imm5;
             RiscvInstructionTypeCILwspDecoderImm.bit.imm7_6 = state->instruction.cilwsp.imm7_6;
             imm = RiscvInstructionTypeCILwspDecoderImm.imm;
-            rdnum = state->instruction.cilwsp.rd;
+            rdnum = (int8_t)state->instruction.cilwsp.rd;
             break;
         }
         case OPCODE16_SWSP: {
@@ -1099,25 +1099,25 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             RiscvInstructionTypeCSSDecoderImm.bit.imm5_2 = state->instruction.csstype.imm5_2;
             RiscvInstructionTypeCSSDecoderImm.bit.imm7_6 = state->instruction.csstype.imm7_6;
             imm = RiscvInstructionTypeCSSDecoderImm.imm;
-            rs2num = state->instruction.csstype.rs2;
+            rs2num = (int8_t)state->instruction.csstype.rs2;
             break;
         }
     }
 
-    if (rdnum != 0xFF) {
+    if (rdnum >= 0) {
         rd = &state->reg.x[rdnum];
     }
-    if (rs1num != 0xFF) {
+    if (rs1num >= 0) {
         rs1 = &state->reg.x[rs1num];
     }
-    if (rs2num != 0xFF) {
+    if (rs2num >= 0) {
         rs2 = &state->reg.x[rs2num];
     }
 
     switch (opfunct3) {
         case OPCODE16_ADDI4SPN:
             if (imm != 0) {
-                RiscvEmulatorC_ADDI4SPN(state, rdnum, rd, sp, (uint16_t)imm);
+                RiscvEmulatorC_ADDI4SPN(state, (uint8_t)rdnum, rd, sp, (uint16_t)imm);
             } else {
                 state->trapflag.illegalinstruction = 1;
             }
@@ -1131,29 +1131,29 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
                     // c.lbu. The offset is formed as uimm[1] = encoding[5]
                     // and uimm[0] = encoding[6].
                     offset = (uint8_t)(state->instruction.cltype.imm2 | (state->instruction.cltype.imm6 << 1));
-                    RiscvEmulatorC_LBU(state, rdnum, rd, rs1num, rs1, offset);
+                    RiscvEmulatorC_LBU(state, (uint8_t)rdnum, rd, (uint8_t)rs1num, rs1, offset);
                     break;
                 case FUNCT3_ZCB_LH:
                     // c.lhu and c.lh. The offset is formed as
                     // uimm[1] = encoding[5].
                     offset = (uint8_t)(state->instruction.cltype.imm6 << 1);
                     if (state->instruction.cltype.imm2 == 0) {
-                        RiscvEmulatorC_LHU(state, rdnum, rd, rs1num, rs1, offset);
+                        RiscvEmulatorC_LHU(state, (uint8_t)rdnum, rd, (uint8_t)rs1num, rs1, offset);
                     } else {
-                        RiscvEmulatorC_LH(state, rdnum, rd, rs1num, rs1, offset);
+                        RiscvEmulatorC_LH(state, (uint8_t)rdnum, rd, (uint8_t)rs1num, rs1, offset);
                     }
                     break;
                 case FUNCT3_ZCB_SB:
                     // c.sb. The offset is formed as uimm[1] = encoding[5]
                     // and uimm[0] = encoding[6].
                     offset = (uint8_t)(state->instruction.cltype.imm2 | (state->instruction.cltype.imm6 << 1));
-                    RiscvEmulatorC_SB(state, rs1num, rs1, rs2num, rs2, offset);
+                    RiscvEmulatorC_SB(state, (uint8_t)rs1num, rs1, (uint8_t)rs2num, rs2, offset);
                     break;
                 case FUNCT3_ZCB_SH:
                     // c.sh. The offset is formed as uimm[1] = encoding[5].
                     if (state->instruction.cltype.imm2 == 0) {
                         offset = (uint8_t)(state->instruction.cltype.imm6 << 1);
-                        RiscvEmulatorC_SH(state, rs1num, rs1, rs2num, rs2, offset);
+                        RiscvEmulatorC_SH(state, (uint8_t)rs1num, rs1, (uint8_t)rs2num, rs2, offset);
                     } else {
                         state->trapflag.illegalinstruction = 1;
                     }
@@ -1166,64 +1166,64 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
         }
 #endif
         case OPCODE16_LW:
-            RiscvEmulatorC_LW(state, rdnum, rd, rs1num, rs1, (uint8_t)imm);
+            RiscvEmulatorC_LW(state, (uint8_t)rdnum, rd, (uint8_t)rs1num, rs1, (uint8_t)imm);
             break;
         case OPCODE16_SW:
-            RiscvEmulatorC_SW(state, rs1num, rs1, rs2num, rs2, (uint8_t)imm);
+            RiscvEmulatorC_SW(state, (uint8_t)rs1num, rs1, (uint8_t)rs2num, rs2, (uint8_t)imm);
             break;
         case OPCODE16_ADDI:
-            RiscvEmulatorC_ADDI(state, rdnum, rd, (int8_t)imm);
+            RiscvEmulatorC_ADDI(state, (uint8_t)rdnum, rd, (int8_t)imm);
             break;
         case OPCODE16_JAL:
             RiscvEmulatorC_JAL(state, ra, (int16_t)imm);
             break;
         case OPCODE16_LI:
-            RiscvEmulatorC_LI(state, rdnum, rd, (int8_t)imm);
+            RiscvEmulatorC_LI(state, (uint8_t)rdnum, rd, (int8_t)imm);
             break;
         case OPCODE16_LUI_ADDI16SP: {
-            rdnum = state->instruction.cilui.rd;
+            rdnum = (int8_t)state->instruction.cilui.rd;
             rd = &state->reg.x[rdnum];
 
             if (rdnum == 2) {
-                RiscvEmulatorC_ADDI16SP(state, rdnum, rd);
+                RiscvEmulatorC_ADDI16SP(state, (uint8_t)rdnum, rd);
             } else {
-                RiscvEmulatorC_LUI(state, rdnum, rd);
+                RiscvEmulatorC_LUI(state, (uint8_t)rdnum, rd);
             }
             break;
         }
         case OPCODE16_MISCALU:
             if (funct3_funct2 == FUNCT3_FUNCT2_SRLI) {
-                RiscvEmulatorC_SRLI(state, rdnum, rd, (uint8_t)imm);
+                RiscvEmulatorC_SRLI(state, (uint8_t)rdnum, rd, (uint8_t)imm);
                 break;
             }
 
             if (funct3_funct2 == FUNCT3_FUNCT2_SRAI) {
-                RiscvEmulatorC_SRAI(state, rdnum, rd, (uint8_t)imm);
+                RiscvEmulatorC_SRAI(state, (uint8_t)rdnum, rd, (uint8_t)imm);
                 break;
             }
 
             if (funct3_funct2 == FUNCT3_FUNCT2_ANDI) {
-                RiscvEmulatorC_ANDI(state, rdnum, rd, (int8_t)imm);
+                RiscvEmulatorC_ANDI(state, (uint8_t)rdnum, rd, (int8_t)imm);
                 break;
             }
 
             if (funct6_funct2 == FUNCT6_FUNCT2_SUB) {
-                RiscvEmulatorC_SUB(state, rdnum, rd, rs2num, rs2);
+                RiscvEmulatorC_SUB(state, (uint8_t)rdnum, rd, (uint8_t)rs2num, rs2);
                 break;
             }
 
             if (funct6_funct2 == FUNCT6_FUNCT2_XOR) {
-                RiscvEmulatorC_XOR(state, rdnum, rd, rs2num, rs2);
+                RiscvEmulatorC_XOR(state, (uint8_t)rdnum, rd, (uint8_t)rs2num, rs2);
                 break;
             }
 
             if (funct6_funct2 == FUNCT6_FUNCT2_OR) {
-                RiscvEmulatorC_OR(state, rdnum, rd, rs2num, rs2);
+                RiscvEmulatorC_OR(state, (uint8_t)rdnum, rd, (uint8_t)rs2num, rs2);
                 break;
             }
 
             if (funct6_funct2 == FUNCT6_FUNCT2_AND) {
-                RiscvEmulatorC_AND(state, rdnum, rd, rs2num, rs2);
+                RiscvEmulatorC_AND(state, (uint8_t)rdnum, rd, (uint8_t)rs2num, rs2);
                 break;
             }
 
@@ -1232,31 +1232,31 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
                 if ((funct6_funct2 & 0b11) == FUNCT2_ZCB_GROUP) {
                     switch (state->instruction.catype.rs2p) {
                         case RS2P_ZCB_ZEXTB:
-                            RiscvEmulatorC_ZEXTB(state, rdnum, rd);
+                            RiscvEmulatorC_ZEXTB(state, (uint8_t)rdnum, rd);
                             break;
                         case RS2P_ZCB_SEXTB:
 #if (RVE_E_ZBB == 1)
-                            RiscvEmulatorC_SEXTB(state, rdnum, rd);
+                            RiscvEmulatorC_SEXTB(state, (uint8_t)rdnum, rd);
 #else
                             state->trapflag.illegalinstruction = 1;
 #endif
                             break;
                         case RS2P_ZCB_ZEXTH:
 #if (RVE_E_ZBB == 1)
-                            RiscvEmulatorC_ZEXTH(state, rdnum, rd);
+                            RiscvEmulatorC_ZEXTH(state, (uint8_t)rdnum, rd);
 #else
                             state->trapflag.illegalinstruction = 1;
 #endif
                             break;
                         case RS2P_ZCB_SEXTH:
 #if (RVE_E_ZBB == 1)
-                            RiscvEmulatorC_SEXTH(state, rdnum, rd);
+                            RiscvEmulatorC_SEXTH(state, (uint8_t)rdnum, rd);
 #else
                             state->trapflag.illegalinstruction = 1;
 #endif
                             break;
                         case RS2P_ZCB_NOT:
-                            RiscvEmulatorC_NOT(state, rdnum, rd);
+                            RiscvEmulatorC_NOT(state, (uint8_t)rdnum, rd);
                             break;
                         default:
                             state->trapflag.illegalinstruction = 1;
@@ -1267,7 +1267,7 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
 
                 if ((funct6_funct2 & 0b11) == FUNCT2_ZCB_MUL) {
 #if (RVE_E_ZMMUL == 1)
-                    RiscvEmulatorC_MUL(state, rdnum, rd, rs2num, rs2);
+                    RiscvEmulatorC_MUL(state, (uint8_t)rdnum, rd, (uint8_t)rs2num, rs2);
 #else
                     state->trapflag.illegalinstruction = 1;
 #endif
@@ -1282,28 +1282,28 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
             RiscvEmulatorC_J(state, (int16_t)imm);
             break;
         case OPCODE16_BEQZ:
-            RiscvEmulatorC_BEQZ(state, rs1num, rs1, (int16_t)imm);
+            RiscvEmulatorC_BEQZ(state, (uint8_t)rs1num, rs1, (int16_t)imm);
             break;
         case OPCODE16_BNEZ:
-            RiscvEmulatorC_BNEZ(state, rs1num, rs1, (int16_t)imm);
+            RiscvEmulatorC_BNEZ(state, (uint8_t)rs1num, rs1, (int16_t)imm);
             break;
         case OPCODE16_SLLI:
-            RiscvEmulatorC_SLLI(state, rdnum, rd, (uint8_t)imm);
+            RiscvEmulatorC_SLLI(state, (uint8_t)rdnum, rd, (uint8_t)imm);
             break;
         case OPCODE16_LWSP:
-            RiscvEmulatorC_LWSP(state, rdnum, rd, sp, (uint8_t)imm);
+            RiscvEmulatorC_LWSP(state, (uint8_t)rdnum, rd, sp, (uint8_t)imm);
             break;
         case OPCODE16_JALR_MV_ADD:
-            rdnum = state->instruction.crtype.rd;
+            rdnum = (int8_t)state->instruction.crtype.rd;
             rd = &state->reg.x[rdnum];
-            rs2num = state->instruction.crtype.rs2;
+            rs2num = (int8_t)state->instruction.crtype.rs2;
             rs2 = &state->reg.x[rs2num];
 
             if (state->instruction.crtype.funct4 == FUNCT4_MV) {
                 if (rs2num == 0) {
-                    RiscvEmulatorC_JR(state, rdnum, rd);
+                    RiscvEmulatorC_JR(state, (uint8_t)rdnum, rd);
                 } else {
-                    RiscvEmulatorC_MV(state, rdnum, rd, rs2num, rs2);
+                    RiscvEmulatorC_MV(state, (uint8_t)rdnum, rd, (uint8_t)rs2num, rs2);
                 }
             } else /* FUNCT4_ADD */
             {
@@ -1311,14 +1311,14 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
                     rs2num == 0) {
                     RiscvEmulatorC_EBREAK(state);
                 } else if (rs2num == 0) {
-                    RiscvEmulatorC_JALR(state, rdnum, rd, ra);
+                    RiscvEmulatorC_JALR(state, (uint8_t)rdnum, rd, ra);
                 } else {
-                    RiscvEmulatorC_ADD(state, rdnum, rd, rs2num, rs2);
+                    RiscvEmulatorC_ADD(state, (uint8_t)rdnum, rd, (uint8_t)rs2num, rs2);
                 }
             }
             break;
         case OPCODE16_SWSP:
-            RiscvEmulatorC_SWSP(state, rs2num, rs2, sp, (uint8_t)imm);
+            RiscvEmulatorC_SWSP(state, (uint8_t)rs2num, rs2, sp, (uint8_t)imm);
             break;
         default:
             state->trapflag.illegalinstruction = 1;

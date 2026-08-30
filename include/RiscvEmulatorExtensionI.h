@@ -1974,11 +1974,11 @@ static inline void RiscvEmulatorFencei(
  * Process miscellaneous memory opcodes.
  */
 static inline void RiscvEmulatorOpcodeMiscMem(RiscvEmulatorState_t *state) {
-    int8_t detectedUnknownInstruction = 1;
+    uint8_t detectedUnknownInstruction = 1;
 
     if (detectedUnknownInstruction) {
         if (state->instruction.itypemiscmem.funct3 == FUNCT3_FENCE) {
-            detectedUnknownInstruction = -1;
+            detectedUnknownInstruction = 0;
             RiscvEmulatorFence(state);
         }
     }
@@ -1986,7 +1986,7 @@ static inline void RiscvEmulatorOpcodeMiscMem(RiscvEmulatorState_t *state) {
 #if (RVE_E_ZIFENCEI == 1)
     if (detectedUnknownInstruction) {
         if (state->instruction.itypemiscmem.funct3 == FUNCT3_FENCEI) {
-            detectedUnknownInstruction = -1;
+            detectedUnknownInstruction = 0;
             RiscvEmulatorFencei(state);
         }
     }
