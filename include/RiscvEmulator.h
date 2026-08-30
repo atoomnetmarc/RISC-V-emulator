@@ -87,48 +87,57 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
 
 #if (RVE_E_C == 1)
     if (instructionlength == 16) {
-        RiscvEmulatorOpcodeCompressed(state);
+        RiscvEmulatorOpcodeCompressed(state, state->instruction.copcode.op, state->instruction.copcode.funct3);
     }
 #endif
 
     if (instructionlength == 32) {
+        uint8_t rdnum = state->instruction.rtype.rd;
+        uint8_t rs1num = state->instruction.rtype.rs1;
+        uint8_t rs2num = state->instruction.rtype.rs2;
+        uint8_t funct3 = state->instruction.rtype.funct3;
+        uint8_t funct7 = state->instruction.rtype.funct7;
+        void *rd = &state->reg.x[rdnum];
+        void *rs1 = &state->reg.x[rs1num];
+        void *rs2 = &state->reg.x[rs2num];
+
         switch (state->instruction.opcode) {
             case OPCODE32_JUMPANDLINKREGISTER:
-                RiscvEmulatorOpcodeJumpAndLinkRegister(state);
+                RiscvEmulatorOpcodeJumpAndLinkRegister(state, rdnum, rd, rs1num, rs1, funct3);
                 break;
             case OPCODE32_OPERATION:
-                RiscvEmulatorOpcodeOperation(state);
+                RiscvEmulatorOpcodeOperation(state, rdnum, rd, rs1num, rs1, rs2num, rs2, funct3, funct7);
                 break;
             case OPCODE32_IMMEDIATE:
-                RiscvEmulatorOpcodeImmediate(state);
+                RiscvEmulatorOpcodeImmediate(state, rdnum, rd, rs1num, rs1);
                 break;
             case OPCODE32_LOAD:
-                RiscvEmulatorOpcodeLoad(state);
+                RiscvEmulatorOpcodeLoad(state, rdnum, rd, rs1num, rs1, (int16_t)state->instruction.itype.imm, funct3);
                 break;
             case OPCODE32_STORE:
-                RiscvEmulatorOpcodeStore(state);
+                RiscvEmulatorOpcodeStore(state, rs1num, rs1, rs2num, rs2);
                 break;
             case OPCODE32_BRANCH:
-                RiscvEmulatorOpcodeBranch(state);
+                RiscvEmulatorOpcodeBranch(state, rs1num, rs1, rs2num, rs2, funct3);
                 break;
             case OPCODE32_ADDUPPERIMMEDIATE2PC:
-                RiscvEmulatorAUIPC(state);
+                RiscvEmulatorAUIPC(state, rdnum, rd);
                 break;
             case OPCODE32_LOADUPPERIMMEDIATE:
-                RiscvEmulatorLUI(state);
+                RiscvEmulatorLUI(state, rdnum, rd);
                 break;
             case OPCODE32_JUMPANDLINK:
-                RiscvEmulatorJAL(state);
+                RiscvEmulatorJAL(state, rdnum, rd);
                 break;
             case OPCODE32_SYSTEM:
-                RiscvEmulatorOpcodeSystem(state);
+                RiscvEmulatorOpcodeSystem(state, rdnum, rd, rs1num, rs1, funct3);
                 break;
             case OPCODE32_MISCMEM:
-                RiscvEmulatorOpcodeMiscMem(state);
+                RiscvEmulatorOpcodeMiscMem(state, funct3);
                 break;
 #if ((RVE_E_ZAAMO == 1) || (RVE_E_ZALRSC == 1))
             case OPCODE32_ATOMICMEMORYOPERATION:
-                RiscvEmulatorOpcodeAtomicMemoryOperation(state);
+                RiscvEmulatorOpcodeAtomicMemoryOperation(state, rdnum, rd, rs1num, rs1, rs2num, rs2, funct3);
                 break;
 #endif
             default:

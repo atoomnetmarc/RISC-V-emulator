@@ -166,15 +166,7 @@ static inline void RiscvEmulatorSC_W(
 /**
  * Process atomic memory operation opcodes.
  */
-static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(
-    RiscvEmulatorState_t *state) {
-    uint8_t rdnum = state->instruction.rtypeatomicmemoryoperation.rd;
-    void *rd = &state->reg.x[rdnum];
-    uint8_t rs1num = state->instruction.rtypeatomicmemoryoperation.rs1;
-    void *rs1 = &state->reg.x[rs1num];
-    uint8_t rs2num = state->instruction.rtypeatomicmemoryoperation.rs2;
-    void *rs2 = &state->reg.x[rs2num];
-
+static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(RiscvEmulatorState_t *state, uint8_t rdnum, void *rd, uint8_t rs1num, void *rs1, uint8_t rs2num, void *rs2, uint8_t funct3) {
     // Remember original address stored in rs1.
     uint32_t originaladdressrs1 = *(const uint32_t *)rs1;
 
@@ -186,12 +178,13 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(
     uint8_t skipstore = 0;
 
     RiscvInstructionTypeRDecoderFunct5Funct3_u instruction_decoderhelper_rtypeatomicmemoryoperation = {0};
-    instruction_decoderhelper_rtypeatomicmemoryoperation.funct3 = state->instruction.rtypeatomicmemoryoperation.funct3;
+    instruction_decoderhelper_rtypeatomicmemoryoperation.funct3 = funct3;
     instruction_decoderhelper_rtypeatomicmemoryoperation.funct5 = state->instruction.rtypeatomicmemoryoperation.funct5;
 
 #if (RVE_E_HOOK == 1)
+    const uint8_t funct5 = instruction_decoderhelper_rtypeatomicmemoryoperation.funct5;
     const char *instructionname = "unknown";
-    switch (state->instruction.rtypeatomicmemoryoperation.funct5) {
+    switch (funct5) {
         case 0b00000:
             instructionname = "amoadd.w";
             break;

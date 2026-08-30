@@ -937,7 +937,7 @@ static inline void RiscvEmulatorC_SWSP(
 /**
  * Process compressed opcodes.
  */
-static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
+static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state, uint8_t op, uint8_t funct3) {
 #if ((RVE_E_ZCMOP == 1) && (RVE_E_C == 1))
     // c.mop instructions are quadrant 1 instructions with funct3 3 and a
     // fixed bit pattern. The n field selects the instruction variant but all
@@ -949,8 +949,8 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
 #endif
 
     RiscvInstructionTypeCDecoderOpcode_u decoderOpcode16 = {0};
-    decoderOpcode16.funct3 = state->instruction.copcode.funct3;
-    decoderOpcode16.op = state->instruction.copcode.op;
+    decoderOpcode16.funct3 = funct3;
+    decoderOpcode16.op = op;
     uint8_t opfunct3 = decoderOpcode16.opfunct3;
 
     uint8_t funct3_funct2 = 0;
@@ -1126,18 +1126,21 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
         case OPCODE16_ZCB_LOADSTORE: {
             uint8_t offset = 0;
 
+            uint8_t imm2 = state->instruction.cltype.imm2;
+            uint8_t imm6 = state->instruction.cltype.imm6;
+
             switch (state->instruction.cltype.imm5_3) {
                 case FUNCT3_ZCB_LBU:
                     // c.lbu. The offset is formed as uimm[1] = encoding[5]
                     // and uimm[0] = encoding[6].
-                    offset = (uint8_t)(state->instruction.cltype.imm2 | (state->instruction.cltype.imm6 << 1));
+                    offset = (uint8_t)(imm2 | (imm6 << 1));
                     RiscvEmulatorC_LBU(state, (uint8_t)rdnum, rd, (uint8_t)rs1num, rs1, offset);
                     break;
                 case FUNCT3_ZCB_LH:
                     // c.lhu and c.lh. The offset is formed as
                     // uimm[1] = encoding[5].
-                    offset = (uint8_t)(state->instruction.cltype.imm6 << 1);
-                    if (state->instruction.cltype.imm2 == 0) {
+                    offset = (uint8_t)(imm6 << 1);
+                    if (imm2 == 0) {
                         RiscvEmulatorC_LHU(state, (uint8_t)rdnum, rd, (uint8_t)rs1num, rs1, offset);
                     } else {
                         RiscvEmulatorC_LH(state, (uint8_t)rdnum, rd, (uint8_t)rs1num, rs1, offset);
@@ -1146,13 +1149,13 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state) {
                 case FUNCT3_ZCB_SB:
                     // c.sb. The offset is formed as uimm[1] = encoding[5]
                     // and uimm[0] = encoding[6].
-                    offset = (uint8_t)(state->instruction.cltype.imm2 | (state->instruction.cltype.imm6 << 1));
+                    offset = (uint8_t)(imm2 | (imm6 << 1));
                     RiscvEmulatorC_SB(state, (uint8_t)rs1num, rs1, (uint8_t)rs2num, rs2, offset);
                     break;
                 case FUNCT3_ZCB_SH:
                     // c.sh. The offset is formed as uimm[1] = encoding[5].
-                    if (state->instruction.cltype.imm2 == 0) {
-                        offset = (uint8_t)(state->instruction.cltype.imm6 << 1);
+                    if (imm2 == 0) {
+                        offset = (uint8_t)(imm6 << 1);
                         RiscvEmulatorC_SH(state, (uint8_t)rs1num, rs1, (uint8_t)rs2num, rs2, offset);
                     } else {
                         state->trapflag.illegalinstruction = 1;
