@@ -49,7 +49,7 @@ static inline void RiscvEmulatorBREV8(
 
     for (uint8_t i = 0; i < 32; i++) {
         if ((input >> i) & 1) {
-            output |= 1 << ((i & ~0x7) | (7 - (i & 0x7)));
+            output |= (uint32_t)1 << ((i & ~0x7) | (7 - (i & 0x7)));
         }
     }
 
@@ -171,10 +171,10 @@ static inline void RiscvEmulatorZIP(
 
     for (uint8_t i = 0; i < 16; i++) {
         if ((input >> i) & 1) {
-            output |= 1 << (i * 2);
+            output |= (uint32_t)1 << (i * 2);
         }
         if ((input >> (i + 16)) & 1) {
-            output |= 1 << (i * 2 + 1);
+            output |= (uint32_t)1 << (i * 2 + 1);
         }
     }
 
@@ -218,10 +218,10 @@ static inline void RiscvEmulatorUNZIP(
 
     for (uint8_t i = 0; i < 16; i++) {
         if ((input >> (i * 2)) & 1) {
-            output |= 1 << i;
+            output |= (uint32_t)1 << i;
         }
         if ((input >> (i * 2 + 1)) & 1) {
-            output |= 1 << (i + 16);
+            output |= (uint32_t)1 << (i + 16);
         }
     }
 

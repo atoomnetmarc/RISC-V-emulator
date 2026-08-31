@@ -51,7 +51,7 @@ static inline void RiscvEmulatorBCLR(
     }
 
     uint8_t index = *(const uint32_t *)rs2 & 31;
-    *(uint32_t *)rd = *(const uint32_t *)rs1 & ~(1U << index);
+    *(uint32_t *)rd = *(const uint32_t *)rs1 & ~((uint32_t)1 << index);
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -91,7 +91,7 @@ static inline void RiscvEmulatorBCLRI(
     }
 
     uint8_t index = shamt & 31;
-    *(uint32_t *)rd = *(const uint32_t *)rs1 & ~(1U << index);
+    *(uint32_t *)rd = *(const uint32_t *)rs1 & ~((uint32_t)1 << index);
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -211,7 +211,7 @@ static inline void RiscvEmulatorBINV(
     }
 
     uint8_t index = *(const uint32_t *)rs2 & 31;
-    *(uint32_t *)rd = *(const uint32_t *)rs1 ^ (1 << index);
+    *(uint32_t *)rd = *(const uint32_t *)rs1 ^ ((uint32_t)1 << index);
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -251,7 +251,7 @@ static inline void RiscvEmulatorBINVI(
     }
 
     uint8_t index = shamt & 31;
-    *(uint32_t *)rd = *(const uint32_t *)rs1 ^ (1 << index);
+    *(uint32_t *)rd = *(const uint32_t *)rs1 ^ ((uint32_t)1 << index);
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -291,7 +291,7 @@ static inline void RiscvEmulatorBSET(
     }
 
     uint8_t index = *(const uint32_t *)rs2 & 31;
-    *(uint32_t *)rd = *(const uint32_t *)rs1 | (1 << index);
+    *(uint32_t *)rd = *(const uint32_t *)rs1 | ((uint32_t)1 << index);
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -331,7 +331,7 @@ static inline void RiscvEmulatorBSETI(
     }
 
     uint8_t index = shamt & 31;
-    *(uint32_t *)rd = *(const uint32_t *)rs1 | (1 << index);
+    *(uint32_t *)rd = *(const uint32_t *)rs1 | ((uint32_t)1 << index);
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;

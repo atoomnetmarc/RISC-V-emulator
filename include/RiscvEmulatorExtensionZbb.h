@@ -164,7 +164,7 @@ static inline void RiscvEmulatorCLZ(
     uint8_t leadingzeros = 32;
 
     for (int8_t i = 31; i >= 0; i--) {
-        if (*(const uint32_t *)rs1 & (1 << i)) {
+        if (*(const uint32_t *)rs1 & ((uint32_t)1 << i)) {
             leadingzeros = (uint8_t)(31 - i);
             break;
         }
@@ -208,7 +208,7 @@ static inline void RiscvEmulatorCTZ(
     uint8_t trailingzeros = 32;
 
     for (int8_t i = 0; i <= 31; i++) {
-        if (*(const uint32_t *)rs1 & (1 << i)) {
+        if (*(const uint32_t *)rs1 & ((uint32_t)1 << i)) {
             trailingzeros = (uint8_t)i;
             break;
         }
@@ -252,7 +252,7 @@ static inline void RiscvEmulatorCPOP(
     uint8_t setbits = 0;
 
     for (int8_t i = 0; i <= 31; i++) {
-        if (*(const uint32_t *)rs1 & (1 << i)) {
+        if (*(const uint32_t *)rs1 & ((uint32_t)1 << i)) {
             setbits++;
         }
     }
@@ -573,9 +573,11 @@ static inline void RiscvEmulatorROL(
         return;
     }
 
+    uint32_t shamt = *(const uint32_t *)rs2 & 31;
+
     *(uint32_t *)rd =
-        *(const uint32_t *)rs1 << *(const uint32_t *)rs2 |
-        *(const uint32_t *)rs1 >> (32 - *(const uint32_t *)rs2);
+        *(const uint32_t *)rs1 << shamt |
+        *(const uint32_t *)rs1 >> ((32 - shamt) & 31);
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -614,9 +616,11 @@ static inline void RiscvEmulatorROR(
         return;
     }
 
+    uint32_t shamt = *(const uint32_t *)rs2 & 31;
+
     *(uint32_t *)rd =
-        *(const uint32_t *)rs1 >> *(const uint32_t *)rs2 |
-        *(const uint32_t *)rs1 << (32 - *(const uint32_t *)rs2);
+        *(const uint32_t *)rs1 >> shamt |
+        *(const uint32_t *)rs1 << ((32 - shamt) & 31);
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
@@ -657,7 +661,7 @@ static inline void RiscvEmulatorRORI(
 
     *(uint32_t *)rd =
         *(const uint32_t *)rs1 >> shamt |
-        *(const uint32_t *)rs1 << (32 - shamt);
+        *(const uint32_t *)rs1 << ((32 - shamt) & 31);
 
 #if (RVE_E_HOOK == 1)
     hc.hook = HOOK_END;
