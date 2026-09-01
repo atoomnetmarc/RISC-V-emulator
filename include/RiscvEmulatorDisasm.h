@@ -167,11 +167,14 @@ static inline void RiscvEmulatorDisasmPrintIType(
     (void)state;
     if (hc->hook == HOOK_BEGIN) {
         RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT(", %s"), hc->instruction);
-        RiscvEmulatorDisasmPrintRegister("rd", hc->rdnum, hc->rdname, hc->rd);
-        RiscvEmulatorDisasmPrintRegister("rs1", hc->rs1num, hc->rs1name, hc->rs1);
-        RiscvEmulatorDisasmPrintInteger(
-            RiscvEmulatorDisasmGetImmName(hc), hc->imm,
-            RiscvEmulatorDisasmGetImmLength(hc), hc->immissigned);
+        // Nop (addi x0, x0, 0) has no meaningful operands.
+        if (strcmp(hc->instruction, "nop") != 0) {
+            RiscvEmulatorDisasmPrintRegister("rd", hc->rdnum, hc->rdname, hc->rd);
+            RiscvEmulatorDisasmPrintRegister("rs1", hc->rs1num, hc->rs1name, hc->rs1);
+            RiscvEmulatorDisasmPrintInteger(
+                RiscvEmulatorDisasmGetImmName(hc), hc->imm,
+                RiscvEmulatorDisasmGetImmLength(hc), hc->immissigned);
+        }
         RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT("\n"));
     } else if (hc->hook == HOOK_END) {
         RiscvEmulatorDisasmPrintRegisterResult(hc->rdnum, hc->rdname, hc->rd);
