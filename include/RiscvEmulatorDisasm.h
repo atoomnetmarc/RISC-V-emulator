@@ -439,8 +439,8 @@ static inline void RiscvEmulatorDisasmPrintTrap(
 
     RiscvEmulatorDisasmPrintf(
         RVE_DISASM_FMT(", trap, interrupt: %d, exception code %d: %s\n"),
-        state->csr.mcause.interrupt,
-        state->csr.mcause.exceptioncode,
+        (int)state->csr.mcause.interrupt,
+        (int)state->csr.mcause.exceptioncode,
         causedescription);
     RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT("                                         mtval = 0x%08lX\n"),
                               (unsigned long)state->csr.mtval);
