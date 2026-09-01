@@ -69,15 +69,15 @@ static inline void RiscvEmulatorDisasmPrintInteger(
             break;
         }
         default: {
-            RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT("0x%08X"), value);
+            RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT("0x%08lX"), (unsigned long)value);
             break;
         }
     }
 
     if (issigned) {
-        RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT("(%d)"), (int32_t)value);
+        RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT("(%ld)"), (long)(int32_t)value);
     } else {
-        RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT("(%d)"), value);
+        RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT("(%lu)"), (unsigned long)value);
     }
 }
 
@@ -86,8 +86,7 @@ static inline void RiscvEmulatorDisasmPrintInteger(
  */
 static inline void RiscvEmulatorDisasmPrintHeader(
     const RiscvEmulatorState_t *state) {
-    RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT("pc: 0x%08X"), state->programcounter);
-
+    RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT("pc: 0x%08lX"), (unsigned long)state->programcounter);
 #if (RVE_E_C == 1)
     if (state->instruction.copcode.op != OPCODE16_QUADRANT_INVALID) {
         RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT(", instruction:     0x%04X"),
@@ -95,8 +94,8 @@ static inline void RiscvEmulatorDisasmPrintHeader(
     } else
 #endif
     {
-        RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT(", instruction: 0x%08X"),
-                                  state->instruction.value);
+        RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT(", instruction: 0x%08lX"),
+                                  (unsigned long)state->instruction.value);
     }
 }
 
@@ -126,8 +125,8 @@ static inline void RiscvEmulatorDisasmPrintRegister(
         return;
     }
     RiscvEmulatorDisasmPrintf(
-        RVE_DISASM_FMT(", %s x%u(%s): 0x%08X"),
-        label, num, name, *(const uint32_t *)reg);
+        RVE_DISASM_FMT(", %s x%u(%s): 0x%08lX"),
+        label, num, name, (unsigned long)*(const uint32_t *)reg);
 }
 
 /**
@@ -139,8 +138,8 @@ static inline void RiscvEmulatorDisasmPrintRegisterResult(
         return;
     }
     RiscvEmulatorDisasmPrintf(
-        RVE_DISASM_FMT("                                         x%u(%s) = 0x%08X\n"),
-        num, name, *(const uint32_t *)reg);
+        RVE_DISASM_FMT("                                         x%u(%s) = 0x%08lX\n"),
+        num, name, (unsigned long)*(const uint32_t *)reg);
 }
 
 /**
@@ -192,8 +191,8 @@ static inline void RiscvEmulatorDisasmPrintLoad(
         RiscvEmulatorDisasmPrintInteger(
             RiscvEmulatorDisasmGetImmName(hc), hc->imm,
             RiscvEmulatorDisasmGetImmLength(hc), hc->immissigned);
-        RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT(", memorylocation: 0x%08X\n"),
-                                  hc->memorylocation);
+        RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT(", memorylocation: 0x%08lX\n"),
+                                  (unsigned long)hc->memorylocation);
     } else if (hc->hook == HOOK_END) {
         if (strcmp(hc->instruction, "lb") == 0) {
             RiscvEmulatorDisasmPrintf(
@@ -221,8 +220,8 @@ static inline void RiscvEmulatorDisasmPrintLoad(
                 hc->rdnum, hc->rdname, *(const uint16_t *)hc->rd);
         }
         RiscvEmulatorDisasmPrintf(
-            RVE_DISASM_FMT("                                         x%u(%s) = 0x%08X\n"),
-            hc->rdnum, hc->rdname, *(const uint32_t *)hc->rd);
+            RVE_DISASM_FMT("                                         x%u(%s) = 0x%08lX\n"),
+            hc->rdnum, hc->rdname, (unsigned long)*(const uint32_t *)hc->rd);
     }
 }
 
@@ -239,21 +238,21 @@ static inline void RiscvEmulatorDisasmPrintStore(
         RiscvEmulatorDisasmPrintInteger(
             RiscvEmulatorDisasmGetImmName(hc), hc->imm,
             RiscvEmulatorDisasmGetImmLength(hc), hc->immissigned);
-        RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT(", memorylocation: 0x%08X\n"),
-                                  hc->memorylocation);
+        RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT(", memorylocation: 0x%08lX\n"),
+                                  (unsigned long)hc->memorylocation);
     } else if (hc->hook == HOOK_END) {
         if (hc->length == 1) {
             RiscvEmulatorDisasmPrintf(
-                RVE_DISASM_FMT("                                         0x%08X = 0x%02X\n"),
-                hc->memorylocation, *(const uint8_t *)hc->rs2);
+                RVE_DISASM_FMT("                                         0x%08lX = 0x%02X\n"),
+                (unsigned long)hc->memorylocation, *(const uint8_t *)hc->rs2);
         } else if (hc->length == 2) {
             RiscvEmulatorDisasmPrintf(
-                RVE_DISASM_FMT("                                         0x%08X = 0x%04X\n"),
-                hc->memorylocation, *(const uint16_t *)hc->rs2);
+                RVE_DISASM_FMT("                                         0x%08lX = 0x%04X\n"),
+                (unsigned long)hc->memorylocation, *(const uint16_t *)hc->rs2);
         } else {
             RiscvEmulatorDisasmPrintf(
-                RVE_DISASM_FMT("                                         0x%08X = 0x%08X\n"),
-                hc->memorylocation, *(const uint32_t *)hc->rs2);
+                RVE_DISASM_FMT("                                         0x%08lX = 0x%08lX\n"),
+                (unsigned long)hc->memorylocation, (unsigned long)*(const uint32_t *)hc->rs2);
         }
     }
 }
@@ -273,8 +272,8 @@ static inline void RiscvEmulatorDisasmPrintBranch(
         RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT("\n"));
     } else if (hc->hook == HOOK_END) {
         RiscvEmulatorDisasmPrintf(
-            RVE_DISASM_FMT("                                         pc = 0x%08X\n"),
-            state->programcounternext);
+            RVE_DISASM_FMT("                                         pc = 0x%08lX\n"),
+            (unsigned long)state->programcounternext);
     }
 }
 
@@ -311,8 +310,8 @@ static inline void RiscvEmulatorDisasmPrintJType(
     } else if (hc->hook == HOOK_END) {
         RiscvEmulatorDisasmPrintRegisterResult(hc->rdnum, hc->rdname, hc->rd);
         RiscvEmulatorDisasmPrintf(
-            RVE_DISASM_FMT("                                         pc = 0x%08X\n"),
-            state->programcounternext);
+            RVE_DISASM_FMT("                                         pc = 0x%08lX\n"),
+            (unsigned long)state->programcounternext);
     }
 }
 
@@ -334,12 +333,12 @@ static inline void RiscvEmulatorDisasmPrintCSR(
                 RiscvEmulatorDisasmGetImmLength(hc), hc->immissigned);
         }
         RiscvEmulatorDisasmPrintf(
-            RVE_DISASM_FMT(", csr 0x%04X(%s): 0x%08X\n"),
-            hc->csrnum, hc->csrname, *(const uint32_t *)hc->csr);
+            RVE_DISASM_FMT(", csr 0x%04X(%s): 0x%08lX\n"),
+            hc->csrnum, hc->csrname, (unsigned long)*(const uint32_t *)hc->csr);
     } else if (hc->hook == HOOK_END) {
         RiscvEmulatorDisasmPrintf(
-            RVE_DISASM_FMT("                                         %s = 0x%08X\n"),
-            hc->csrname, *(const uint32_t *)hc->csr);
+            RVE_DISASM_FMT("                                         %s = 0x%08lX\n"),
+            hc->csrname, (unsigned long)*(const uint32_t *)hc->csr);
         RiscvEmulatorDisasmPrintRegisterResult(hc->rdnum, hc->rdname, hc->rd);
     }
 }
@@ -355,8 +354,8 @@ static inline void RiscvEmulatorDisasmPrintPlain(
     } else if (hc->hook == HOOK_END) {
         if (strcmp(hc->instruction, "mret") == 0) {
             RiscvEmulatorDisasmPrintf(
-                RVE_DISASM_FMT("                                         pc = 0x%08X\n"),
-                state->programcounternext);
+                RVE_DISASM_FMT("                                         pc = 0x%08lX\n"),
+                (unsigned long)state->programcounternext);
         }
     }
 }
@@ -371,16 +370,16 @@ static inline void RiscvEmulatorDisasmPrintCSwsp(
         RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT(", %s"), hc->instruction);
         RiscvEmulatorDisasmPrintRegister("rs2", hc->rs2num, hc->rs2name, hc->rs2);
         RiscvEmulatorDisasmPrintf(
-            RVE_DISASM_FMT(", sp: 0x%08X"), *(const uint32_t *)&state->reg.sp);
+            RVE_DISASM_FMT(", sp: 0x%08lX"), (unsigned long)*(const uint32_t *)&state->reg.sp);
         RiscvEmulatorDisasmPrintInteger(
             RiscvEmulatorDisasmGetImmName(hc), hc->imm,
             RiscvEmulatorDisasmGetImmLength(hc), hc->immissigned);
-        RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT(", memorylocation: 0x%08X\n"),
-                                  hc->memorylocation);
+        RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT(", memorylocation: 0x%08lX\n"),
+                                  (unsigned long)hc->memorylocation);
     } else if (hc->hook == HOOK_END) {
         RiscvEmulatorDisasmPrintf(
-            RVE_DISASM_FMT("                                         0x%08X = 0x%08X\n"),
-            hc->memorylocation, *(const uint32_t *)hc->rs2);
+            RVE_DISASM_FMT("                                         0x%08lX = 0x%08lX\n"),
+            (unsigned long)hc->memorylocation, (unsigned long)*(const uint32_t *)hc->rs2);
     }
 }
 
@@ -394,7 +393,7 @@ static inline void RiscvEmulatorDisasmPrintCAddi4spn(
         RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT(", %s"), hc->instruction);
         RiscvEmulatorDisasmPrintRegister("rd", hc->rdnum, hc->rdname, hc->rd);
         RiscvEmulatorDisasmPrintf(
-            RVE_DISASM_FMT(", sp: 0x%08X"), *(const uint32_t *)&state->reg.sp);
+            RVE_DISASM_FMT(", sp: 0x%08lX"), (unsigned long)*(const uint32_t *)&state->reg.sp);
         RiscvEmulatorDisasmPrintInteger(
             RiscvEmulatorDisasmGetImmName(hc), hc->imm,
             RiscvEmulatorDisasmGetImmLength(hc), hc->immissigned);
@@ -414,16 +413,16 @@ static inline void RiscvEmulatorDisasmPrintCLwsp(
         RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT(", %s"), hc->instruction);
         RiscvEmulatorDisasmPrintRegister("rd", hc->rdnum, hc->rdname, hc->rd);
         RiscvEmulatorDisasmPrintf(
-            RVE_DISASM_FMT(", sp: 0x%08X"), *(const uint32_t *)&state->reg.sp);
+            RVE_DISASM_FMT(", sp: 0x%08lX"), (unsigned long)*(const uint32_t *)&state->reg.sp);
         RiscvEmulatorDisasmPrintInteger(
             RiscvEmulatorDisasmGetImmName(hc), hc->imm,
             RiscvEmulatorDisasmGetImmLength(hc), hc->immissigned);
-        RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT(", memorylocation: 0x%08X\n"),
-                                  hc->memorylocation);
+        RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT(", memorylocation: 0x%08lX\n"),
+                                  (unsigned long)hc->memorylocation);
     } else if (hc->hook == HOOK_END) {
         RiscvEmulatorDisasmPrintf(
-            RVE_DISASM_FMT("                                         x%u(%s) = 0x%08X\n"),
-            hc->rdnum, hc->rdname, *(const uint32_t *)hc->rd);
+            RVE_DISASM_FMT("                                         x%u(%s) = 0x%08lX\n"),
+            hc->rdnum, hc->rdname, (unsigned long)*(const uint32_t *)hc->rd);
     }
 }
 
@@ -443,18 +442,18 @@ static inline void RiscvEmulatorDisasmPrintTrap(
         state->csr.mcause.interrupt,
         state->csr.mcause.exceptioncode,
         causedescription);
-    RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT("                                         mtval = 0x%08X\n"),
-                              state->csr.mtval);
+    RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT("                                         mtval = 0x%08lX\n"),
+                              (unsigned long)state->csr.mtval);
     RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT("                                         mstatus.mpp = %d\n"),
                               state->csr.mstatus.mpp);
     RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT("                                         mstatus.mpie = %d\n"),
                               state->csr.mstatus.mpie);
     RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT("                                         mstatus.mie = %d\n"),
                               state->csr.mstatus.mie);
-    RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT("                                         mepc = 0x%08X\n"),
-                              state->csr.mepc);
-    RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT("                                         pc = 0x%08X\n"),
-                              state->programcounternext);
+    RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT("                                         mepc = 0x%08lX\n"),
+                              (unsigned long)state->csr.mepc);
+    RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT("                                         pc = 0x%08lX\n"),
+                              (unsigned long)state->programcounternext);
 }
 #endif
 
