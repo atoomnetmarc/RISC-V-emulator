@@ -30,18 +30,25 @@ static inline void RiscvEmulatorCZEROEQZ(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
-#if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
+    state->instructionhandled = 1;
     RiscvEmulatorHookContext_t hc = {0};
     hc.instruction = "czero.eqz";
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
+    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
     hc.rd = rd;
     hc.rs1num = rs1num;
+    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
     hc.rs1 = rs1;
     hc.rs2num = rs2num;
+    hc.rs2name = RiscvEmulatorGetRegisterSymbolicName(rs2num);
     hc.rs2 = rs2;
     RiscvEmulatorHook(state, &hc);
+    #if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintHeader(state);
+    RiscvEmulatorDisasmPrintRType(state, &hc);
+    #endif
 #endif
 
     if (rdnum == 0) {
@@ -54,9 +61,12 @@ static inline void RiscvEmulatorCZEROEQZ(
         *(uint32_t *)rd = *(const uint32_t *)rs1;
     }
 
-#if (RVE_E_HOOK == 1)
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
     RiscvEmulatorHook(state, &hc);
+    #if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintRType(state, &hc);
+    #endif
 #endif
 }
 
@@ -73,18 +83,25 @@ static inline void RiscvEmulatorCZERONEZ(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
-#if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
+    state->instructionhandled = 1;
     RiscvEmulatorHookContext_t hc = {0};
     hc.instruction = "czero.nez";
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
+    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
     hc.rd = rd;
     hc.rs1num = rs1num;
+    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
     hc.rs1 = rs1;
     hc.rs2num = rs2num;
+    hc.rs2name = RiscvEmulatorGetRegisterSymbolicName(rs2num);
     hc.rs2 = rs2;
     RiscvEmulatorHook(state, &hc);
+    #if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintHeader(state);
+    RiscvEmulatorDisasmPrintRType(state, &hc);
+    #endif
 #endif
 
     if (rdnum == 0) {
@@ -97,9 +114,12 @@ static inline void RiscvEmulatorCZERONEZ(
         *(uint32_t *)rd = *(const uint32_t *)rs1;
     }
 
-#if (RVE_E_HOOK == 1)
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
     RiscvEmulatorHook(state, &hc);
+    #if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintRType(state, &hc);
+    #endif
 #endif
 }
 

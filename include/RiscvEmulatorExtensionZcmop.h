@@ -24,12 +24,16 @@
  */
 static inline void RiscvEmulatorCMOP(
     RiscvEmulatorState_t *state __attribute__((unused))) {
-#if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
+    state->instructionhandled = 1;
     RiscvEmulatorHookContext_t hc = {0};
     hc.instruction = "c.mop";
     hc.hook = HOOK_BEGIN;
     RiscvEmulatorHook(state, &hc);
+    #if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintHeader(state);
+    RiscvEmulatorDisasmPrintPlain(state, &hc);
+    #endif
 #endif
 }
 

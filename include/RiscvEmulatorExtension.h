@@ -8,6 +8,8 @@
 #ifndef RiscvEmulatorExtension_H_
 #define RiscvEmulatorExtension_H_
 
+#include "RiscvEmulatorDebug.h"
+#include "RiscvEmulatorDisasm.h"
 #include "RiscvEmulatorExtensionA.h"
 #include "RiscvEmulatorExtensionC.h"
 #include "RiscvEmulatorExtensionI.h"

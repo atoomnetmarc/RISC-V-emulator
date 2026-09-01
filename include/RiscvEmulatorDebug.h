@@ -12,17 +12,10 @@
 
 #include "RiscvEmulatorConfig.h"
 
-/*
- * Prototypes for the debug helpers.
- */
-const char *RiscvEmulatorGetRegisterSymbolicName(const uint8_t r);
-const char *RiscvEmulatorGetCSRName(const uint16_t csr);
-const char *RiscvEmulatorGetMcauseException(const uint8_t interrupt, const uint32_t exceptioncode);
-
 /**
  * Debug function for returning the symbolic name of a register.
  */
-const char *RiscvEmulatorGetRegisterSymbolicName(const uint8_t r) {
+static inline const char *RiscvEmulatorGetRegisterSymbolicName(const uint8_t r) {
     switch (r) {
         case 0:
             return "Zero";
@@ -97,7 +90,7 @@ const char *RiscvEmulatorGetRegisterSymbolicName(const uint8_t r) {
 /**
  * Debug function for returning the name of a CSR.
  */
-const char *RiscvEmulatorGetCSRName(const uint16_t csr) {
+static inline const char *RiscvEmulatorGetCSRName(const uint16_t csr) {
     const char *name;
     switch (csr) {
         // Machine Information Registers
@@ -174,7 +167,7 @@ const char *RiscvEmulatorGetCSRName(const uint16_t csr) {
 /**
  * Debug function to get exception description.
  */
-const char *RiscvEmulatorGetMcauseException(const uint8_t interrupt, const uint32_t exceptioncode) {
+static inline const char *RiscvEmulatorGetMcauseException(const uint8_t interrupt, const uint32_t exceptioncode) {
     if (interrupt) {
         switch (exceptioncode) {
             case 1:

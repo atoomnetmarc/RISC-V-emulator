@@ -49,9 +49,9 @@ static inline void RiscvEmulatorInit(RiscvEmulatorState_t *state, uint32_t ram_l
  */
 static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
 
-#if (RVE_E_HOOK == 1)
-    // Detect if hook exists for the instruction executed. Will be set to 1 when executing a hook.
-    state->hookexists = 0;
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
+    // Detect if the executed instruction was handled by a hook or disassembly.
+    state->instructionhandled = 0;
 #endif
 
     state->programcounter = state->programcounternext;

@@ -140,6 +140,11 @@
 #define RVE_E_HOOK 0
 #endif
 
+// Built-in disassembly rendering.
+#ifndef RVE_E_DISASM
+#define RVE_E_DISASM 0
+#endif
+
 // ---------------------------------------------------------------------------
 // Implication blocks.
 

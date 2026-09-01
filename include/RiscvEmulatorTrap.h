@@ -14,6 +14,8 @@
 
 #include "RiscvEmulatorDefine.h"
 #include "RiscvEmulatorHook.h"
+#include "RiscvEmulatorDisasm.h"
+#include "RiscvEmulatorDebug.h"
 
 /**
  * Handle a trap.
@@ -65,11 +67,15 @@ static inline void RiscvEmulatorTrap(RiscvEmulatorState_t *state) {
     }
 #endif
 
-#if (RVE_E_HOOK == 1 && RVE_E_ZICSR == 1)
-    state->hookexists = 1;
+#if ((RVE_E_HOOK == 1 || RVE_E_DISASM == 1) && RVE_E_ZICSR == 1)
+    state->instructionhandled = 1;
     RiscvEmulatorHookContext_t hc = {0};
     hc.instruction = "_trap";
     RiscvEmulatorHook(state, &hc);
+#endif
+#if (RVE_E_DISASM == 1 && RVE_E_ZICSR == 1)
+    RiscvEmulatorDisasmPrintHeader(state);
+    RiscvEmulatorDisasmPrintTrap(state);
 #endif
 
     if (state->trapflag.illegalinstruction == 1) {

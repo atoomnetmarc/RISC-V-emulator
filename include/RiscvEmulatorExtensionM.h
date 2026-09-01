@@ -29,18 +29,25 @@ static inline void RiscvEmulatorMUL(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
-#if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
+    state->instructionhandled = 1;
     RiscvEmulatorHookContext_t hc = {0};
     hc.instruction = "mul";
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
+    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
     hc.rd = rd;
     hc.rs1num = rs1num;
+    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
     hc.rs1 = rs1;
     hc.rs2num = rs2num;
+    hc.rs2name = RiscvEmulatorGetRegisterSymbolicName(rs2num);
     hc.rs2 = rs2;
     RiscvEmulatorHook(state, &hc);
+    #if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintHeader(state);
+    RiscvEmulatorDisasmPrintRType(state, &hc);
+    #endif
 #endif
 
     if (rdnum == 0) {
@@ -49,9 +56,12 @@ static inline void RiscvEmulatorMUL(
 
     *(uint32_t *)rd = (*(const uint32_t *)rs1 * *(const uint32_t *)rs2);
 
-#if (RVE_E_HOOK == 1)
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
     RiscvEmulatorHook(state, &hc);
+    #if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintRType(state, &hc);
+    #endif
 #endif
 }
 
@@ -68,18 +78,25 @@ static inline void RiscvEmulatorMULH(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
-#if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
+    state->instructionhandled = 1;
     RiscvEmulatorHookContext_t hc = {0};
     hc.instruction = "mulh";
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
+    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
     hc.rd = rd;
     hc.rs1num = rs1num;
+    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
     hc.rs1 = rs1;
     hc.rs2num = rs2num;
+    hc.rs2name = RiscvEmulatorGetRegisterSymbolicName(rs2num);
     hc.rs2 = rs2;
     RiscvEmulatorHook(state, &hc);
+    #if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintHeader(state);
+    RiscvEmulatorDisasmPrintRType(state, &hc);
+    #endif
 #endif
 
     if (rdnum == 0) {
@@ -89,9 +106,12 @@ static inline void RiscvEmulatorMULH(
     int64_t result = (int64_t)(*(const int32_t *)rs1 * (int64_t)*(const int32_t *)rs2);
     *(int32_t *)rd = (result >> 32);
 
-#if (RVE_E_HOOK == 1)
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
     RiscvEmulatorHook(state, &hc);
+    #if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintRType(state, &hc);
+    #endif
 #endif
 }
 
@@ -108,18 +128,25 @@ static inline void RiscvEmulatorMULHSU(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
-#if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
+    state->instructionhandled = 1;
     RiscvEmulatorHookContext_t hc = {0};
     hc.instruction = "mulhsu";
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
+    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
     hc.rd = rd;
     hc.rs1num = rs1num;
+    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
     hc.rs1 = rs1;
     hc.rs2num = rs2num;
+    hc.rs2name = RiscvEmulatorGetRegisterSymbolicName(rs2num);
     hc.rs2 = rs2;
     RiscvEmulatorHook(state, &hc);
+    #if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintHeader(state);
+    RiscvEmulatorDisasmPrintRType(state, &hc);
+    #endif
 #endif
 
     if (rdnum == 0) {
@@ -129,9 +156,12 @@ static inline void RiscvEmulatorMULHSU(
     int64_t result = (int64_t)*(const int32_t *)rs1 * (int64_t)(uint64_t)*(const uint32_t *)rs2;
     *(int32_t *)rd = (result >> 32);
 
-#if (RVE_E_HOOK == 1)
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
     RiscvEmulatorHook(state, &hc);
+    #if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintRType(state, &hc);
+    #endif
 #endif
 }
 
@@ -148,18 +178,25 @@ static inline void RiscvEmulatorMULHU(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
-#if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
+    state->instructionhandled = 1;
     RiscvEmulatorHookContext_t hc = {0};
     hc.instruction = "mulhu";
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
+    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
     hc.rd = rd;
     hc.rs1num = rs1num;
+    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
     hc.rs1 = rs1;
     hc.rs2num = rs2num;
+    hc.rs2name = RiscvEmulatorGetRegisterSymbolicName(rs2num);
     hc.rs2 = rs2;
     RiscvEmulatorHook(state, &hc);
+    #if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintHeader(state);
+    RiscvEmulatorDisasmPrintRType(state, &hc);
+    #endif
 #endif
 
     if (rdnum == 0) {
@@ -169,9 +206,12 @@ static inline void RiscvEmulatorMULHU(
     uint64_t result = (uint64_t)(*(const uint32_t *)rs1 * (uint64_t)*(const uint32_t *)rs2);
     *(uint32_t *)rd = (result >> 32);
 
-#if (RVE_E_HOOK == 1)
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
     RiscvEmulatorHook(state, &hc);
+    #if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintRType(state, &hc);
+    #endif
 #endif
 }
 
@@ -192,18 +232,25 @@ static inline void RiscvEmulatorDIV(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
-#if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
+    state->instructionhandled = 1;
     RiscvEmulatorHookContext_t hc = {0};
     hc.instruction = "div";
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
+    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
     hc.rd = rd;
     hc.rs1num = rs1num;
+    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
     hc.rs1 = rs1;
     hc.rs2num = rs2num;
+    hc.rs2name = RiscvEmulatorGetRegisterSymbolicName(rs2num);
     hc.rs2 = rs2;
     RiscvEmulatorHook(state, &hc);
+    #if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintHeader(state);
+    RiscvEmulatorDisasmPrintRType(state, &hc);
+    #endif
 #endif
 
     if (rdnum == 0) {
@@ -220,9 +267,12 @@ static inline void RiscvEmulatorDIV(
         *(int32_t *)rd = (*(const int32_t *)rs1 / *(const int32_t *)rs2);
     }
 
-#if (RVE_E_HOOK == 1)
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
     RiscvEmulatorHook(state, &hc);
+    #if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintRType(state, &hc);
+    #endif
 #endif
 }
 
@@ -239,18 +289,25 @@ static inline void RiscvEmulatorDIVU(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
-#if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
+    state->instructionhandled = 1;
     RiscvEmulatorHookContext_t hc = {0};
     hc.instruction = "divu";
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
+    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
     hc.rd = rd;
     hc.rs1num = rs1num;
+    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
     hc.rs1 = rs1;
     hc.rs2num = rs2num;
+    hc.rs2name = RiscvEmulatorGetRegisterSymbolicName(rs2num);
     hc.rs2 = rs2;
     RiscvEmulatorHook(state, &hc);
+    #if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintHeader(state);
+    RiscvEmulatorDisasmPrintRType(state, &hc);
+    #endif
 #endif
 
     if (rdnum == 0) {
@@ -264,9 +321,12 @@ static inline void RiscvEmulatorDIVU(
         *(uint32_t *)rd = (*(const uint32_t *)rs1 / *(const uint32_t *)rs2);
     }
 
-#if (RVE_E_HOOK == 1)
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
     RiscvEmulatorHook(state, &hc);
+    #if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintRType(state, &hc);
+    #endif
 #endif
 }
 
@@ -283,18 +343,25 @@ static inline void RiscvEmulatorREM(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
-#if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
+    state->instructionhandled = 1;
     RiscvEmulatorHookContext_t hc = {0};
     hc.instruction = "rem";
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
+    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
     hc.rd = rd;
     hc.rs1num = rs1num;
+    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
     hc.rs1 = rs1;
     hc.rs2num = rs2num;
+    hc.rs2name = RiscvEmulatorGetRegisterSymbolicName(rs2num);
     hc.rs2 = rs2;
     RiscvEmulatorHook(state, &hc);
+    #if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintHeader(state);
+    RiscvEmulatorDisasmPrintRType(state, &hc);
+    #endif
 #endif
 
     if (rdnum == 0) {
@@ -311,9 +378,12 @@ static inline void RiscvEmulatorREM(
         *(int32_t *)rd = (*(const int32_t *)rs1 % *(const int32_t *)rs2);
     }
 
-#if (RVE_E_HOOK == 1)
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
     RiscvEmulatorHook(state, &hc);
+    #if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintRType(state, &hc);
+    #endif
 #endif
 }
 
@@ -330,18 +400,25 @@ static inline void RiscvEmulatorREMU(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
-#if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
+    state->instructionhandled = 1;
     RiscvEmulatorHookContext_t hc = {0};
     hc.instruction = "remu";
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
+    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
     hc.rd = rd;
     hc.rs1num = rs1num;
+    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
     hc.rs1 = rs1;
     hc.rs2num = rs2num;
+    hc.rs2name = RiscvEmulatorGetRegisterSymbolicName(rs2num);
     hc.rs2 = rs2;
     RiscvEmulatorHook(state, &hc);
+    #if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintHeader(state);
+    RiscvEmulatorDisasmPrintRType(state, &hc);
+    #endif
 #endif
 
     if (rdnum == 0) {
@@ -355,9 +432,12 @@ static inline void RiscvEmulatorREMU(
         *(uint32_t *)rd = (*(const uint32_t *)rs1 % *(const uint32_t *)rs2);
     }
 
-#if (RVE_E_HOOK == 1)
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
     RiscvEmulatorHook(state, &hc);
+    #if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintRType(state, &hc);
+    #endif
 #endif
 }
 

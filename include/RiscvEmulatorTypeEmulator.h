@@ -52,8 +52,8 @@ typedef struct
     uint32_t reservationaddress;
 #endif
 
-#if (RVE_E_HOOK == 1)
-    uint8_t hookexists;
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
+    uint8_t instructionhandled;
 #endif
 
 #if (RVE_E_ZICSR == 1)

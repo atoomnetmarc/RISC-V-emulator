@@ -162,17 +162,68 @@ lib_deps =
   https://github.com/atoomnetmarc/RISC-V-emulator.git
 ```
 
-# Hooks
+# Hooks and disassembly
 
-Enabling the hook with `-D RVE_E_HOOK=1` makes it possible to tap into the inner workings of the emulator. I added this functionality for use in [RISC-V-emulator-Native](https://github.com/atoomnetmarc/RISC-V-emulator-Native) for debugging.
+The emulator provides two independent, opt-in features for tapping into its inner workings:
 
-Implement your own non-weak function to start using the hook. For example:
+- **`RVE_E_HOOK`** — a generic weak hook called before and after every instruction. Use it for custom side effects: counting instructions, writing the mnemonic to an LCD, logging, etc.
+- **`RVE_E_DISASM`** — built-in disassembly rendering. When enabled, the emulator prints a human-readable trace of every instruction (mnemonic, operands, and results) via a weak `RiscvEmulatorDisasmPrintf` function that you override to choose the output channel.
+
+Both default to `0` (disabled). When disabled, none of the associated code is compiled in — zero code-size cost. They are fully independent: you can enable either, both, or neither.
+
+## Generic hook (`RVE_E_HOOK`)
+
+Enable with `-D RVE_E_HOOK=1`. Implement your own non-weak `RiscvEmulatorHook` to receive a `RiscvEmulatorHookContext_t` before (`hook == HOOK_BEGIN`) and after (`hook == HOOK_END`) every instruction:
 
 ```c
 void RiscvEmulatorHook(
     const RiscvEmulatorState_t *state,
     const RiscvEmulatorHookContext_t *context) {
+    // Example: write the mnemonic to an LCD.
+    lcd_puts(context->instruction);
 }
 ```
+
+The context contains the instruction name, register numbers/pointers/names, immediate, memory location, and more. You choose how much to use.
+
+## Disassembly rendering (`RVE_E_DISASM`)
+
+Enable with `-D RVE_E_DISASM=1`. The emulator then calls a set of built-in `static inline` rendering functions that format each instruction and emit text via a weak `RiscvEmulatorDisasmPrintf`. Override that function to route the output. Because a weak definition cannot be overridden in the same translation unit, also define `RVE_DISASM_PRINTF_OVERRIDE` before including the library:
+
+```c
+#define RVE_DISASM_PRINTF_OVERRIDE 1
+#include <RiscvEmulator.h>
+#include <stdarg.h>
+
+void RiscvEmulatorDisasmPrintf(const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    vprintf(fmt, ap);
+    va_end(ap);
+}
+```
+
+Only the rendering functions for the extensions you have enabled are compiled in; the rest are eliminated as dead code. You pay only for what you use.
+
+### On AVR (keeping format strings in flash)
+
+AVR has little SRAM and string literals normally get copied to RAM at startup. To keep the disassembly format strings in flash (zero RAM cost), define `RVE_DISASM_FMT(s)` as `PSTR(s)` **before** `RiscvEmulatorDisasm.h` is included. Since a `-D` build flag with parentheses does not survive the shell, the cleanest place is the project's `RiscvEmulatorImplementationSpecific.h`, which every library translation unit includes before the disassembly header anyway:
+
+```c
+#define RVE_DISASM_FMT(s) PSTR(s)
+```
+
+```c
+void RiscvEmulatorDisasmPrintf(const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    vfprintf_P(stdout, fmt, ap);
+    va_end(ap);
+}
+```
+
+### Combining both
+
+You can enable both `RVE_E_HOOK` and `RVE_E_DISASM`. The generic hook is called first (for your custom side effects), then the disassembly renderer prints the full trace. For example, on AVR you could write the mnemonic to a TFT via the hook while also emitting a full trace to UART via disassembly.
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)

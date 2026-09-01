@@ -8,8 +8,7 @@
 #ifndef RiscvEmulatorDefineHook_H_
 #define RiscvEmulatorDefineHook_H_
 
-#define HOOK_UNKNOWN 0
-#define HOOK_BEGIN   1
-#define HOOK_END     2
+#define HOOK_BEGIN 1
+#define HOOK_END   2
 
 #endif

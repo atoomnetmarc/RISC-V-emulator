@@ -23,12 +23,16 @@
  */
 static inline void RiscvEmulatorNTLP1(
     RiscvEmulatorState_t *state __attribute__((unused))) {
-#if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
+    state->instructionhandled = 1;
     RiscvEmulatorHookContext_t hc = {0};
     hc.instruction = "ntl.p1";
     hc.hook = HOOK_BEGIN;
     RiscvEmulatorHook(state, &hc);
+    #if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintHeader(state);
+    RiscvEmulatorDisasmPrintPlain(state, &hc);
+    #endif
 #endif
 }
 
@@ -38,12 +42,16 @@ static inline void RiscvEmulatorNTLP1(
  */
 static inline void RiscvEmulatorNTLS1(
     RiscvEmulatorState_t *state __attribute__((unused))) {
-#if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
+    state->instructionhandled = 1;
     RiscvEmulatorHookContext_t hc = {0};
     hc.instruction = "ntl.s1";
     hc.hook = HOOK_BEGIN;
     RiscvEmulatorHook(state, &hc);
+    #if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintHeader(state);
+    RiscvEmulatorDisasmPrintPlain(state, &hc);
+    #endif
 #endif
 }
 
@@ -53,12 +61,16 @@ static inline void RiscvEmulatorNTLS1(
  */
 static inline void RiscvEmulatorNTLPALL(
     RiscvEmulatorState_t *state __attribute__((unused))) {
-#if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
+    state->instructionhandled = 1;
     RiscvEmulatorHookContext_t hc = {0};
     hc.instruction = "ntl.pall";
     hc.hook = HOOK_BEGIN;
     RiscvEmulatorHook(state, &hc);
+    #if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintHeader(state);
+    RiscvEmulatorDisasmPrintPlain(state, &hc);
+    #endif
 #endif
 }
 
@@ -68,12 +80,16 @@ static inline void RiscvEmulatorNTLPALL(
  */
 static inline void RiscvEmulatorNTLALL(
     RiscvEmulatorState_t *state __attribute__((unused))) {
-#if (RVE_E_HOOK == 1)
-    state->hookexists = 1;
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
+    state->instructionhandled = 1;
     RiscvEmulatorHookContext_t hc = {0};
     hc.instruction = "ntl.all";
     hc.hook = HOOK_BEGIN;
     RiscvEmulatorHook(state, &hc);
+    #if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintHeader(state);
+    RiscvEmulatorDisasmPrintPlain(state, &hc);
+    #endif
 #endif
 }
 

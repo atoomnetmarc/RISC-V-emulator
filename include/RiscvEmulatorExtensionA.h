@@ -181,7 +181,7 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(RiscvEmulatorState_t
     instruction_decoderhelper_rtypeatomicmemoryoperation.funct3 = funct3;
     instruction_decoderhelper_rtypeatomicmemoryoperation.funct5 = state->instruction.rtypeatomicmemoryoperation.funct5;
 
-#if (RVE_E_HOOK == 1)
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     const uint8_t funct5 = instruction_decoderhelper_rtypeatomicmemoryoperation.funct5;
     const char *instructionname = "unknown";
     switch (funct5) {
@@ -220,19 +220,26 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(RiscvEmulatorState_t
             break;
     }
 
-    state->hookexists = 1;
+    state->instructionhandled = 1;
     RiscvEmulatorHookContext_t hc = {0};
     hc.instruction = instructionname;
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
+    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
     hc.rd = rd;
     hc.rs1num = rs1num;
+    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
     hc.rs1 = rs1;
     hc.rs2num = rs2num;
+    hc.rs2name = RiscvEmulatorGetRegisterSymbolicName(rs2num);
     hc.rs2 = rs2;
     hc.memorylocation = originaladdressrs1;
     hc.length = sizeof(uint32_t);
     RiscvEmulatorHook(state, &hc);
+    #if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintHeader(state);
+    RiscvEmulatorDisasmPrintPlain(state, &hc);
+    #endif
 #endif
 
 #if (RVE_E_ZAAMO == 1)
@@ -314,9 +321,12 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(RiscvEmulatorState_t
     (void)skipstore;
 #endif
 
-#if (RVE_E_HOOK == 1)
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
     RiscvEmulatorHook(state, &hc);
+    #if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintPlain(state, &hc);
+    #endif
 #endif
 }
 
