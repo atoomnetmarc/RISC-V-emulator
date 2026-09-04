@@ -20,8 +20,14 @@ RISC-V ISA manual (`/home/marc/Downloads/riscv-isa-manual/`).
   of the same source, not diverging copies.
 - **Compliance wins over backwards compatibility.** Where a behavior change
   is necessary for spec compliance, it is made — e.g. the misa MXL field
-  removal and the vectored-mtvec base fix. RV32 ABI/config compatibility is
-  preserved where compliance allows it.
+  being hard-coded WARL per build and the vectored-mtvec base fix. RV32
+  ABI/config compatibility is preserved where compliance allows it.
+- **Misaligned access policy is configurable.** `RVE_E_MISALIGNED`
+  (`RiscvEmulatorConfig.h`) selects whether misaligned loads/stores execute
+  or raise a load/store-address-misaligned trap (`mcause` 4/5); the ACT
+  configs run with it disabled (strict, matching Sail). Instruction-address
+  misalignment on taken control transfers always traps (`mcause` 0/1),
+  regardless of this option (spec `norm:jump_misaligned_exception`).
 
 ## 1. Dual XLEN via compile-time flag `RVE_XLEN`
 
@@ -87,6 +93,11 @@ The first implementation includes only:
 - RV64I base instructions: existing I-extension instructions widened via
   `rve_xlen_t`, plus the new RV64I instructions: LD, LWU, SD, ADDIW, SLLIW,
   SRLIW, SRAIW, ADDW, SUBW, SLLW, SRLW, SRAW.
+  - ADDIW: overflow is ignored; the result is the sign-extension of the
+    low 32 bits of rs1 + imm[11:0] (spec rv64.adoc).
+  - JALR: the target address is rs1 + sign-extended imm with bit 0 cleared
+    (spec `norm:jalr_target`); the existing implementation must preserve
+    this under the widened `rve_xlen_t` address type.
 - Zicsr (CSR instructions), adapted for 64-bit CSRs — see section 4.
 - Explicitly out of scope: M, A, C (compressed), B/Zbb, etc. Note for later:
   RV64C encodings fundamentally differ from RV32C (C_LD/C_SD vs C_LW/C_SW,
@@ -180,8 +191,11 @@ Exceptions with their own rules:
   RV64 in `mstatus` (bit 39), so the `mpv = 0` clear becomes
   `#if RVE_XLEN == 32` (via `mstatush`) / `#else` (via `mstatus`). The
   `mepc → pc` restore is correct once both are `rve_xlen_t`. The
-  privilege-mode TODO around MPP remains explicitly out of scope for this
-  plan.
+  privilege-mode TODO around MPP — including the normative
+  `mstatus` interrupt-state updates (trap entry: MPIE←MIE, MIE←0, MPP;
+  MRET: MIE←MPIE, MPIE←1) — remains explicitly out of scope for this plan.
+  Known consequence: ACT suites that traverse a trap + MRET may diff
+  against Sail on `mstatus` until that TODO is picked up.
 
 ## 5. Addresses follow XLEN
 
@@ -219,14 +233,18 @@ externally implemented `RiscvEmulatorLoad/Store` (EEI), and `ram_length` /
     separate RV64 instruction-type struct with `shamt : 6` and a bit-30-based
     decode; the RV32 struct (`shamt : 5` + `imm11_5 : 7`) stays unchanged.
     Both guarded by `#if RVE_XLEN == 64`.
+  - Immediate shifts SLLI/SRLI/SRAI (RV64): shift amounts 0–63 are all
+    legal — `shamt[5]` is a valid shift-amount bit (spec rv64.adoc: "the
+    shift amount is encoded in the lower 6 bits of the I-immediate field").
+    Reserved encodings are detected solely via funct6 [31:26]: SLLI requires
+    000000, SRLI 000000, SRAI 010000; any other funct6 value is treated as
+    illegal-instruction (deterministic, matches Sail/ACT).
   - W-variant shifts (SLLW/SRLW/SRAW, SLLIW/SRLIW/SRAIW) keep a 5-bit shift
     amount even in RV64 (spec rv64.adoc: rs2[4:0]; imm[5] != 0 is reserved).
     They must NOT pick up the `& 0x3f` rule. The immediate W-shifts reuse
     the existing 5-bit-shamt struct; encodings with `imm[5] != 0` are
     reserved per spec and are treated as illegal-instruction
-    (deterministic, matches Sail/ACT). Same policy for reserved encodings of
-    RV64 SLLI/SRLI/SRAI (shamt[5] != 0 for SLLI/SRLI, or invalid
-    bit-30/funct6 combinations).
+    (deterministic, matches Sail/ACT).
   - The `shamt` function parameter stays `uint8_t` (holds 6 bits fine);
     only the internal masks and the decode struct change.
 - Hook/disasm context (`RiscvEmulatorHookContext_t`): `memorylocation`
@@ -256,20 +274,29 @@ Required work for RV64 validation:
   `"name: rve-rv32i"`, `"udb_config: rve-rv32i.yaml"`, lines 255-320) with
   no `rv64` path. `gen_core.py` must be made rv64-aware before it can emit
   a valid rv64 config.
-- A riscv64-capable cross toolchain is a **hard prerequisite**. The current
-  `install.sh` installs only `riscv32-unknown-elf-gcc`, which cannot emit
-  rv64 code. `install.sh` needs a riscv64 (or multilib) toolchain install
-  step.
+- A multilib `riscv64-unknown-elf-gcc` toolchain (rv32i/ilp32 and rv64i/lp64
+  multilibs) is a **hard prerequisite**: one toolchain builds both RV32 and
+  RV64 test ELFs. `install.sh` installs it as the single toolchain, with no
+  fallback to the previous riscv32-only installation.
 
 ### Acceptance criteria
 
+- **Toolchain baseline first**: before any core change, the full existing
+  RV32 ACT matrix is re-run with the new multilib toolchain and that result
+  is recorded as the baseline, so later regressions are attributable to the
+  XLEN refactor rather than compiler diffs.
 - **RV32 regression**: all existing RV32 ACT suites (rve-rv32i,
-  rve-rv32imacb_zicsr_zifencei, etc.) still pass on the Native backend,
-  modulo the two deliberate compliance fixes (misa MXL field, vectored-mtvec
-  base). If any suite encoded the old deviant behavior, its expectations are
-  corrected in the same change, with a note in the commit/PR.
+  rve-rv32imacb_zicsr_zifencei, etc.) still pass on the Native backend
+  against the toolchain baseline, modulo the two deliberate compliance fixes
+  (misa MXL field, vectored-mtvec base). If any suite encoded the old
+  deviant behavior, its expectations are corrected in the same change, with
+  a note in the commit/PR.
 - **RV64**: the new suites `rve-rv64i` and `rve-rv64i_zicsr` pass fully
   against the Sail golden model on the Native backend.
+- **RV64 misalign**: the `rve-rv64i_misalign` suite (config with
+  `RVE_E_MISALIGNED` disabled) passes, validating that misaligned loads,
+  stores and taken control transfers trap with the correct `mcause`
+  (4/5 and 0/1 respectively).
 
 ### Backend decision
 
