@@ -61,14 +61,26 @@ First implementation includes only:
 - Zicsr (CSR instructions) adapted for 64-bit CSRs. The current CSR
   read/write path (`RiscvEmulatorExtensionZicsr.h`) hardcodes `*(uint32_t *)`
   casts for both register and CSR access. In RV64, MXLEN-bit CSRs (mstatus,
-  mtvec, mepc, mtval, misa, satp, mscratch, pmpaddr0) must transfer 64 bits,
-  but 32-bit CSRs (mhartid, mcause, mie, mip, pmpcfg0) must stay 32-bit — a
-  blanket `rve_xlen_t *` cast would over-read the 32-bit CSRs. This is
-  resolved by replacing the raw pointer + deref with per-CSR read/write
-  helper functions (`RiscvEmulatorCSRRead`/`RiscvEmulatorCSRWrite`) that
-  handle width internally and apply WARL/masking in one place (MXL writes
-  ignored, `mtvec.base` masked, etc.). `RiscvEmulatorGetCSRAddress` is
+  mtvec, mepc, mtval, misa, satp, mscratch, pmpaddr0) must transfer 64 bits.
+  This is resolved by replacing the raw pointer + deref with per-CSR
+  read/write helper functions (`RiscvEmulatorCSRRead`/`RiscvEmulatorCSRWrite`)
+  that handle width internally and apply WARL/masking in one place (MXL
+  writes ignored, `mtvec.base` masked, etc.). `RiscvEmulatorGetCSRAddress` is
   retired or kept only for disasm/hook naming.
+
+  CORRECTED during spec review: the plan originally claimed mhartid, mcause,
+  mie, mip and pmpcfg0 must stay 32-bit in RV64 — this is wrong. In RV64,
+  mhartid is "an MXLEN-bit read-only register" (machine.adoc) and mcause,
+  mie, mip are likewise MXLEN-bit, so their storage widens to `rve_xlen_t`
+  in RV64 builds like mtvec/mepc/mtval. Policy: always implement exactly what
+  the spec mandates per XLEN, configurable between RV32/RV64, no out-of-spec
+  shortcuts. The pmpcfg family is the only genuinely special case: in RV64
+  each even-numbered pmpcfg CSR (0, 2, ... 14) holds 8 PMP entries — lower 32
+  bits match the RV32 layout (entries 0-3 in pmpcfg0[31:0]), upper 32 bits
+  hold entries 4-7 (`norm:pmp_cfg_rv64_layout`); odd-numbered pmpcfg CSRs are
+  illegal in RV64 (`norm:pmp_cfg_rv64_illegal`). The RV64 pmpcfg0 struct
+  models the full 8-entry layout (64-bit), guarded by `#if RVE_XLEN == 64`;
+  the RV32 4-entry struct stays.
 - Counter CSR high-half variants (0xC80 cycleh, 0xC81 timeh, 0xC82 instreth)
   are RV32I-only (spec rv-32-64g.adoc: "Upper 32 bits of `cycle`, RV32I only";
   machine.adoc: the `*h` access is "When XLEN=32"). The current code
@@ -96,7 +108,10 @@ Keep the readable symbolic CSR structs. Changes:
 - `mtvec.base` becomes a mask-based accessor instead of a C bitfield
   (spec: mtvec is MXLEN-bit; base occupies bits XLEN-1:2 — a variable-width
   bitfield is not portable C).
-- Fields that are 32-bit regardless of XLEN (e.g. mhartid) stay unchanged.
+- mhartid, mcause, mie, mip: MXLEN-bit per spec, widen to `rve_xlen_t` in
+  RV64 builds (see corrected note in section 3).
+- pmpcfg0: 32-bit in RV32 (4×8-bit configs); in RV64 a full 8-entry 64-bit
+  layout (`norm:pmp_cfg_rv64_layout`). Odd pmpcfg CSRs → illegal in RV64.
 - `mstatus` is MXLEN-bit with a structurally different RV64 layout
   (spec `mstatusreg` figure vs `mstatusreg-rv321`): in RV64 it is a 64-bit
   struct with SD at bit 63, new SXL/UXL fields at [35:32], and MPV/GVA
@@ -114,8 +129,20 @@ Keep the readable symbolic CSR structs. Changes:
   bare-metal and likely never enables paging, but the storage layout must be
   correct for CSR read/write fidelity (ACT may probe it).
 - `pmpaddr0` widens to `rve_xlen_t` (54 significant bits in RV64; bits
-  [55:54] read as 0). `pmpcfg0` stays 32-bit (4×8-bit configs) regardless of
-  XLEN.
+  [55:54] read as 0). `pmpcfg0` is 32-bit in RV32 (4×8-bit configs); in RV64
+  it becomes a full 8-entry 64-bit layout per `norm:pmp_cfg_rv64_layout`
+  (lower 32 bits match RV32, upper 32 bits hold entries 4-7).
+- medeleg, mideleg, mnstatus are also MXLEN-bit per spec and widen to
+  `rve_xlen_t` in RV64 builds.
+- Central CSR authority decision: the existing address-only switch
+  (`RiscvEmulatorGetCSRAddress`) is replaced by `RiscvEmulatorCSRRead` /
+  `RiscvEmulatorCSRWrite`, backed by a single compile-time CSR table that is
+  the sole authority on (a) which CSR numbers exist in this build
+  (`#if RVE_XLEN`-guarded entries; RV32-only CSRs like mstatush and the `*h`
+  counters are absent in RV64 → illegal instruction), and (b) read-only vs
+  read-write permission — the current code has no read-only enforcement at
+  all (writes to mhartid/cycle currently succeed), which must be added per
+  the Zicsr spec.
 - Reference: `src/priv/machine.adoc`, mtvec section: "The mtvec register is
   an MXLEN-bit WARL read/write register... the CSR contains only bits
   XLEN-1 through 2 of the base".
@@ -176,10 +203,17 @@ Usage: `#if RVE_XLEN == 64` for RV64 paths.
 Alternative considered: `RVE_E_64` boolean — rejected; a value flag is
 more descriptive and extensible toward a future RV128.
 
-No `#error` validation is added for unsupported `RVE_XLEN` values (e.g. 128,
-48, 16): the typedef `#if/#else` silently falls through to RV32 for any
-non-64 value. This is an accepted risk, matching the existing config's
-no-validation style; the typedef branch is the single source of truth.
+An `#error` guard is added for unsupported `RVE_XLEN` values (anything other
+than 32 or 64) in `RiscvEmulatorConfig.h`. Decision during review: a silent
+typedef fallback to RV32 for a typo like `RVE_XLEN=86` would produce a
+silently wrong build; compile-time checks are free at runtime. When RV128
+arrives, the guard is updated in the same change as the typedef.
+
+MRET/MPP scope note: the existing TODOs around privilege-mode restoration in
+`RiscvEmulatorMRET` are explicitly out of scope for this plan. Only the
+XLEN-dependent changes are made (mpv bit placement, widened mepc). MPP WARL
+semantics for an M-mode-only hart (MPP hardwired to 3) are a candidate for a
+future plan.
 
 ## Encoding notes for implementation
 
@@ -205,7 +239,12 @@ no-validation style; the typedef branch is the single source of truth.
     amount even in RV64 (spec rv64.adoc: rs2[4:0]; imm[5] != 0 is reserved).
     They must NOT pick up the `& 0x3f` rule. The immediate W-shifts reuse
     the existing 5-bit-shamt struct, with an `imm[5] != 0` →
-    illegal-instruction check.
+    illegal-instruction check. Note: the spec marks these encodings
+    *reserved* (not illegal) as of the current manual
+    (rv64.adoc, `norm:slliw_srliw_sraiw_imm5_rsv`); we choose to raise
+    illegal-instruction for deterministic behavior, matching Sail/ACT.
+    Same policy for reserved encodings of RV64 SLLI/SRLI/SRAI
+    (shamt[5] != 0 for SLLI/SRLI, or invalid bit-30/funct6 combinations).
 - Hook/disasm context (`RiscvEmulatorHookContext_t`): `memorylocation`
  becomes `rve_xlen_t` (it is an address and would truncate in RV64).
  `imm`/`upperimmediate` stay `uint32_t` (encoding width is 32-bit); the
@@ -236,6 +275,15 @@ Required work for RV64 validation:
   `install.sh` installs only `riscv32-unknown-elf-gcc`, which cannot emit
   rv64 code. `install.sh` needs a riscv64 (or multilib) toolchain install
   step.
+
+Acceptance criteria, decided during review:
+- Regression: all existing RV32 ACT suites (rve-rv32i,
+  rve-rv32imacb_zicsr_zifencei, etc.) must still pass on the Native backend,
+  modulo the two deliberate behavior fixes (misa `mxlen` field removal,
+  vectored-mtvec base fix). If any suite encoded the old buggy vectored
+  behavior, its expectations are corrected in the same change with a note.
+- Two new RV64 suites are added: `rve-rv64i` and `rve-rv64i_zicsr`
+  (not just the Zicsr variant).
 
 Alternatives rejected: hand-written PlatformIO unit tests only (weak
 coverage, own expectations may be wrong); demo program only (weak coverage).
