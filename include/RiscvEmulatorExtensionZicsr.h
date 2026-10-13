@@ -21,6 +21,75 @@
 #include "RiscvEmulatorType.h"
 
 /**
+ * Apply WARL behavior to a value written to a CSR.
+ */
+static inline uint32_t RiscvEmulatorCSRWriteMask(RiscvEmulatorState_t *state __attribute__((unused)), const uint16_t csrnum, uint32_t value) {
+    switch (csrnum) {
+        case 0x300:
+            value &= RVE_CSR_MSTATUS_WRITE_MASK;
+            value |= RVE_CSR_MSTATUS_MPP_MMODE;
+            break;
+        case 0x301:
+            value &= RVE_CSR_MISA_WRITE_MASK;
+            break;
+        case 0x302:
+            value &= RVE_CSR_MEDELEG_WRITE_MASK;
+            break;
+        case 0x303:
+            value &= RVE_CSR_MIDELEG_WRITE_MASK;
+            break;
+        case 0x304:
+            value &= RVE_CSR_MIE_WRITE_MASK;
+            break;
+        case 0x305:
+            value &= RVE_CSR_MTVEC_WRITE_MASK;
+            break;
+        case 0x310:
+            value &= RVE_CSR_MSTATUSH_WRITE_MASK;
+            break;
+        case 0x180:
+            value &= RVE_CSR_SATP_WRITE_MASK;
+            break;
+        case 0x341:
+            value &= RVE_CSR_MEPC_WRITE_MASK;
+            break;
+        case 0x344:
+            value &= RVE_CSR_MIP_WRITE_MASK;
+            break;
+        case 0x3A0:
+            value &= RVE_CSR_PMPCFG0_WRITE_MASK;
+            break;
+        case 0x3B0:
+            value &= RVE_CSR_PMPADDR0_WRITE_MASK;
+            break;
+        default:
+            break;
+    }
+
+    return value;
+}
+
+/**
+ * Apply WARL behavior to a value read from a CSR.
+ */
+static inline uint32_t RiscvEmulatorCSRReadMask(RiscvEmulatorState_t *state __attribute__((unused)), const uint16_t csrnum, uint32_t value) {
+    switch (csrnum) {
+        case 0x301:
+            // misa: MXL is read-only RV32 and the I bit is always set.
+            value &= ~(3ul << 30);
+            value |= RVE_CSR_MISA_MXL_RV32 | RVE_CSR_MISA_I;
+            break;
+        case 0x341:
+            value &= ~(uint32_t)RVE_CSR_MEPC_READ_MASK;
+            break;
+        default:
+            break;
+    }
+
+    return value;
+}
+
+/**
  * Machine return: return from a trap in machine mode by restoring mstatus and jumping to mepc.
  * pc = mepc
  */
@@ -31,10 +100,10 @@ static inline void RiscvEmulatorMRET(RiscvEmulatorState_t *state) {
     hc.instruction = "mret";
     hc.hook = HOOK_BEGIN;
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintHeader(state);
     RiscvEmulatorDisasmPrintPlain(state, &hc);
-    #endif
+#endif
 #endif
 
     // TODO: Determine what the new privilege mode will be according to the values of MPP and MPV in mstatus.
@@ -47,14 +116,14 @@ static inline void RiscvEmulatorMRET(RiscvEmulatorState_t *state) {
 
     // TODO: Set the privilege mode as previously determined.
 
-    state->programcounternext = state->csr.mepc;
+    state->programcounternext = RiscvEmulatorCSRReadMask(state, 0x341, state->csr.mepc);
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintPlain(state, &hc);
-    #endif
+#endif
 #endif
 }
 
@@ -164,314 +233,123 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
 }
 
 /**
- * Control and status register write: atomically swap the CSR with rs1, reading the old value into rd.
- * t = csr; csr = rs1; rd = t
+ * Control and status register access: perform the requested atomic
+ * read-modify-write operation on the CSR.
+ *
+ * Returns 1 when the instruction was handled, 0 for an unknown funct3.
  */
-static inline void RiscvEmulatorCSRRW(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum,
+static inline uint8_t RiscvEmulatorCSR(
+    RiscvEmulatorState_t *state,
     void *rd,
-    const uint8_t rs1num __attribute__((unused)),
     const void *rs1,
-    const uint16_t csrnum __attribute__((unused)),
     void *csr) {
+
+    const uint8_t rdnum = state->instruction.itypecsr.rd;
+    const uint8_t rs1num __attribute__((unused)) = state->instruction.itypecsr.rs1;
+    const uint8_t funct3 = state->instruction.itypecsr.funct3;
+    const uint16_t csrnum = state->instruction.itypecsr.csr;
+
+    // The immediate variants (csrrwi, csrrsi, csrrci) hold a zero-extended
+    // 5-bit immediate in the rs1 field instead of a register number.
+    uint8_t immvariant;
+    switch (funct3) {
+        case FUNCT3_CSR_CSRRW:
+        case FUNCT3_CSR_CSRRS:
+        case FUNCT3_CSR_CSRRC:
+            immvariant = 0;
+            break;
+        case FUNCT3_CSR_CSRRWI:
+        case FUNCT3_CSR_CSRRSI:
+        case FUNCT3_CSR_CSRRCI:
+            immvariant = 1;
+            break;
+        default:
+            return 0;
+    }
+
+    uint32_t value;
+    if (immvariant) {
+        value = state->instruction.itypecsrimm.imm;
+    } else {
+        value = *(const uint32_t *)rs1;
+    }
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     state->instructionhandled = 1;
     RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "csrrw";
+    const char *instructionname;
+    switch (funct3) {
+        case FUNCT3_CSR_CSRRW:
+            instructionname = "csrrw";
+            break;
+        case FUNCT3_CSR_CSRRS:
+            instructionname = "csrrs";
+            break;
+        case FUNCT3_CSR_CSRRC:
+            instructionname = "csrrc";
+            break;
+        case FUNCT3_CSR_CSRRWI:
+            instructionname = "csrrwi";
+            break;
+        case FUNCT3_CSR_CSRRSI:
+            instructionname = "csrrsi";
+            break;
+        default:
+            instructionname = "csrrci";
+            break;
+    }
+    hc.instruction = instructionname;
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
     hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
     hc.rd = rd;
-    hc.rs1num = rs1num;
-    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
-    hc.rs1 = rs1;
+    if (immvariant) {
+        hc.imm = rs1num;
+        hc.immlength = sizeof(rs1num);
+        hc.immname = "uimm";
+    } else {
+        hc.rs1num = rs1num;
+        hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
+        hc.rs1 = rs1;
+    }
     hc.csrnum = csrnum;
     hc.csrname = RiscvEmulatorGetCSRName(csrnum);
     hc.csr = csr;
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintHeader(state);
     RiscvEmulatorDisasmPrintCSR(state, &hc);
-    #endif
 #endif
-
-    uint32_t originalvaluers1 = *(const uint32_t *)rs1;
+#endif
 
     // Read old value into destination register when requested.
     if (rdnum != 0) {
-        *(uint32_t *)rd = *(uint32_t *)csr;
+        *(uint32_t *)rd = RiscvEmulatorCSRReadMask(state, csrnum, *(uint32_t *)csr);
     }
 
-    *(uint32_t *)csr = originalvaluers1;
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintCSR(state, &hc);
-    #endif
-#endif
-}
-
-/**
- * Control and status register write immediate: atomically swap the CSR with the zero-extended immediate, reading the old value into rd.
- * t = csr; csr = uimm; rd = t
- */
-static inline void RiscvEmulatorCSRRWI(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum,
-    void *rd,
-    const uint8_t uimm,
-    const uint16_t csrnum __attribute__((unused)),
-    void *csr) {
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    state->instructionhandled = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "csrrwi";
-    hc.hook = HOOK_BEGIN;
-    hc.rdnum = rdnum;
-    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
-    hc.rd = rd;
-    hc.imm = uimm;
-    hc.csrnum = csrnum;
-    hc.csrname = RiscvEmulatorGetCSRName(csrnum);
-    hc.csr = csr;
-    hc.immlength = sizeof(uimm);
-    hc.immname = "uimm";
-    RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintCSR(state, &hc);
-    #endif
-#endif
-
-    // Read old value into destination register when requested.
-    if (rdnum != 0) {
-        *(uint32_t *)rd = *(uint32_t *)csr;
-    }
-
-    *(uint32_t *)csr = uimm;
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintCSR(state, &hc);
-    #endif
-#endif
-}
-
-/**
- * Control and status register set: atomically read the CSR into rd and set the bits of rs1 in the CSR.
- * t = csr; csr = csr | rs1; rd = t
- */
-static inline void RiscvEmulatorCSRRS(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum,
-    void *rd,
-    const uint8_t rs1num __attribute__((unused)),
-    const void *rs1,
-    const uint16_t csrnum __attribute__((unused)),
-    void *csr) {
-
-    uint32_t initialrs1value = *(const uint32_t *)rs1;
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    state->instructionhandled = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "csrrs";
-    hc.hook = HOOK_BEGIN;
-    hc.rdnum = rdnum;
-    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
-    hc.rd = rd;
-    hc.rs1num = rs1num;
-    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
-    hc.rs1 = rs1;
-    hc.csrnum = csrnum;
-    hc.csrname = RiscvEmulatorGetCSRName(csrnum);
-    hc.csr = csr;
-    RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintCSR(state, &hc);
-    #endif
-#endif
-
-    if (rdnum != 0) {
-        *(uint32_t *)rd = *(uint32_t *)csr;
-    }
-
-    // Set bits when requested.
-    if (initialrs1value != 0) {
-        *(uint32_t *)csr |= initialrs1value;
+    // csrrw always writes; csrrs and csrrc only write when the value is nonzero.
+    if ((funct3 == FUNCT3_CSR_CSRRW) || (funct3 == FUNCT3_CSR_CSRRWI) || (value != 0)) {
+        uint32_t oldvalue = *(uint32_t *)csr;
+        uint32_t newvalue;
+        if ((funct3 == FUNCT3_CSR_CSRRW) || (funct3 == FUNCT3_CSR_CSRRWI)) {
+            newvalue = value;
+        } else if ((funct3 == FUNCT3_CSR_CSRRS) || (funct3 == FUNCT3_CSR_CSRRSI)) {
+            newvalue = oldvalue | value;
+        } else {
+            newvalue = oldvalue & ~value;
+        }
+        *(uint32_t *)csr = RiscvEmulatorCSRWriteMask(state, csrnum, newvalue);
     }
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintCSR(state, &hc);
-    #endif
 #endif
-}
-
-/**
- * Control and status register set immediate: atomically read the CSR into rd and set the bits of the zero-extended immediate in the CSR.
- * t = csr; csr = csr | uimm; rd = t
- */
-static inline void RiscvEmulatorCSRRSI(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum,
-    void *rd,
-    const uint8_t uimm,
-    const uint16_t csrnum __attribute__((unused)),
-    void *csr) {
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    state->instructionhandled = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "csrrsi";
-    hc.hook = HOOK_BEGIN;
-    hc.rdnum = rdnum;
-    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
-    hc.rd = rd;
-    hc.imm = uimm;
-    hc.csrnum = csrnum;
-    hc.csrname = RiscvEmulatorGetCSRName(csrnum);
-    hc.csr = csr;
-    hc.immlength = sizeof(uimm);
-    hc.immname = "uimm";
-    RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintCSR(state, &hc);
-    #endif
 #endif
 
-    if (rdnum != 0) {
-        *(uint32_t *)rd = *(uint32_t *)csr;
-    }
-
-    // Set bits when requested.
-    if (uimm != 0) {
-        *(uint32_t *)csr |= uimm;
-    }
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintCSR(state, &hc);
-    #endif
-#endif
-}
-
-/**
- * Control and status register clear: atomically read the CSR into rd and clear the bits of rs1 in the CSR.
- * t = csr; csr = csr & ~rs1; rd = t
- */
-static inline void RiscvEmulatorCSRRC(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum,
-    void *rd,
-    const uint8_t rs1num __attribute__((unused)),
-    const void *rs1,
-    const uint16_t csrnum __attribute__((unused)),
-    void *csr) {
-
-    uint32_t initialrs1value = *(const uint32_t *)rs1;
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    state->instructionhandled = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "csrrc";
-    hc.hook = HOOK_BEGIN;
-    hc.rdnum = rdnum;
-    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
-    hc.rd = rd;
-    hc.rs1num = rs1num;
-    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
-    hc.rs1 = rs1;
-    hc.csrnum = csrnum;
-    hc.csrname = RiscvEmulatorGetCSRName(csrnum);
-    hc.csr = csr;
-    RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintCSR(state, &hc);
-    #endif
-#endif
-
-    if (rdnum != 0) {
-        *(uint32_t *)rd = *(uint32_t *)csr;
-    }
-
-    // Clear bits when requested.
-    if (initialrs1value != 0) {
-        *(uint32_t *)csr &= ~initialrs1value;
-    }
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintCSR(state, &hc);
-    #endif
-#endif
-}
-
-/**
- * Control and status register clear immediate: atomically read the CSR into rd and clear the bits of the zero-extended immediate in the CSR.
- * t = csr; csr = csr & ~uimm; rd = t
- */
-static inline void RiscvEmulatorCSRRCI(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum,
-    void *rd,
-    const uint8_t uimm,
-    const uint16_t csrnum __attribute__((unused)),
-    void *csr) {
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    state->instructionhandled = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "csrrci";
-    hc.hook = HOOK_BEGIN;
-    hc.rdnum = rdnum;
-    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
-    hc.rd = rd;
-    hc.imm = uimm;
-    hc.csrnum = csrnum;
-    hc.csrname = RiscvEmulatorGetCSRName(csrnum);
-    hc.csr = csr;
-    hc.immlength = sizeof(uimm);
-    hc.immname = "uimm";
-    RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintCSR(state, &hc);
-    #endif
-#endif
-
-    if (rdnum != 0) {
-        *(uint32_t *)rd = *(uint32_t *)csr;
-    }
-
-    // Clear bits when requested.
-    if (uimm != 0) {
-        *(uint32_t *)csr &= ~(uint32_t)uimm;
-    }
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintCSR(state, &hc);
-    #endif
-#endif
+    return 1;
 }
 
 #endif
