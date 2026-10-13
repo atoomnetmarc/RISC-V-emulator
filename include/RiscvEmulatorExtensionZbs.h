@@ -47,10 +47,10 @@ static inline void RiscvEmulatorBCLR(
     hc.rs2name = RiscvEmulatorGetRegisterSymbolicName(rs2num);
     hc.rs2 = rs2;
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintHeader(state);
     RiscvEmulatorDisasmPrintRType(state, &hc);
-    #endif
+#endif
 #endif
 
     if (rdnum == 0) {
@@ -63,9 +63,9 @@ static inline void RiscvEmulatorBCLR(
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintRType(state, &hc);
-    #endif
+#endif
 #endif
 }
 
@@ -96,10 +96,10 @@ static inline void RiscvEmulatorBCLRI(
     hc.immlength = sizeof(shamt);
     hc.immname = "shamt";
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintHeader(state);
     RiscvEmulatorDisasmPrintIType(state, &hc);
-    #endif
+#endif
 #endif
 
     if (rdnum == 0) {
@@ -112,9 +112,9 @@ static inline void RiscvEmulatorBCLRI(
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintIType(state, &hc);
-    #endif
+#endif
 #endif
 }
 
@@ -146,10 +146,10 @@ static inline void RiscvEmulatorBEXT(
     hc.rs2name = RiscvEmulatorGetRegisterSymbolicName(rs2num);
     hc.rs2 = rs2;
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintHeader(state);
     RiscvEmulatorDisasmPrintRType(state, &hc);
-    #endif
+#endif
 #endif
 
     if (rdnum == 0) {
@@ -162,9 +162,9 @@ static inline void RiscvEmulatorBEXT(
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintRType(state, &hc);
-    #endif
+#endif
 #endif
 }
 
@@ -195,10 +195,10 @@ static inline void RiscvEmulatorBEXTI(
     hc.immlength = sizeof(shamt);
     hc.immname = "shamt";
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintHeader(state);
     RiscvEmulatorDisasmPrintIType(state, &hc);
-    #endif
+#endif
 #endif
 
     if (rdnum == 0) {
@@ -211,9 +211,9 @@ static inline void RiscvEmulatorBEXTI(
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintIType(state, &hc);
-    #endif
+#endif
 #endif
 }
 
@@ -245,10 +245,10 @@ static inline void RiscvEmulatorBINV(
     hc.rs2name = RiscvEmulatorGetRegisterSymbolicName(rs2num);
     hc.rs2 = rs2;
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintHeader(state);
     RiscvEmulatorDisasmPrintRType(state, &hc);
-    #endif
+#endif
 #endif
 
     if (rdnum == 0) {
@@ -261,9 +261,9 @@ static inline void RiscvEmulatorBINV(
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintRType(state, &hc);
-    #endif
+#endif
 #endif
 }
 
@@ -294,10 +294,10 @@ static inline void RiscvEmulatorBINVI(
     hc.immlength = sizeof(shamt);
     hc.immname = "shamt";
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintHeader(state);
     RiscvEmulatorDisasmPrintIType(state, &hc);
-    #endif
+#endif
 #endif
 
     if (rdnum == 0) {
@@ -310,9 +310,9 @@ static inline void RiscvEmulatorBINVI(
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintIType(state, &hc);
-    #endif
+#endif
 #endif
 }
 
@@ -344,10 +344,10 @@ static inline void RiscvEmulatorBSET(
     hc.rs2name = RiscvEmulatorGetRegisterSymbolicName(rs2num);
     hc.rs2 = rs2;
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintHeader(state);
     RiscvEmulatorDisasmPrintRType(state, &hc);
-    #endif
+#endif
 #endif
 
     if (rdnum == 0) {
@@ -360,9 +360,9 @@ static inline void RiscvEmulatorBSET(
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintRType(state, &hc);
-    #endif
+#endif
 #endif
 }
 
@@ -393,10 +393,10 @@ static inline void RiscvEmulatorBSETI(
     hc.immlength = sizeof(shamt);
     hc.immname = "shamt";
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintHeader(state);
     RiscvEmulatorDisasmPrintIType(state, &hc);
-    #endif
+#endif
 #endif
 
     if (rdnum == 0) {
@@ -409,9 +409,9 @@ static inline void RiscvEmulatorBSETI(
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintIType(state, &hc);
-    #endif
+#endif
 #endif
 }
 

@@ -35,10 +35,10 @@ static inline void RiscvEmulatorMOPR(
     hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
     hc.rd = rd;
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintHeader(state);
     RiscvEmulatorDisasmPrintPlain(state, &hc);
-    #endif
+#endif
 #endif
 
     if (rdnum == 0) {
@@ -50,9 +50,9 @@ static inline void RiscvEmulatorMOPR(
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintPlain(state, &hc);
-    #endif
+#endif
 #endif
 }
 
@@ -74,10 +74,10 @@ static inline void RiscvEmulatorMOPRR(
     hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
     hc.rd = rd;
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintHeader(state);
     RiscvEmulatorDisasmPrintPlain(state, &hc);
-    #endif
+#endif
 #endif
 
     if (rdnum == 0) {
@@ -89,9 +89,9 @@ static inline void RiscvEmulatorMOPRR(
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintPlain(state, &hc);
-    #endif
+#endif
 #endif
 }
 

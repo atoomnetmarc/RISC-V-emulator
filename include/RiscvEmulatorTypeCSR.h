@@ -43,17 +43,17 @@
  * the F extension or the V extension. MPP is forced to M-mode (0b11).
  */
 #define RVE_CSR_MSTATUS_WRITE_MASK 0x1888u
-#define RVE_CSR_MSTATUS_MPP_MMODE 0x1800u
+#define RVE_CSR_MSTATUS_MPP_MMODE  0x1800u
 
 /**
  * medeleg, mideleg, mstatush, satp, pmpcfg0 and pmpaddr0: without S-mode,
  * the hypervisor extension or PMP enforcement, these are read-only zero.
  */
-#define RVE_CSR_MEDELEG_WRITE_MASK 0x0u
-#define RVE_CSR_MIDELEG_WRITE_MASK 0x0u
+#define RVE_CSR_MEDELEG_WRITE_MASK  0x0u
+#define RVE_CSR_MIDELEG_WRITE_MASK  0x0u
 #define RVE_CSR_MSTATUSH_WRITE_MASK 0x0u
-#define RVE_CSR_SATP_WRITE_MASK 0x0u
-#define RVE_CSR_PMPCFG0_WRITE_MASK 0x0u
+#define RVE_CSR_SATP_WRITE_MASK     0x0u
+#define RVE_CSR_PMPCFG0_WRITE_MASK  0x0u
 #define RVE_CSR_PMPADDR0_WRITE_MASK 0x0u
 
 /**
@@ -63,31 +63,31 @@
 #define RVE_CSR_MISA_I (1u << 8)
 
 #if (RVE_E_M == 1)
-    #define RVE_CSR_MISA_M (1u << 13)
+#define RVE_CSR_MISA_M (1u << 13)
 #else
-    #define RVE_CSR_MISA_M 0u
+#define RVE_CSR_MISA_M 0u
 #endif
 
 #if (RVE_E_A == 1)
-    #define RVE_CSR_MISA_A (1u << 0)
+#define RVE_CSR_MISA_A (1u << 0)
 #else
-    #define RVE_CSR_MISA_A 0u
+#define RVE_CSR_MISA_A 0u
 #endif
 
 #if (RVE_E_C == 1)
-    #define RVE_CSR_MISA_C (1u << 2)
+#define RVE_CSR_MISA_C (1u << 2)
 #else
-    #define RVE_CSR_MISA_C 0u
+#define RVE_CSR_MISA_C 0u
 #endif
 
 #if (RVE_E_B == 1)
-    #define RVE_CSR_MISA_B (1u << 1)
+#define RVE_CSR_MISA_B (1u << 1)
 #else
-    #define RVE_CSR_MISA_B 0u
+#define RVE_CSR_MISA_B 0u
 #endif
 
 #define RVE_CSR_MISA_WRITE_MASK (RVE_CSR_MISA_I | RVE_CSR_MISA_M | RVE_CSR_MISA_A | RVE_CSR_MISA_C | RVE_CSR_MISA_B)
-#define RVE_CSR_MISA_MXL_RV32 (1ul << 30)
+#define RVE_CSR_MISA_MXL_RV32   (1ul << 30)
 
 /**
  * WARL read masks: bits that are masked on reads.
@@ -132,9 +132,9 @@ typedef struct __attribute__((packed)) {
 
     // Machine Counter Setup
 #if (RVE_E_ZICNTR == 1)
-    uint64_t cycle;    // Machine cycle counter.
-    uint64_t time;     // Machine real-time counter.
-    uint64_t instret;  // Machine instructions-retired counter.
+    uint64_t cycle;   // Machine cycle counter.
+    uint64_t time;    // Machine real-time counter.
+    uint64_t instret; // Machine instructions-retired counter.
 #endif
 } RiscvCSR_t;
 

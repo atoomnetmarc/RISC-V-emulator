@@ -236,10 +236,10 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(RiscvEmulatorState_t
     hc.memorylocation = originaladdressrs1;
     hc.length = sizeof(uint32_t);
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintHeader(state);
     RiscvEmulatorDisasmPrintPlain(state, &hc);
-    #endif
+#endif
 #endif
 
 #if (RVE_E_ZAAMO == 1)
@@ -324,9 +324,9 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(RiscvEmulatorState_t
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintPlain(state, &hc);
-    #endif
+#endif
 #endif
 }
 

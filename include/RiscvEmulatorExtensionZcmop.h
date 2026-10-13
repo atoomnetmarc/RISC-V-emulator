@@ -30,10 +30,10 @@ static inline void RiscvEmulatorCMOP(
     hc.instruction = "c.mop";
     hc.hook = HOOK_BEGIN;
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintHeader(state);
     RiscvEmulatorDisasmPrintPlain(state, &hc);
-    #endif
+#endif
 #endif
 }
 

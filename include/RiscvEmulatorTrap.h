@@ -12,10 +12,10 @@
 
 #include <RiscvEmulatorImplementationSpecific.h>
 
-#include "RiscvEmulatorDefine.h"
-#include "RiscvEmulatorHook.h"
-#include "RiscvEmulatorDisasm.h"
 #include "RiscvEmulatorDebug.h"
+#include "RiscvEmulatorDefine.h"
+#include "RiscvEmulatorDisasm.h"
+#include "RiscvEmulatorHook.h"
 
 /**
  * Handle a trap.

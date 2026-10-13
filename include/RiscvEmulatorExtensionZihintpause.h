@@ -29,10 +29,10 @@ static inline void RiscvEmulatorPAUSE(
     hc.instruction = "pause";
     hc.hook = HOOK_BEGIN;
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintHeader(state);
     RiscvEmulatorDisasmPrintPlain(state, &hc);
-    #endif
+#endif
 #endif
 }
 

@@ -13,11 +13,11 @@
 #include <string.h>
 
 #include "RiscvEmulatorConfig.h"
+#include "RiscvEmulatorDebug.h"
 #include "RiscvEmulatorDefineHook.h"
 #include "RiscvEmulatorDefineOpcode.h"
-#include "RiscvEmulatorTypeHook.h"
 #include "RiscvEmulatorTypeEmulator.h"
-#include "RiscvEmulatorDebug.h"
+#include "RiscvEmulatorTypeHook.h"
 
 /**
  * Format-string storage for disassembly output. Defaults to a plain string

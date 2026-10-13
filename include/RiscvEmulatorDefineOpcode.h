@@ -19,31 +19,31 @@
 
 // 16-bit opcodes when RV32. Bits [15:13][1:0].
 
-#define OPCODE16_ADDI4SPN     0b00000
-#define OPCODE16_FLD          0b00100
+#define OPCODE16_ADDI4SPN 0b00000
+#define OPCODE16_FLD      0b00100
 // Zcb reuses the quadrant 0 funct3 100 encoding space (opfunct3 = op | funct3 << 2).
 #define OPCODE16_ZCB_LOADSTORE 0b10000
-#define OPCODE16_LW           0b01000
-#define OPCODE16_FLW          0b01100
-#define OPCODE16_FSD          0b10100
-#define OPCODE16_SW           0b11000
-#define OPCODE16_FSW          0b11100
-#define OPCODE16_ADDI         0b00001
-#define OPCODE16_JAL          0b00101
-#define OPCODE16_LI           0b01001
-#define OPCODE16_LUI_ADDI16SP 0b01101
-#define OPCODE16_MISCALU      0b10001
-#define OPCODE16_J            0b10101
-#define OPCODE16_BEQZ         0b11001
-#define OPCODE16_BNEZ         0b11101
-#define OPCODE16_SLLI         0b00010
-#define OPCODE16_FLDSP        0b00110
-#define OPCODE16_LWSP         0b01010
-#define OPCODE16_FLWSP        0b01110
-#define OPCODE16_JALR_MV_ADD  0b10010
-#define OPCODE16_FSDSP        0b10110
-#define OPCODE16_SWSP         0b11010
-#define OPCODE16_FSWSP        0b11110
+#define OPCODE16_LW            0b01000
+#define OPCODE16_FLW           0b01100
+#define OPCODE16_FSD           0b10100
+#define OPCODE16_SW            0b11000
+#define OPCODE16_FSW           0b11100
+#define OPCODE16_ADDI          0b00001
+#define OPCODE16_JAL           0b00101
+#define OPCODE16_LI            0b01001
+#define OPCODE16_LUI_ADDI16SP  0b01101
+#define OPCODE16_MISCALU       0b10001
+#define OPCODE16_J             0b10101
+#define OPCODE16_BEQZ          0b11001
+#define OPCODE16_BNEZ          0b11101
+#define OPCODE16_SLLI          0b00010
+#define OPCODE16_FLDSP         0b00110
+#define OPCODE16_LWSP          0b01010
+#define OPCODE16_FLWSP         0b01110
+#define OPCODE16_JALR_MV_ADD   0b10010
+#define OPCODE16_FSDSP         0b10110
+#define OPCODE16_SWSP          0b11010
+#define OPCODE16_FSWSP         0b11110
 
 #endif
 

@@ -29,10 +29,10 @@ static inline void RiscvEmulatorNTLP1(
     hc.instruction = "ntl.p1";
     hc.hook = HOOK_BEGIN;
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintHeader(state);
     RiscvEmulatorDisasmPrintPlain(state, &hc);
-    #endif
+#endif
 #endif
 }
 
@@ -48,10 +48,10 @@ static inline void RiscvEmulatorNTLS1(
     hc.instruction = "ntl.s1";
     hc.hook = HOOK_BEGIN;
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintHeader(state);
     RiscvEmulatorDisasmPrintPlain(state, &hc);
-    #endif
+#endif
 #endif
 }
 
@@ -67,10 +67,10 @@ static inline void RiscvEmulatorNTLPALL(
     hc.instruction = "ntl.pall";
     hc.hook = HOOK_BEGIN;
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintHeader(state);
     RiscvEmulatorDisasmPrintPlain(state, &hc);
-    #endif
+#endif
 #endif
 }
 
@@ -86,10 +86,10 @@ static inline void RiscvEmulatorNTLALL(
     hc.instruction = "ntl.all";
     hc.hook = HOOK_BEGIN;
     RiscvEmulatorHook(state, &hc);
-    #if (RVE_E_DISASM == 1)
+#if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintHeader(state);
     RiscvEmulatorDisasmPrintPlain(state, &hc);
-    #endif
+#endif
 #endif
 }
 
