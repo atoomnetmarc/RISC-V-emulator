@@ -240,14 +240,14 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
  */
 static inline uint8_t RiscvEmulatorCSR(
     RiscvEmulatorState_t *state,
+    const uint8_t rdnum,
     void *rd,
+    const uint8_t rs1num,
     const void *rs1,
-    void *csr) {
-
-    const uint8_t rdnum = state->instruction.itypecsr.rd;
-    const uint8_t rs1num __attribute__((unused)) = state->instruction.itypecsr.rs1;
-    const uint8_t funct3 = state->instruction.itypecsr.funct3;
-    const uint16_t csrnum = state->instruction.itypecsr.csr;
+    const uint8_t funct3,
+    void *csr,
+    const uint16_t csrnum,
+    const uint8_t imm) {
 
     // The immediate variants (csrrwi, csrrsi, csrrci) hold a zero-extended
     // 5-bit immediate in the rs1 field instead of a register number.
@@ -269,7 +269,7 @@ static inline uint8_t RiscvEmulatorCSR(
 
     uint32_t value;
     if (immvariant) {
-        value = state->instruction.itypecsrimm.imm;
+        value = imm;
     } else {
         value = *(const uint32_t *)rs1;
     }

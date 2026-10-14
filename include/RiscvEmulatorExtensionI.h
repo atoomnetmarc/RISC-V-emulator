@@ -1727,7 +1727,11 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state, uint8_
             return;
         }
 
-        if (RiscvEmulatorCSR(state, rd, rs1, csr) == 0) {
+        // The immediate variants (csrrwi, csrrsi, csrrci) hold a zero-extended
+        // 5-bit immediate in the rs1 field instead of a register number.
+        const uint8_t imm = state->instruction.itypecsrimm.imm;
+
+        if (RiscvEmulatorCSR(state, rdnum, rd, rs1num, rs1, funct3, csr, csrnum, imm) == 0) {
             detectedUnknownInstruction = 1;
         }
     }
