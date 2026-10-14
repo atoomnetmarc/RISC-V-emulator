@@ -109,22 +109,74 @@ static inline void RiscvEmulatorOpcodeJumpAndLinkRegister(RiscvEmulatorState_t *
 }
 
 /**
- * Add: add rs1 and rs2.
- * rd = rs1 + rs2
+ * Operation funnel for add/addi, slt/slti, sltu/sltiu, xor/xori, or/ori and
+ * and/andi (shared funct3). immvariant selects the immediate variant; the
+ * second operand is the rs2 register value or the sign-extended immediate.
+ * All instruction fields are decoded by the caller (decode-once). Returns 1
+ * when handled, 0 when funct3 does not match a funneled operation.
  */
-static inline void RiscvEmulatorADD(
+static inline uint8_t RiscvEmulatorOperation(
     RiscvEmulatorState_t *state __attribute__((unused)),
     const uint8_t rdnum,
     void *rd,
     const uint8_t rs1num __attribute__((unused)),
     const void *rs1,
     const uint8_t rs2num __attribute__((unused)),
-    const void *rs2) {
+    const void *rs2 __attribute__((unused)),
+    const uint8_t immvariant,
+    const uint32_t imm __attribute__((unused)),
+    const uint8_t funct3) {
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     state->instructionhandled = 1;
     RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "add";
+    // Instruction name, including pseudoinstructions derived from the decoded fields.
+    switch (funct3) {
+        case FUNCT3_IMMEDIATE_ADDI:
+            if (immvariant == 0) {
+                hc.instruction = "add";
+            } else if (rdnum == 0) {
+                hc.instruction = "nop"; // addi x0, x0, 0
+            } else if (imm == 0) {
+                hc.instruction = "mv"; // addi rd, rs1, 0
+            } else {
+                hc.instruction = "addi";
+            }
+            break;
+        case FUNCT3_IMMEDIATE_SLTI:
+            if (immvariant == 0) {
+                if (rs2num == 0) {
+                    hc.instruction = "sltz"; // slt rd, rs1, x0
+                } else if (rs1num == 0) {
+                    hc.instruction = "sgtz"; // slt rd, x0, rs2
+                } else {
+                    hc.instruction = "slt";
+                }
+            } else {
+                hc.instruction = "slti";
+            }
+            break;
+        case FUNCT3_IMMEDIATE_SLTIU:
+            if (immvariant == 0) {
+                hc.instruction = (rs1num == 0) ? "snez" : "sltu"; // snez: sltu rd, x0, rs2
+            } else {
+                hc.instruction = (imm == 1) ? "seqz" : "sltiu"; // seqz: sltiu rd, rs1, 1
+            }
+            break;
+        case FUNCT3_IMMEDIATE_XORI:
+            if (immvariant == 0) {
+                hc.instruction = "xor";
+            } else {
+                hc.instruction = ((int16_t)imm == -1) ? "not" : "xori"; // not: xori rd, rs1, -1
+            }
+            break;
+        case FUNCT3_IMMEDIATE_ORI:
+            hc.instruction = (immvariant == 0) ? "or" : "ori";
+            break;
+        case FUNCT3_IMMEDIATE_ANDI:
+            hc.instruction = (immvariant == 0) ? "and" : "andi";
+            break;
+    }
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
     hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
@@ -132,84 +184,67 @@ static inline void RiscvEmulatorADD(
     hc.rs1num = rs1num;
     hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
     hc.rs1 = rs1;
-    hc.rs2num = rs2num;
-    hc.rs2name = RiscvEmulatorGetRegisterSymbolicName(rs2num);
-    hc.rs2 = rs2;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintRType(state, &hc);
-#endif
-#endif
-
-    if (rdnum == 0) {
-        return;
-    }
-
-    *(int32_t *)rd = *(const int32_t *)rs1 + *(const int32_t *)rs2;
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintRType(state, &hc);
-#endif
-#endif
-}
-
-/**
- * Add immediate: add rs1 and the sign-extended immediate.
- * rd = rs1 + imm
- */
-static inline void RiscvEmulatorADDI(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum __attribute__((unused)),
-    void *rd,
-    const uint8_t rs1num __attribute__((unused)),
-    const void *rs1,
-    const int16_t imm) {
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    state->instructionhandled = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    // Pseudoinstructions: nop (addi x0, x0, 0) and mv (addi rd, rs1, 0).
-    if (rdnum == 0) {
-        hc.instruction = "nop";
-    } else if (imm == 0) {
-        hc.instruction = "mv";
+    if (immvariant == 0) {
+        hc.rs2num = rs2num;
+        hc.rs2name = RiscvEmulatorGetRegisterSymbolicName(rs2num);
+        hc.rs2 = rs2;
     } else {
-        hc.instruction = "addi";
+        hc.imm = imm;
+        hc.immissigned = 1;
+        hc.immlength = (funct3 == FUNCT3_IMMEDIATE_SLTIU || funct3 == FUNCT3_IMMEDIATE_XORI) ? sizeof(uint32_t) : sizeof(int16_t);
     }
-    hc.hook = HOOK_BEGIN;
-    hc.rdnum = rdnum;
-    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
-    hc.rd = rd;
-    hc.rs1num = rs1num;
-    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
-    hc.rs1 = rs1;
-    hc.imm = (uint32_t)imm;
-    hc.immissigned = 1;
-    hc.immlength = sizeof(imm);
     RiscvEmulatorHook(state, &hc);
 #if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintIType(state, &hc);
+    if (immvariant == 0) {
+        RiscvEmulatorDisasmPrintRType(state, &hc);
+    } else {
+        RiscvEmulatorDisasmPrintIType(state, &hc);
+    }
 #endif
 #endif
 
     if (rdnum == 0) {
-        return;
+        return 1;
     }
 
-    *(int32_t *)rd = *(const int32_t *)rs1 + imm;
+    const uint32_t operand2 = (immvariant == 0) ? *(const uint32_t *)rs2 : imm; // rs2 value or sign-extended immediate
+
+    switch (funct3) {
+        case FUNCT3_IMMEDIATE_ADDI:
+            *(uint32_t *)rd = *(const uint32_t *)rs1 + operand2;
+            break;
+        case FUNCT3_IMMEDIATE_SLTI:
+            *(int32_t *)rd = (*(const int32_t *)rs1 < (int32_t)operand2);
+            break;
+        case FUNCT3_IMMEDIATE_SLTIU:
+            *(uint32_t *)rd = (*(const uint32_t *)rs1 < operand2);
+            break;
+        case FUNCT3_IMMEDIATE_XORI:
+            *(uint32_t *)rd = *(const uint32_t *)rs1 ^ operand2;
+            break;
+        case FUNCT3_IMMEDIATE_ORI:
+            *(uint32_t *)rd = *(const uint32_t *)rs1 | operand2;
+            break;
+        case FUNCT3_IMMEDIATE_ANDI:
+            *(uint32_t *)rd = *(const uint32_t *)rs1 & operand2;
+            break;
+        default:
+            return 0;
+    }
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
     RiscvEmulatorHook(state, &hc);
 #if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintIType(state, &hc);
+    if (immvariant == 0) {
+        RiscvEmulatorDisasmPrintRType(state, &hc);
+    } else {
+        RiscvEmulatorDisasmPrintIType(state, &hc);
+    }
 #endif
 #endif
+    return 1;
 }
 
 /**
@@ -353,316 +388,6 @@ static inline void RiscvEmulatorSLLI(
     }
 
     *(uint32_t *)rd = *(const uint32_t *)rs1 << (shamt & 0b11111);
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintIType(state, &hc);
-#endif
-#endif
-}
-
-/**
- * Set less than: compare rs1 and rs2 as signed integers.
- * rd = (rs1 < rs2)
- */
-static inline void RiscvEmulatorSLT(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum,
-    void *rd,
-    const uint8_t rs1num __attribute__((unused)),
-    const void *rs1,
-    const uint8_t rs2num __attribute__((unused)),
-    const void *rs2) {
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    state->instructionhandled = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    // Pseudoinstructions: sltz (slt rd, rs1, x0) and sgtz (slt rd, x0, rs2).
-    if (rs2num == 0) {
-        hc.instruction = "sltz";
-    } else if (rs1num == 0) {
-        hc.instruction = "sgtz";
-    } else {
-        hc.instruction = "slt";
-    }
-    hc.hook = HOOK_BEGIN;
-    hc.rdnum = rdnum;
-    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
-    hc.rd = rd;
-    hc.rs1num = rs1num;
-    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
-    hc.rs1 = rs1;
-    hc.rs2num = rs2num;
-    hc.rs2name = RiscvEmulatorGetRegisterSymbolicName(rs2num);
-    hc.rs2 = rs2;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintRType(state, &hc);
-#endif
-#endif
-
-    if (rdnum == 0) {
-        return;
-    }
-
-    *(int32_t *)rd = (*(const int32_t *)rs1 < *(const int32_t *)rs2);
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintRType(state, &hc);
-#endif
-#endif
-}
-
-/**
- * Set less than immediate: compare rs1 with the sign-extended immediate as signed integers.
- * rd = (rs1 < imm)
- */
-static inline void RiscvEmulatorSLTI(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum __attribute__((unused)),
-    void *rd,
-    const uint8_t rs1num __attribute__((unused)),
-    const void *rs1,
-    const int16_t imm) {
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    state->instructionhandled = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "slti";
-    hc.hook = HOOK_BEGIN;
-    hc.rdnum = rdnum;
-    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
-    hc.rd = rd;
-    hc.rs1num = rs1num;
-    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
-    hc.rs1 = rs1;
-    hc.imm = (uint32_t)imm;
-    hc.immlength = (sizeof(imm));
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintIType(state, &hc);
-#endif
-#endif
-
-    if (rdnum == 0) {
-        return;
-    }
-
-    *(int32_t *)rd = (*(const int32_t *)rs1 < imm);
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintIType(state, &hc);
-#endif
-#endif
-}
-
-/**
- * Set less than unsigned: compare rs1 and rs2 as unsigned integers.
- * rd = (rs1 < rs2)
- */
-static inline void RiscvEmulatorSLTU(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum,
-    void *rd,
-    const uint8_t rs1num __attribute__((unused)),
-    const void *rs1,
-    const uint8_t rs2num __attribute__((unused)),
-    const void *rs2) {
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    state->instructionhandled = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    // Pseudoinstruction: snez (sltu rd, x0, rs2).
-    if (rs1num == 0) {
-        hc.instruction = "snez";
-    } else {
-        hc.instruction = "sltu";
-    }
-    hc.hook = HOOK_BEGIN;
-    hc.rdnum = rdnum;
-    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
-    hc.rd = rd;
-    hc.rs1num = rs1num;
-    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
-    hc.rs1 = rs1;
-    hc.rs2num = rs2num;
-    hc.rs2name = RiscvEmulatorGetRegisterSymbolicName(rs2num);
-    hc.rs2 = rs2;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintRType(state, &hc);
-#endif
-#endif
-
-    if (rdnum == 0) {
-        return;
-    }
-
-    *(uint32_t *)rd = (*(const uint32_t *)rs1 < *(const uint32_t *)rs2);
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintRType(state, &hc);
-#endif
-#endif
-}
-
-/**
- * Set less than unsigned immediate: compare rs1 with the sign-extended immediate as unsigned integers.
- * rd = (rs1 < imm)
- */
-static inline void RiscvEmulatorSLTIU(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum __attribute__((unused)),
-    void *rd,
-    const uint8_t rs1num __attribute__((unused)),
-    const void *rs1,
-    const uint32_t imm) {
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    state->instructionhandled = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    // Pseudoinstruction: seqz (sltiu rd, rs1, 1).
-    if (imm == 1) {
-        hc.instruction = "seqz";
-    } else {
-        hc.instruction = "sltiu";
-    }
-    hc.hook = HOOK_BEGIN;
-    hc.rdnum = rdnum;
-    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
-    hc.rd = rd;
-    hc.rs1num = rs1num;
-    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
-    hc.rs1 = rs1;
-    hc.imm = (uint32_t)imm;
-    hc.immlength = (sizeof(imm));
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintIType(state, &hc);
-#endif
-#endif
-
-    if (rdnum == 0) {
-        return;
-    }
-
-    *(uint32_t *)rd = (*(const uint32_t *)rs1 < imm);
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintIType(state, &hc);
-#endif
-#endif
-}
-
-/**
- * Exclusive or: xor rs1 and rs2.
- * rd = rs1 ^ rs2
- */
-static inline void RiscvEmulatorXOR(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum,
-    void *rd,
-    const uint8_t rs1num __attribute__((unused)),
-    const void *rs1,
-    const uint8_t rs2num __attribute__((unused)),
-    const void *rs2) {
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    state->instructionhandled = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "xor";
-    hc.hook = HOOK_BEGIN;
-    hc.rdnum = rdnum;
-    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
-    hc.rd = rd;
-    hc.rs1num = rs1num;
-    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
-    hc.rs1 = rs1;
-    hc.rs2num = rs2num;
-    hc.rs2name = RiscvEmulatorGetRegisterSymbolicName(rs2num);
-    hc.rs2 = rs2;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintRType(state, &hc);
-#endif
-#endif
-
-    if (rdnum == 0) {
-        return;
-    }
-
-    *(uint32_t *)rd = *(const uint32_t *)rs1 ^ *(const uint32_t *)rs2;
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintRType(state, &hc);
-#endif
-#endif
-}
-
-/**
- * Exclusive or immediate: xor rs1 with the sign-extended immediate.
- * rd = rs1 ^ imm
- */
-static inline void RiscvEmulatorXORI(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum __attribute__((unused)),
-    void *rd,
-    const uint8_t rs1num __attribute__((unused)),
-    const void *rs1,
-    const uint32_t imm) {
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    state->instructionhandled = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    // Pseudoinstruction: not (xori rd, rs1, -1).
-    if ((int16_t)imm == -1) {
-        hc.instruction = "not";
-    } else {
-        hc.instruction = "xori";
-    }
-    hc.hook = HOOK_BEGIN;
-    hc.rdnum = rdnum;
-    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
-    hc.rd = rd;
-    hc.rs1num = rs1num;
-    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
-    hc.rs1 = rs1;
-    hc.imm = (uint32_t)imm;
-    hc.immlength = (sizeof(imm));
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintIType(state, &hc);
-#endif
-#endif
-
-    if (rdnum == 0) {
-        return;
-    }
-
-    *(uint32_t *)rd = *(const uint32_t *)rs1 ^ imm;
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
@@ -868,198 +593,6 @@ static inline void RiscvEmulatorSRAI(
 }
 
 /**
- * Or: or rs1 and rs2.
- * rd = rs1 | rs2
- */
-static inline void RiscvEmulatorOR(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum,
-    void *rd,
-    const uint8_t rs1num __attribute__((unused)),
-    const void *rs1,
-    const uint8_t rs2num __attribute__((unused)),
-    const void *rs2) {
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    state->instructionhandled = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "or";
-    hc.hook = HOOK_BEGIN;
-    hc.rdnum = rdnum;
-    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
-    hc.rd = rd;
-    hc.rs1num = rs1num;
-    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
-    hc.rs1 = rs1;
-    hc.rs2num = rs2num;
-    hc.rs2name = RiscvEmulatorGetRegisterSymbolicName(rs2num);
-    hc.rs2 = rs2;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintRType(state, &hc);
-#endif
-#endif
-
-    if (rdnum == 0) {
-        return;
-    }
-
-    *(int32_t *)rd = *(const int32_t *)rs1 | *(const int32_t *)rs2;
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintRType(state, &hc);
-#endif
-#endif
-}
-
-/**
- * Or immediate: or rs1 with the sign-extended immediate.
- * rd = rs1 | imm
- */
-static inline void RiscvEmulatorORI(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum __attribute__((unused)),
-    void *rd,
-    const uint8_t rs1num __attribute__((unused)),
-    const void *rs1,
-    const int16_t imm) {
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    state->instructionhandled = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "ori";
-    hc.hook = HOOK_BEGIN;
-    hc.rdnum = rdnum;
-    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
-    hc.rd = rd;
-    hc.rs1num = rs1num;
-    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
-    hc.rs1 = rs1;
-    hc.imm = (uint32_t)imm;
-    hc.immlength = (sizeof(imm));
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintIType(state, &hc);
-#endif
-#endif
-
-    if (rdnum == 0) {
-        return;
-    }
-
-    *(int32_t *)rd = *(const int32_t *)rs1 | imm;
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintIType(state, &hc);
-#endif
-#endif
-}
-
-/**
- * And: and rs1 and rs2.
- * rd = rs1 & rs2
- */
-static inline void RiscvEmulatorAND(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum,
-    void *rd,
-    const uint8_t rs1num __attribute__((unused)),
-    const void *rs1,
-    const uint8_t rs2num __attribute__((unused)),
-    const void *rs2) {
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    state->instructionhandled = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "and";
-    hc.hook = HOOK_BEGIN;
-    hc.rdnum = rdnum;
-    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
-    hc.rd = rd;
-    hc.rs1num = rs1num;
-    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
-    hc.rs1 = rs1;
-    hc.rs2num = rs2num;
-    hc.rs2name = RiscvEmulatorGetRegisterSymbolicName(rs2num);
-    hc.rs2 = rs2;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintRType(state, &hc);
-#endif
-#endif
-
-    if (rdnum == 0) {
-        return;
-    }
-
-    *(int32_t *)rd = *(const int32_t *)rs1 & *(const int32_t *)rs2;
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintRType(state, &hc);
-#endif
-#endif
-}
-
-/**
- * And immediate: and rs1 with the sign-extended immediate.
- * rd = rs1 & imm
- */
-static inline void RiscvEmulatorANDI(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum __attribute__((unused)),
-    void *rd,
-    const uint8_t rs1num __attribute__((unused)),
-    const void *rs1,
-    const int16_t imm) {
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    state->instructionhandled = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "andi";
-    hc.hook = HOOK_BEGIN;
-    hc.rdnum = rdnum;
-    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
-    hc.rd = rd;
-    hc.rs1num = rs1num;
-    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
-    hc.rs1 = rs1;
-    hc.imm = (uint32_t)imm;
-    hc.immlength = (sizeof(imm));
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintIType(state, &hc);
-#endif
-#endif
-
-    if (rdnum == 0) {
-        return;
-    }
-
-    *(int32_t *)rd = *(const int32_t *)rs1 & imm;
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintIType(state, &hc);
-#endif
-#endif
-}
-
-/**
  * Process operation opcodes.
  */
 static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state, uint8_t rdnum, void *rd, uint8_t rs1num, void *rs1, uint8_t rs2num, void *rs2, uint8_t funct3, uint8_t funct7) {
@@ -1073,9 +606,14 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state, uin
         detectedUnknownInstruction = -1;
         switch (instruction_decoderhelper_rtype.funct7_3) {
             case FUNCT7_FUNCT3_OPERATION_ADD:
+            case FUNCT7_FUNCT3_OPERATION_SLT:
+            case FUNCT7_FUNCT3_OPERATION_SLTU:
+            case FUNCT7_FUNCT3_OPERATION_XOR:
+            case FUNCT7_FUNCT3_OPERATION_OR:
+            case FUNCT7_FUNCT3_OPERATION_AND:
 #if (RVE_E_ZIHINTNTL == 1)
                 // ntl.p1/pall/s1/all are encoded as add x0, x0, x2/x3/x4/x5.
-                if (rdnum == 0 && rs1num == 0) {
+                if (funct3 == FUNCT3_IMMEDIATE_ADDI && rdnum == 0 && rs1num == 0) {
                     if (rs2num == FUNCT7_FUNCT3_RS2_NTL_P1) {
                         RiscvEmulatorNTLP1(state);
                         break;
@@ -1094,7 +632,9 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state, uin
                     }
                 }
 #endif
-                RiscvEmulatorADD(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+                if (RiscvEmulatorOperation(state, rdnum, rd, rs1num, rs1, rs2num, rs2, 0, 0, funct3) == 0) {
+                    detectedUnknownInstruction = 1;
+                }
                 break;
             case FUNCT7_FUNCT3_OPERATION_SUB:
                 RiscvEmulatorSUB(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
@@ -1102,26 +642,11 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state, uin
             case FUNCT7_FUNCT3_OPERATION_SLL:
                 RiscvEmulatorSLL(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
-            case FUNCT7_FUNCT3_OPERATION_SLT:
-                RiscvEmulatorSLT(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
-                break;
-            case FUNCT7_FUNCT3_OPERATION_SLTU:
-                RiscvEmulatorSLTU(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
-                break;
-            case FUNCT7_FUNCT3_OPERATION_XOR:
-                RiscvEmulatorXOR(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
-                break;
             case FUNCT7_FUNCT3_OPERATION_SRL:
                 RiscvEmulatorSRL(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
             case FUNCT7_FUNCT3_OPERATION_SRA:
                 RiscvEmulatorSRA(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
-                break;
-            case FUNCT7_FUNCT3_OPERATION_OR:
-                RiscvEmulatorOR(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
-                break;
-            case FUNCT7_FUNCT3_OPERATION_AND:
-                RiscvEmulatorAND(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
                 break;
 #if (RVE_E_ZMMUL == 1)
             case FUNCT7_FUNCT3_OPERATION_MUL:
@@ -1384,22 +909,14 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state, uin
         int16_t imm = state->instruction.itype.imm;
         switch (funct3) {
             case FUNCT3_IMMEDIATE_ADDI:
-                RiscvEmulatorADDI(state, rdnum, rd, rs1num, rs1, imm);
-                break;
             case FUNCT3_IMMEDIATE_SLTI:
-                RiscvEmulatorSLTI(state, rdnum, rd, rs1num, rs1, imm);
-                break;
             case FUNCT3_IMMEDIATE_SLTIU:
-                RiscvEmulatorSLTIU(state, rdnum, rd, rs1num, rs1, (uint32_t)imm);
-                break;
             case FUNCT3_IMMEDIATE_XORI:
-                RiscvEmulatorXORI(state, rdnum, rd, rs1num, rs1, (uint32_t)imm);
-                break;
             case FUNCT3_IMMEDIATE_ORI:
-                RiscvEmulatorORI(state, rdnum, rd, rs1num, rs1, imm);
-                break;
             case FUNCT3_IMMEDIATE_ANDI:
-                RiscvEmulatorANDI(state, rdnum, rd, rs1num, rs1, imm);
+                if (RiscvEmulatorOperation(state, rdnum, rd, rs1num, rs1, 0, NULL, 1, (uint32_t)imm, funct3) == 0) {
+                    detectedUnknownInstruction = 1;
+                }
                 break;
             default:
                 detectedUnknownInstruction = 1;
