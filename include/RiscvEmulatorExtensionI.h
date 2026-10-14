@@ -35,9 +35,7 @@
  * Jump and link register: jump to rs1 plus the sign-extended offset, clearing the least significant bit, and store the return address in rd.
  * rd = pc + 4; pc = (rs1 + imm) & ~1
  */
-static inline void RiscvEmulatorJALR(RiscvEmulatorState_t *state, uint8_t rdnum, void *rd, uint8_t rs1num, void *rs1) {
-    int16_t imm = state->instruction.itype.imm;
-
+static inline void RiscvEmulatorJALR(RiscvEmulatorState_t *state, uint8_t rdnum, void *rd, uint8_t rs1num, void *rs1, const int16_t imm) {
     uint32_t immu = (uint32_t)imm;
     uint32_t jumptoprogramcounter = (*(const uint32_t *)rs1 + immu) & (UINT32_MAX - 1);
 
@@ -100,9 +98,9 @@ static inline void RiscvEmulatorJALR(RiscvEmulatorState_t *state, uint8_t rdnum,
 /**
  * Process JALR opcode.
  */
-static inline void RiscvEmulatorOpcodeJumpAndLinkRegister(RiscvEmulatorState_t *state, uint8_t rdnum, void *rd, uint8_t rs1num, void *rs1, uint8_t funct3) {
+static inline void RiscvEmulatorOpcodeJumpAndLinkRegister(RiscvEmulatorState_t *state, uint8_t rdnum, void *rd, uint8_t rs1num, void *rs1, uint8_t funct3, int16_t imm) {
     if (funct3 == FUNCT3_JUMPANDLINKREGISTER_JALR) {
-        RiscvEmulatorJALR(state, rdnum, rd, rs1num, rs1);
+        RiscvEmulatorJALR(state, rdnum, rd, rs1num, rs1, imm);
     } else {
         state->trapflag.illegalinstruction = 1;
     }
@@ -797,10 +795,8 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state, uin
 /**
  * Process immediate opcodes.
  */
-static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state, uint8_t rdnum, void *rd, uint8_t rs1num, void *rs1) {
+static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state, uint8_t rdnum, void *rd, uint8_t rs1num, void *rs1, uint8_t funct3, int16_t imm) {
     int8_t detectedUnknownInstruction = 1;
-
-    uint8_t funct3 = state->instruction.itype.funct3;
 
 #if (RVE_E_ZBB == 1)
     if (detectedUnknownInstruction == 1) {
@@ -809,7 +805,7 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state, uin
             funct3 == FUNCT3_IMMEDIATE_FUNCTIONS_5) {
             RiscvInstructionTypeIDecoderImmFunct3ImmFunct3_u instruction_decoderhelper_itype_functiongroup = {0};
             instruction_decoderhelper_itype_functiongroup.funct3 = funct3;
-            instruction_decoderhelper_itype_functiongroup.imm = state->instruction.itype.imm;
+            instruction_decoderhelper_itype_functiongroup.imm = imm;
 
             detectedUnknownInstruction = -1;
             switch (instruction_decoderhelper_itype_functiongroup.immfunct3) {
@@ -906,7 +902,6 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state, uin
 
     if (detectedUnknownInstruction == 1) {
         detectedUnknownInstruction = -1;
-        int16_t imm = state->instruction.itype.imm;
         switch (funct3) {
             case FUNCT3_IMMEDIATE_ADDI:
             case FUNCT3_IMMEDIATE_SLTI:
@@ -1052,8 +1047,7 @@ static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state, uint8_t 
 /**
  * Process store opcodes.
  */
-static inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state, uint8_t rs1num, void *rs1, uint8_t rs2num, void *rs2) {
-    // Untangle the immediate bits.
+static inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state, uint8_t rs1num, void *rs1, uint8_t rs2num, void *rs2, uint8_t funct3) {
     RiscvInstructionTypeSDecoderImm_u immdecoder = {0};
     immdecoder.bit.imm4_0 = state->instruction.stype.imm4_0;
     immdecoder.bit.imm11_5 = state->instruction.stype.imm11_5;
@@ -1067,7 +1061,7 @@ static inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state, uint8_t
 #endif
 
     uint8_t length = 0;
-    switch (state->instruction.stype.funct3) {
+    switch (funct3) {
         case FUNCT3_STORE_SW:
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
             hc.instruction = "sw";
@@ -1409,15 +1403,14 @@ static inline void RiscvEmulatorBLTU(
  * Process branch opcodes.
  */
 static inline void RiscvEmulatorOpcodeBranch(RiscvEmulatorState_t *state, uint8_t rs1num, void *rs1, uint8_t rs2num, void *rs2, uint8_t funct3) {
-    uint8_t executebranch = BRANCH_NO;
-
-    // Untangle the immediate bits.
     RiscvInstructionTypeBDecoderImm_u immdecoder = {0};
     immdecoder.bit.imm4_1 = state->instruction.btype.imm4_1;
     immdecoder.bit.imm10_5 = state->instruction.btype.imm10_5;
     immdecoder.bit.imm11 = state->instruction.btype.imm11;
     immdecoder.bit.imm12 = state->instruction.btype.imm12;
     int16_t imm = immdecoder.imm;
+
+    uint8_t executebranch = BRANCH_NO;
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     RiscvEmulatorHookContext_t hc = {0};
@@ -1472,15 +1465,13 @@ static inline void RiscvEmulatorOpcodeBranch(RiscvEmulatorState_t *state, uint8_
 }
 
 /**
- * Add upper immediate to program counter: add the 20-bit upper immediate shifted left by 12 to the program counter.
- * rd = pc + (imm[31:12] << 12)
+ * Add upper immediate to program counter.
+ * rd = pc + imm
  */
 static inline void RiscvEmulatorAUIPC(RiscvEmulatorState_t *state, uint8_t rdnum, void *rd __attribute__((unused))) {
-    uint32_t upperimmediate = state->instruction.utype.imm31_12;
-
     RiscvInstructionTypeUDecoderImm_u immdecoder = {0};
-    immdecoder.bit.imm31_12 = upperimmediate & 0xFFFFFu;
-    int32_t imm = (int32_t)immdecoder.imm;
+    immdecoder.bit.imm31_12 = state->instruction.utype.imm31_12;
+    uint32_t imm = immdecoder.imm;
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     state->instructionhandled = 1;
@@ -1490,8 +1481,8 @@ static inline void RiscvEmulatorAUIPC(RiscvEmulatorState_t *state, uint8_t rdnum
     hc.rdnum = rdnum;
     hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
     hc.rd = rd;
-    hc.upperimmediate = upperimmediate;
-    hc.imm = (uint32_t)imm;
+    hc.upperimmediate = state->instruction.utype.imm31_12;
+    hc.imm = imm;
     RiscvEmulatorHook(state, &hc);
 #if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintHeader(state);
@@ -1500,7 +1491,7 @@ static inline void RiscvEmulatorAUIPC(RiscvEmulatorState_t *state, uint8_t rdnum
 #endif
 
     if (rdnum != 0) {
-        state->reg.x[rdnum] = state->programcounter + (uint32_t)imm;
+        state->reg.x[rdnum] = state->programcounter + imm;
     }
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
@@ -1513,14 +1504,12 @@ static inline void RiscvEmulatorAUIPC(RiscvEmulatorState_t *state, uint8_t rdnum
 }
 
 /**
- * Load upper immediate: place the 20-bit upper immediate in the most significant bits of rd.
- * rd = imm[31:12] << 12
+ * Load upper immediate.
+ * rd = imm
  */
 static inline void RiscvEmulatorLUI(RiscvEmulatorState_t *state, uint8_t rdnum, void *rd) {
     RiscvInstructionTypeUDecoderImm_u immdecoder = {0};
-    immdecoder.bit.imm11_0 = 0;
     immdecoder.bit.imm31_12 = state->instruction.utype.imm31_12;
-
     uint32_t imm = immdecoder.imm;
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
@@ -1531,7 +1520,7 @@ static inline void RiscvEmulatorLUI(RiscvEmulatorState_t *state, uint8_t rdnum, 
     hc.rdnum = rdnum;
     hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
     hc.rd = rd;
-    hc.imm = (uint32_t)imm;
+    hc.imm = imm;
     RiscvEmulatorHook(state, &hc);
 #if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintHeader(state);
@@ -1557,14 +1546,14 @@ static inline void RiscvEmulatorLUI(RiscvEmulatorState_t *state, uint8_t rdnum, 
  * rd = pc + 4; pc += offset
  */
 static inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state, uint8_t rdnum, void *rd) {
-    // Untangle the immediate bits.
     RiscvInstructionTypeJDecoderImm_u immdecoder = {0};
     immdecoder.bit.imm10_1 = state->instruction.jtype.imm10_1;
     immdecoder.bit.imm11 = state->instruction.jtype.imm11;
     immdecoder.bit.imm19_12 = state->instruction.jtype.imm19_12;
     immdecoder.bit.imm20 = state->instruction.jtype.imm20;
+    int32_t imm = immdecoder.imm;
 
-    uint32_t immu = (uint32_t)immdecoder.imm;
+    uint32_t immu = (uint32_t)imm;
     uint32_t jumptoprogramcounter = state->programcounter + immu;
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
@@ -1580,7 +1569,7 @@ static inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state, uint8_t rdnum, 
     hc.rdnum = rdnum;
     hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
     hc.rd = rd;
-    hc.imm = (uint32_t)immdecoder.imm;
+    hc.imm = (uint32_t)imm;
     hc.immissigned = 1;
     hc.immname = "offset";
     RiscvEmulatorHook(state, &hc);
@@ -1670,6 +1659,8 @@ static inline void RiscvEmulatorEBREAK(RiscvEmulatorState_t *state) {
  * Process system opcodes.
  */
 static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state, uint8_t rdnum, void *rd __attribute__((unused)), uint8_t rs1num, void *rs1 __attribute__((unused)), uint8_t funct3) {
+    uint16_t funct12 = state->instruction.itypesystem.funct12;
+
     int8_t detectedUnknownInstruction = 1;
 
     if (detectedUnknownInstruction == 1) {
@@ -1677,7 +1668,7 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state, uint8_
             funct3 == 0 &&
             rs1num == 0) {
             detectedUnknownInstruction = -1;
-            switch (state->instruction.itypesystem.funct12) {
+            switch (funct12) {
 #if (RVE_E_ZICSR == 1)
                 case FUNCT12_MRET:
                     RiscvEmulatorMRET(state);
@@ -1706,10 +1697,11 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state, uint8_
         // May-Be-Operation instructions are SYSTEM opcode instructions with
         // funct3 4 and a fixed bit pattern in the upper bits. The n field
         // selects the instruction variant but all variants behave the same.
-        if ((state->instruction.value & MASK_ZIMOP_MOPR) == PATTERN_ZIMOP_MOPR) {
+        uint32_t instructionvalue = state->instruction.value;
+        if ((instructionvalue & MASK_ZIMOP_MOPR) == PATTERN_ZIMOP_MOPR) {
             detectedUnknownInstruction = -1;
             RiscvEmulatorMOPR(state, rdnum, rd);
-        } else if ((state->instruction.value & MASK_ZIMOP_MOPRR) == PATTERN_ZIMOP_MOPRR) {
+        } else if ((instructionvalue & MASK_ZIMOP_MOPRR) == PATTERN_ZIMOP_MOPRR) {
             detectedUnknownInstruction = -1;
             RiscvEmulatorMOPRR(state, rdnum, rd);
         }
@@ -1720,7 +1712,7 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state, uint8_
     if (detectedUnknownInstruction == 1) {
         detectedUnknownInstruction = -1;
 
-        uint16_t csrnum = state->instruction.itypecsr.csr;
+        uint16_t csrnum = funct12;
         void *csr = RiscvEmulatorGetCSRAddress(state, csrnum);
 
         if (state->trapflag.value > 0) {
@@ -1729,7 +1721,7 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state, uint8_
 
         // The immediate variants (csrrwi, csrrsi, csrrci) hold a zero-extended
         // 5-bit immediate in the rs1 field instead of a register number.
-        const uint8_t imm = state->instruction.itypecsrimm.imm;
+        const uint8_t imm = state->instruction.itypesystem.rs1;
 
         if (RiscvEmulatorCSR(state, rdnum, rd, rs1num, rs1, funct3, csr, csrnum, imm) == 0) {
             detectedUnknownInstruction = 1;

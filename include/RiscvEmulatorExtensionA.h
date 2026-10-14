@@ -182,9 +182,9 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(RiscvEmulatorState_t
     instruction_decoderhelper_rtypeatomicmemoryoperation.funct5 = state->instruction.rtypeatomicmemoryoperation.funct5;
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    const uint8_t funct5 = instruction_decoderhelper_rtypeatomicmemoryoperation.funct5;
+    const uint8_t funct5disasm = instruction_decoderhelper_rtypeatomicmemoryoperation.funct5;
     const char *instructionname = "unknown";
-    switch (funct5) {
+    switch (funct5disasm) {
         case 0b00000:
             instructionname = "amoadd.w";
             break;

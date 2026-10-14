@@ -97,25 +97,26 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
         uint8_t rs2num = state->instruction.rtype.rs2;
         uint8_t funct3 = state->instruction.rtype.funct3;
         uint8_t funct7 = state->instruction.rtype.funct7;
+        int16_t imm = state->instruction.itype.imm;
         void *rd = &state->reg.x[rdnum];
         void *rs1 = &state->reg.x[rs1num];
         void *rs2 = &state->reg.x[rs2num];
 
         switch (state->instruction.opcode) {
             case OPCODE32_JUMPANDLINKREGISTER:
-                RiscvEmulatorOpcodeJumpAndLinkRegister(state, rdnum, rd, rs1num, rs1, funct3);
+                RiscvEmulatorOpcodeJumpAndLinkRegister(state, rdnum, rd, rs1num, rs1, funct3, imm);
                 break;
             case OPCODE32_OPERATION:
                 RiscvEmulatorOpcodeOperation(state, rdnum, rd, rs1num, rs1, rs2num, rs2, funct3, funct7);
                 break;
             case OPCODE32_IMMEDIATE:
-                RiscvEmulatorOpcodeImmediate(state, rdnum, rd, rs1num, rs1);
+                RiscvEmulatorOpcodeImmediate(state, rdnum, rd, rs1num, rs1, funct3, imm);
                 break;
             case OPCODE32_LOAD:
-                RiscvEmulatorOpcodeLoad(state, rdnum, rd, rs1num, rs1, (int16_t)state->instruction.itype.imm, funct3);
+                RiscvEmulatorOpcodeLoad(state, rdnum, rd, rs1num, rs1, imm, funct3);
                 break;
             case OPCODE32_STORE:
-                RiscvEmulatorOpcodeStore(state, rs1num, rs1, rs2num, rs2);
+                RiscvEmulatorOpcodeStore(state, rs1num, rs1, rs2num, rs2, funct3);
                 break;
             case OPCODE32_BRANCH:
                 RiscvEmulatorOpcodeBranch(state, rs1num, rs1, rs2num, rs2, funct3);

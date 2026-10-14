@@ -29,6 +29,8 @@ static inline void RiscvEmulatorSHADD(
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2) {
 
+    uint8_t funct3_shifts = state->instruction.rtypeshift.funct3_shifts;
+
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     state->instructionhandled = 1;
     RiscvEmulatorHookContext_t hc = {0};
@@ -54,7 +56,7 @@ static inline void RiscvEmulatorSHADD(
         return;
     }
 
-    *(uint32_t *)rd = *(const uint32_t *)rs2 + (*(const uint32_t *)rs1 << state->instruction.rtypeshift.funct3_shifts);
+    *(uint32_t *)rd = *(const uint32_t *)rs2 + (*(const uint32_t *)rs1 << funct3_shifts);
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
