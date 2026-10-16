@@ -672,10 +672,8 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state, uin
 #endif
 #if (RVE_E_ZBKB == 1)
                 case IMM11_5_FUNCT3_IMMEDIATE_ZIP:
-                    RiscvEmulatorZIP(state, rdnum, rd, rs1num, rs1);
-                    break;
                 case IMM11_5_FUNCT3_IMMEDIATE_UNZIP:
-                    RiscvEmulatorUNZIP(state, rdnum, rd, rs1num, rs1);
+                    RiscvEmulatorZIPUNZIPOperation(state, rdnum, rd, rs1num, rs1, instruction_decoderhelper_itype_functions_shamt.imm11_5funct3);
                     break;
 #endif
 #if (RVE_E_ZBS == 1)
