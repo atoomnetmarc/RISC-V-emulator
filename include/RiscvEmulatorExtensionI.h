@@ -208,28 +208,39 @@ static inline uint8_t RiscvEmulatorOperation(
 
     const uint32_t operand2 = (immvariant == 0) ? *(const uint32_t *)rs2 : imm; // rs2 value or sign-extended immediate
 
+    uint32_t result;
     switch (funct3) {
-        case FUNCT3_IMMEDIATE_ADDI:
-            *(uint32_t *)rd = *(const uint32_t *)rs1 + operand2;
-            break;
         case FUNCT3_IMMEDIATE_SLTI:
-            *(int32_t *)rd = (*(const int32_t *)rs1 < (int32_t)operand2);
+            result = (*(const int32_t *)rs1 < (int32_t)operand2);
             break;
         case FUNCT3_IMMEDIATE_SLTIU:
-            *(uint32_t *)rd = (*(const uint32_t *)rs1 < operand2);
+            result = (*(const uint32_t *)rs1 < operand2);
             break;
+        case FUNCT3_IMMEDIATE_ADDI:
         case FUNCT3_IMMEDIATE_XORI:
-            *(uint32_t *)rd = *(const uint32_t *)rs1 ^ operand2;
-            break;
         case FUNCT3_IMMEDIATE_ORI:
-            *(uint32_t *)rd = *(const uint32_t *)rs1 | operand2;
+        case FUNCT3_IMMEDIATE_ANDI: {
+            const uint32_t a = *(const uint32_t *)rs1;
+            switch (funct3) {
+                case FUNCT3_IMMEDIATE_ADDI:
+                    result = a + operand2;
+                    break;
+                case FUNCT3_IMMEDIATE_XORI:
+                    result = a ^ operand2;
+                    break;
+                case FUNCT3_IMMEDIATE_ORI:
+                    result = a | operand2;
+                    break;
+                default: // FUNCT3_IMMEDIATE_ANDI
+                    result = a & operand2;
+                    break;
+            }
             break;
-        case FUNCT3_IMMEDIATE_ANDI:
-            *(uint32_t *)rd = *(const uint32_t *)rs1 & operand2;
-            break;
+        }
         default:
             return 0;
     }
+    *(uint32_t *)rd = result;
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
