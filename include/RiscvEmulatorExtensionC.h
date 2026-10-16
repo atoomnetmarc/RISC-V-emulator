@@ -1339,46 +1339,14 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state, ui
             break;
 #if ((RVE_E_ZCB == 1) && (RVE_E_C == 1))
         case OPCODE16_ZCB_LOADSTORE: {
-            uint8_t offset = 0;
-
+            uint8_t imm5_3 = state->instruction.cltype.imm5_3;
             uint8_t imm2 = state->instruction.cltype.imm2;
             uint8_t imm6 = state->instruction.cltype.imm6;
 
-            switch (state->instruction.cltype.imm5_3) {
-                case FUNCT3_ZCB_LBU:
-                    // c.lbu. The offset is formed as uimm[1] = encoding[5]
-                    // and uimm[0] = encoding[6].
-                    offset = (uint8_t)(imm2 | (imm6 << 1));
-                    RiscvEmulatorC_LBU(state, (uint8_t)rdnum, rd, (uint8_t)rs1num, rs1, offset);
-                    break;
-                case FUNCT3_ZCB_LH:
-                    // c.lhu and c.lh. The offset is formed as
-                    // uimm[1] = encoding[5].
-                    offset = (uint8_t)(imm6 << 1);
-                    if (imm2 == 0) {
-                        RiscvEmulatorC_LHU(state, (uint8_t)rdnum, rd, (uint8_t)rs1num, rs1, offset);
-                    } else {
-                        RiscvEmulatorC_LH(state, (uint8_t)rdnum, rd, (uint8_t)rs1num, rs1, offset);
-                    }
-                    break;
-                case FUNCT3_ZCB_SB:
-                    // c.sb. The offset is formed as uimm[1] = encoding[5]
-                    // and uimm[0] = encoding[6].
-                    offset = (uint8_t)(imm2 | (imm6 << 1));
-                    RiscvEmulatorC_SB(state, (uint8_t)rs1num, rs1, (uint8_t)rs2num, rs2, offset);
-                    break;
-                case FUNCT3_ZCB_SH:
-                    // c.sh. The offset is formed as uimm[1] = encoding[5].
-                    if (imm2 == 0) {
-                        offset = (uint8_t)(imm6 << 1);
-                        RiscvEmulatorC_SH(state, (uint8_t)rs1num, rs1, (uint8_t)rs2num, rs2, offset);
-                    } else {
-                        state->trapflag.illegalinstruction = 1;
-                    }
-                    break;
-                default:
-                    state->trapflag.illegalinstruction = 1;
-                    break;
+            if (imm5_3 == FUNCT3_ZCB_SB || imm5_3 == FUNCT3_ZCB_SH) {
+                RiscvEmulatorC_StoreOperation(state, (uint8_t)rs1num, rs1, (uint8_t)rs2num, rs2, imm5_3, imm2, imm6);
+            } else {
+                RiscvEmulatorC_LoadOperation(state, (uint8_t)rdnum, rd, (uint8_t)rs1num, rs1, imm5_3, imm2, imm6);
             }
             break;
         }
@@ -1448,38 +1416,7 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state, ui
 #if ((RVE_E_ZCB == 1) && (RVE_E_C == 1))
             if ((funct6_funct2 >> 2) == FUNCT6_ZCB) {
                 if ((funct6_funct2 & 0b11) == FUNCT2_ZCB_GROUP) {
-                    switch (state->instruction.catype.rs2p) {
-                        case RS2P_ZCB_ZEXTB:
-                            RiscvEmulatorC_ZEXTB(state, (uint8_t)rdnum, rd);
-                            break;
-                        case RS2P_ZCB_SEXTB:
-#if (RVE_E_ZBB == 1)
-                            RiscvEmulatorC_SEXTB(state, (uint8_t)rdnum, rd);
-#else
-                            state->trapflag.illegalinstruction = 1;
-#endif
-                            break;
-                        case RS2P_ZCB_ZEXTH:
-#if (RVE_E_ZBB == 1)
-                            RiscvEmulatorC_ZEXTH(state, (uint8_t)rdnum, rd);
-#else
-                            state->trapflag.illegalinstruction = 1;
-#endif
-                            break;
-                        case RS2P_ZCB_SEXTH:
-#if (RVE_E_ZBB == 1)
-                            RiscvEmulatorC_SEXTH(state, (uint8_t)rdnum, rd);
-#else
-                            state->trapflag.illegalinstruction = 1;
-#endif
-                            break;
-                        case RS2P_ZCB_NOT:
-                            RiscvEmulatorC_NOT(state, (uint8_t)rdnum, rd);
-                            break;
-                        default:
-                            state->trapflag.illegalinstruction = 1;
-                            break;
-                    }
+                    RiscvEmulatorC_RdOperation(state, (uint8_t)rdnum, rd, state->instruction.catype.rs2p);
                     break;
                 }
 

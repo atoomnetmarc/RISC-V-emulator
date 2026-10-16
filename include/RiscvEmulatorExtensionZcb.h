@@ -21,133 +21,59 @@
 #include "RiscvEmulatorType.h"
 
 /**
- * Load byte: load a byte from rs1 plus the offset, zero-extended.
- * rd = zeroext(memory[rs1 + offset])
+ * Compressed load operation funnel: c.lbu, c.lhu and c.lh.
+ * rd = zeroext(memory[rs1 + offset]) or rd = signext(memory[rs1 + offset])
+ *
+ * The variant is the decoded imm5_3 field; imm2 selects between c.lhu and
+ * c.lh for the halfword variants and is part of the offset for c.lbu.
  */
-static inline void RiscvEmulatorC_LBU(
-    RiscvEmulatorState_t *state __attribute__((unused)),
+static inline void RiscvEmulatorC_LoadOperation(
+    RiscvEmulatorState_t *state,
     const uint8_t rdnum __attribute__((unused)),
     void *rd,
     const uint8_t rs1num __attribute__((unused)),
     void *rs1,
-    const uint8_t offset) {
+    const uint8_t imm5_3,
+    const uint8_t imm2,
+    const uint8_t imm6) {
 
-    uint8_t length = sizeof(uint8_t);
+    uint8_t offset = 0;
+    uint8_t length = 0;
+
+    switch (imm5_3) {
+        case FUNCT3_ZCB_LBU:
+            // c.lbu. The offset is formed as uimm[1] = encoding[5]
+            // and uimm[0] = encoding[6].
+            offset = (uint8_t)(imm2 | (imm6 << 1));
+            length = sizeof(uint8_t);
+            break;
+        case FUNCT3_ZCB_LH:
+            // c.lhu and c.lh. The offset is formed as uimm[1] = encoding[5].
+            offset = (uint8_t)(imm6 << 1);
+            length = sizeof(uint16_t);
+            break;
+        default:
+            state->trapflag.illegalinstruction = 1;
+            return;
+    }
 
     uint32_t memorylocation = *(const uint32_t *)rs1 + offset;
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     state->instructionhandled = 1;
     RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "c.lbu";
-    hc.hook = HOOK_BEGIN;
-    hc.rdnum = rdnum;
-    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
-    hc.rd = rd;
-    hc.rs1num = rs1num;
-    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
-    hc.rs1 = rs1;
-    hc.imm = offset;
-    hc.immlength = sizeof(offset);
-    hc.immname = "offset";
-    hc.memorylocation = memorylocation;
-    hc.length = length;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintLoad(state, &hc);
-#endif
-#endif
-
-    // Load into a zeroed local first so the upper bytes of the 32-bit
-    // register are cleared.
-    uint32_t loadedvalue = 0;
-    RiscvEmulatorLoad(memorylocation, &loadedvalue, length);
-    *(uint32_t *)rd = loadedvalue;
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintLoad(state, &hc);
-#endif
-#endif
-}
-
-/**
- * Load halfword: load a halfword from rs1 plus the offset, zero-extended.
- * rd = zeroext(memory[rs1 + offset])
- */
-static inline void RiscvEmulatorC_LHU(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum __attribute__((unused)),
-    void *rd,
-    const uint8_t rs1num __attribute__((unused)),
-    void *rs1,
-    const uint8_t offset) {
-
-    uint8_t length = sizeof(uint16_t);
-
-    uint32_t memorylocation = *(const uint32_t *)rs1 + offset;
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    state->instructionhandled = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "c.lhu";
-    hc.hook = HOOK_BEGIN;
-    hc.rdnum = rdnum;
-    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
-    hc.rd = rd;
-    hc.rs1num = rs1num;
-    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
-    hc.rs1 = rs1;
-    hc.imm = offset;
-    hc.immlength = sizeof(offset);
-    hc.immname = "offset";
-    hc.memorylocation = memorylocation;
-    hc.length = length;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintLoad(state, &hc);
-#endif
-#endif
-
-    // Load into a zeroed local first so the upper bytes of the 32-bit
-    // register are cleared.
-    uint32_t loadedvalue = 0;
-    RiscvEmulatorLoad(memorylocation, &loadedvalue, length);
-    *(uint32_t *)rd = loadedvalue;
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintLoad(state, &hc);
-#endif
-#endif
-}
-
-/**
- * Load halfword: load a halfword from rs1 plus the offset, sign-extended.
- * rd = signext(memory[rs1 + offset])
- */
-static inline void RiscvEmulatorC_LH(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum __attribute__((unused)),
-    void *rd,
-    const uint8_t rs1num __attribute__((unused)),
-    void *rs1,
-    const uint8_t offset) {
-
-    uint8_t length = sizeof(uint16_t);
-
-    uint32_t memorylocation = *(const uint32_t *)rs1 + offset;
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    state->instructionhandled = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "c.lh";
+    switch (imm5_3) {
+        case FUNCT3_ZCB_LBU:
+            hc.instruction = "c.lbu";
+            break;
+        case FUNCT3_ZCB_LH:
+            if (imm2 == 0) {
+                hc.instruction = "c.lhu";
+            } else {
+                hc.instruction = "c.lh";
+            }
+            break;
+    }
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
     hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
@@ -172,9 +98,11 @@ static inline void RiscvEmulatorC_LH(
     uint32_t loadedvalue = 0;
     RiscvEmulatorLoad(memorylocation, &loadedvalue, length);
 
-    // Sign extend the loaded halfword.
-    if (loadedvalue & 0x8000) {
-        loadedvalue |= 0xFFFF0000;
+    // Sign extend the loaded halfword for c.lh.
+    if (imm5_3 == FUNCT3_ZCB_LH && imm2 != 0) {
+        if (loadedvalue & 0x8000) {
+            loadedvalue |= 0xFFFF0000;
+        }
     }
 
     *(uint32_t *)rd = loadedvalue;
@@ -189,25 +117,59 @@ static inline void RiscvEmulatorC_LH(
 }
 
 /**
- * Store byte: store the least significant byte of rs2 to rs1 plus the offset.
- * memory[rs1 + offset] = rs2[7:0]
+ * Compressed store operation funnel: c.sb and c.sh.
+ * memory[rs1 + offset] = rs2[7:0] or memory[rs1 + offset] = rs2[15:0]
+ *
+ * The variant is the decoded imm5_3 field; imm2 is part of the offset for
+ * c.sb and must be zero for c.sh.
  */
-static inline void RiscvEmulatorC_SB(
-    RiscvEmulatorState_t *state __attribute__((unused)),
+static inline void RiscvEmulatorC_StoreOperation(
+    RiscvEmulatorState_t *state,
     const uint8_t rs1num __attribute__((unused)),
     void *rs1,
     const uint8_t rs2num __attribute__((unused)),
     const void *rs2,
-    const uint8_t offset) {
+    const uint8_t imm5_3,
+    const uint8_t imm2,
+    const uint8_t imm6) {
 
-    uint8_t length = sizeof(uint8_t);
+    uint8_t offset = 0;
+    uint8_t length = 0;
+
+    switch (imm5_3) {
+        case FUNCT3_ZCB_SB:
+            // c.sb. The offset is formed as uimm[1] = encoding[5]
+            // and uimm[0] = encoding[6].
+            offset = (uint8_t)(imm2 | (imm6 << 1));
+            length = sizeof(uint8_t);
+            break;
+        case FUNCT3_ZCB_SH:
+            // c.sh. The offset is formed as uimm[1] = encoding[5].
+            if (imm2 != 0) {
+                state->trapflag.illegalinstruction = 1;
+                return;
+            }
+            offset = (uint8_t)(imm6 << 1);
+            length = sizeof(uint16_t);
+            break;
+        default:
+            state->trapflag.illegalinstruction = 1;
+            return;
+    }
 
     uint32_t memorylocation = *(const uint32_t *)rs1 + offset;
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     state->instructionhandled = 1;
     RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "c.sb";
+    switch (imm5_3) {
+        case FUNCT3_ZCB_SB:
+            hc.instruction = "c.sb";
+            break;
+        case FUNCT3_ZCB_SH:
+            hc.instruction = "c.sh";
+            break;
+    }
     hc.hook = HOOK_BEGIN;
     hc.rs1num = rs1num;
     hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
@@ -239,142 +201,40 @@ static inline void RiscvEmulatorC_SB(
 }
 
 /**
- * Store halfword: store the least significant halfword of rs2 to rs1 plus the offset.
- * memory[rs1 + offset] = rs2[15:0]
+ * Compressed rd operation funnel: c.zext.b, c.sext.b, c.zext.h, c.sext.h
+ * and c.not. The variant is the decoded rs2p field.
  */
-static inline void RiscvEmulatorC_SH(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rs1num __attribute__((unused)),
-    void *rs1,
-    const uint8_t rs2num __attribute__((unused)),
-    const void *rs2,
-    const uint8_t offset) {
-
-    uint8_t length = sizeof(uint16_t);
-
-    uint32_t memorylocation = *(const uint32_t *)rs1 + offset;
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    state->instructionhandled = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "c.sh";
-    hc.hook = HOOK_BEGIN;
-    hc.rs1num = rs1num;
-    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
-    hc.rs1 = rs1;
-    hc.rs2num = rs2num;
-    hc.rs2name = RiscvEmulatorGetRegisterSymbolicName(rs2num);
-    hc.rs2 = rs2;
-    hc.imm = offset;
-    hc.immlength = sizeof(offset);
-    hc.immname = "offset";
-    hc.memorylocation = memorylocation;
-    hc.length = length;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintStore(state, &hc);
-#endif
-#endif
-
-    RiscvEmulatorStore(memorylocation, rs2, length);
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintStore(state, &hc);
-#endif
-#endif
-}
-
-/**
- * Zero-extend byte: zero-extend the least significant byte of rd to XLEN bits.
- * rd = zeroext(rd[7:0])
- */
-static inline void RiscvEmulatorC_ZEXTB(
-    RiscvEmulatorState_t *state __attribute__((unused)),
+static inline void RiscvEmulatorC_RdOperation(
+    RiscvEmulatorState_t *state,
     const uint8_t rdnum __attribute__((unused)),
-    void *rd) {
+    void *rd,
+    const uint8_t variant) {
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     state->instructionhandled = 1;
     RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "c.zext.b";
-    hc.hook = HOOK_BEGIN;
-    hc.rdnum = rdnum;
-    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
-    hc.rd = rd;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintIType(state, &hc);
+    switch (variant) {
+        case RS2P_ZCB_ZEXTB:
+            hc.instruction = "c.zext.b";
+            break;
+#if (RVE_E_ZBB == 1)
+        case RS2P_ZCB_SEXTB:
+            hc.instruction = "c.sext.b";
+            break;
+        case RS2P_ZCB_ZEXTH:
+            hc.instruction = "c.zext.h";
+            break;
+        case RS2P_ZCB_SEXTH:
+            hc.instruction = "c.sext.h";
+            break;
 #endif
-#endif
-
-    *(uint32_t *)rd &= 0xFF;
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintIType(state, &hc);
-#endif
-#endif
-}
-
-/**
- * Sign-extend byte: sign-extend the least significant byte of rd to XLEN bits.
- * rd = signext(rd[7:0])
- */
-static inline void RiscvEmulatorC_SEXTB(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum __attribute__((unused)),
-    void *rd) {
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    state->instructionhandled = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "c.sext.b";
-    hc.hook = HOOK_BEGIN;
-    hc.rdnum = rdnum;
-    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
-    hc.rd = rd;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintIType(state, &hc);
-#endif
-#endif
-
-    if (*(uint32_t *)rd & 0x80) {
-        *(uint32_t *)rd |= 0xFFFFFF00;
-    } else {
-        *(uint32_t *)rd &= 0xFF;
+        case RS2P_ZCB_NOT:
+            hc.instruction = "c.not";
+            break;
+        default:
+            state->trapflag.illegalinstruction = 1;
+            return;
     }
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintIType(state, &hc);
-#endif
-#endif
-}
-
-/**
- * Zero-extend halfword: zero-extend the least significant halfword of rd to XLEN bits.
- * rd = zeroext(rd[15:0])
- */
-static inline void RiscvEmulatorC_ZEXTH(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum __attribute__((unused)),
-    void *rd) {
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    state->instructionhandled = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "c.zext.h";
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
     hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
@@ -386,81 +246,36 @@ static inline void RiscvEmulatorC_ZEXTH(
 #endif
 #endif
 
-    *(uint32_t *)rd &= 0xFFFF;
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintIType(state, &hc);
+    switch (variant) {
+        case RS2P_ZCB_ZEXTB:
+            *(uint32_t *)rd &= 0xFF;
+            break;
+#if (RVE_E_ZBB == 1)
+        case RS2P_ZCB_SEXTB:
+            if (*(uint32_t *)rd & 0x80) {
+                *(uint32_t *)rd |= 0xFFFFFF00;
+            } else {
+                *(uint32_t *)rd &= 0xFF;
+            }
+            break;
+        case RS2P_ZCB_ZEXTH:
+            *(uint32_t *)rd &= 0xFFFF;
+            break;
+        case RS2P_ZCB_SEXTH:
+            if (*(uint32_t *)rd & 0x8000) {
+                *(uint32_t *)rd |= 0xFFFF0000;
+            } else {
+                *(uint32_t *)rd &= 0xFFFF;
+            }
+            break;
 #endif
-#endif
-}
-
-/**
- * Sign-extend halfword: sign-extend the least significant halfword of rd to XLEN bits.
- * rd = signext(rd[15:0])
- */
-static inline void RiscvEmulatorC_SEXTH(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum __attribute__((unused)),
-    void *rd) {
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    state->instructionhandled = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "c.sext.h";
-    hc.hook = HOOK_BEGIN;
-    hc.rdnum = rdnum;
-    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
-    hc.rd = rd;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintIType(state, &hc);
-#endif
-#endif
-
-    if (*(uint32_t *)rd & 0x8000) {
-        *(uint32_t *)rd |= 0xFFFF0000;
-    } else {
-        *(uint32_t *)rd &= 0xFFFF;
+        case RS2P_ZCB_NOT:
+            *(uint32_t *)rd = ~*(uint32_t *)rd;
+            break;
+        default:
+            state->trapflag.illegalinstruction = 1;
+            return;
     }
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintIType(state, &hc);
-#endif
-#endif
-}
-
-/**
- * Not: invert all bits of rd.
- * rd = ~rd
- */
-static inline void RiscvEmulatorC_NOT(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum __attribute__((unused)),
-    void *rd) {
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    state->instructionhandled = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "c.not";
-    hc.hook = HOOK_BEGIN;
-    hc.rdnum = rdnum;
-    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
-    hc.rd = rd;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintIType(state, &hc);
-#endif
-#endif
-
-    *(uint32_t *)rd = ~*(uint32_t *)rd;
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
