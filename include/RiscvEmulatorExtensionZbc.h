@@ -20,22 +20,35 @@
 #include "RiscvEmulatorType.h"
 
 /**
- * Carry-less multiply low-part: multiply rs1 and rs2 without carries, keeping the lower 32 bits of the result.
- * rd = clmul(rs1, rs2)[31:0]
+ * Carry-less multiply funnel for the register variants clmul, clmulh and
+ * clmulr. variant is the combined funct7/funct3 decoder value
+ * (FUNCT7_FUNCT3_OPERATION_CMUL/CMULH/CMULR), decoded once by the caller
+ * and shared by a single call site.
  */
-static inline void RiscvEmulatorCLMUL(
+static inline void RiscvEmulatorCLMULOperation(
     RiscvEmulatorState_t *state __attribute__((unused)),
     const uint8_t rdnum,
     void *rd,
     const uint8_t rs1num __attribute__((unused)),
     const void *rs1,
     const uint8_t rs2num __attribute__((unused)),
-    const void *rs2) {
+    const void *rs2,
+    const uint16_t variant) {
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     state->instructionhandled = 1;
     RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "clmul";
+    switch (variant) {
+        case FUNCT7_FUNCT3_OPERATION_CMUL:
+            hc.instruction = "clmul";
+            break;
+        case FUNCT7_FUNCT3_OPERATION_CMULH:
+            hc.instruction = "clmulh";
+            break;
+        default: // FUNCT7_FUNCT3_OPERATION_CMULR
+            hc.instruction = "clmulr";
+            break;
+    }
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
     hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
@@ -57,15 +70,39 @@ static inline void RiscvEmulatorCLMUL(
         return;
     }
 
-    uint32_t output = 0;
+    const uint32_t rs1value = *(const uint32_t *)rs1;
+    const uint32_t rs2value = *(const uint32_t *)rs2;
 
-    for (uint8_t i = 0; i < 32; i++) {
-        if ((*(const uint32_t *)rs2 >> i) & 1) {
-            output ^= *(const uint32_t *)rs1 << i;
+    uint32_t result = 0;
+
+    switch (variant) {
+        case FUNCT7_FUNCT3_OPERATION_CMUL: {
+            for (uint8_t i = 0; i < 32; i++) {
+                if ((rs2value >> i) & 1) {
+                    result ^= rs1value << i;
+                }
+            }
+            break;
+        }
+        case FUNCT7_FUNCT3_OPERATION_CMULH: {
+            for (uint8_t i = 1; i < 32; i++) {
+                if ((rs2value >> i) & 1) {
+                    result ^= rs1value >> (32 - i);
+                }
+            }
+            break;
+        }
+        default: { // FUNCT7_FUNCT3_OPERATION_CMULR
+            for (uint8_t i = 0; i < 32; i++) {
+                if ((rs2value >> i) & 1) {
+                    result ^= rs1value >> (32 - i - 1);
+                }
+            }
+            break;
         }
     }
 
-    *(uint32_t *)rd = output;
+    *(uint32_t *)rd = result;
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
@@ -75,122 +112,6 @@ static inline void RiscvEmulatorCLMUL(
 #endif
 #endif
 }
-
-/**
- * Carry-less multiply high-part: multiply rs1 and rs2 without carries, keeping the upper 32 bits of the result.
- * rd = clmul(rs1, rs2)[63:32]
- */
-static inline void RiscvEmulatorCLMULH(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum,
-    void *rd,
-    const uint8_t rs1num __attribute__((unused)),
-    const void *rs1,
-    const uint8_t rs2num __attribute__((unused)),
-    const void *rs2) {
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    state->instructionhandled = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "clmulh";
-    hc.hook = HOOK_BEGIN;
-    hc.rdnum = rdnum;
-    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
-    hc.rd = rd;
-    hc.rs1num = rs1num;
-    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
-    hc.rs1 = rs1;
-    hc.rs2num = rs2num;
-    hc.rs2name = RiscvEmulatorGetRegisterSymbolicName(rs2num);
-    hc.rs2 = rs2;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintRType(state, &hc);
-#endif
-#endif
-
-    if (rdnum == 0) {
-        return;
-    }
-
-    uint32_t output = 0;
-
-    for (uint8_t i = 1; i < 32; i++) {
-        if ((*(const uint32_t *)rs2 >> i) & 1) {
-            output ^= *(const uint32_t *)rs1 >> (32 - i);
-        }
-    }
-
-    *(uint32_t *)rd = output;
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintRType(state, &hc);
-#endif
-#endif
-}
-
-#if (RVE_E_ZBC == 1)
-/**
- * Carry-less multiply reversed: multiply rs1 and rs2 without carries, keeping bits 31 to 0 of the reversed result.
- * rd = clmulr(rs1, rs2)
- */
-static inline void RiscvEmulatorCLMULR(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum,
-    void *rd,
-    const uint8_t rs1num __attribute__((unused)),
-    const void *rs1,
-    const uint8_t rs2num __attribute__((unused)),
-    const void *rs2) {
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    state->instructionhandled = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "clmulr";
-    hc.hook = HOOK_BEGIN;
-    hc.rdnum = rdnum;
-    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
-    hc.rd = rd;
-    hc.rs1num = rs1num;
-    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
-    hc.rs1 = rs1;
-    hc.rs2num = rs2num;
-    hc.rs2name = RiscvEmulatorGetRegisterSymbolicName(rs2num);
-    hc.rs2 = rs2;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintRType(state, &hc);
-#endif
-#endif
-
-    if (rdnum == 0) {
-        return;
-    }
-
-    uint32_t output = 0;
-
-    for (uint8_t i = 0; i < 32; i++) {
-        if ((*(const uint32_t *)rs2 >> i) & 1) {
-            output ^= *(const uint32_t *)rs1 >> (32 - i - 1);
-        }
-    }
-
-    *(uint32_t *)rd = output;
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintRType(state, &hc);
-#endif
-#endif
-}
-#endif
 
 #endif
 

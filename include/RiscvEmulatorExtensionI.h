@@ -566,15 +566,11 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state, uin
 #endif
 #if ((RVE_E_ZBC == 1) || (RVE_E_ZBKC == 1))
             case FUNCT7_FUNCT3_OPERATION_CMUL:
-                RiscvEmulatorCLMUL(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
-                break;
             case FUNCT7_FUNCT3_OPERATION_CMULH:
-                RiscvEmulatorCLMULH(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
-                break;
-#endif
 #if (RVE_E_ZBC == 1)
             case FUNCT7_FUNCT3_OPERATION_CMULR:
-                RiscvEmulatorCLMULR(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+#endif
+                RiscvEmulatorCLMULOperation(state, rdnum, rd, rs1num, rs1, rs2num, rs2, instruction_decoderhelper_rtype.funct7_3);
                 break;
 #endif
 #if (RVE_E_ZBS == 1)
@@ -587,26 +583,20 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state, uin
 #endif
 #if (RVE_E_ZBKB == 1)
             case FUNCT7_FUNCT3_OPERATION_PACK:
-                RiscvEmulatorPACK(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
-                break;
             case FUNCT7_FUNCT3_OPERATION_PACKH:
-                RiscvEmulatorPACKH(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+                RiscvEmulatorPACKOperation(state, rdnum, rd, rs1num, rs1, rs2num, rs2, instruction_decoderhelper_rtype.funct7_3);
                 break;
 #endif
 #if (RVE_E_ZBKX == 1)
             case FUNCT7_FUNCT3_OPERATION_XPERM8:
-                RiscvEmulatorXPERM8(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
-                break;
             case FUNCT7_FUNCT3_OPERATION_XPERM4:
-                RiscvEmulatorXPERM4(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+                RiscvEmulatorXPERMOperation(state, rdnum, rd, rs1num, rs1, rs2num, rs2, instruction_decoderhelper_rtype.funct7_3);
                 break;
 #endif
 #if (RVE_E_ZICOND == 1)
             case FUNCT7_FUNCT3_OPERATION_CZEROEQZ:
-                RiscvEmulatorCZEROEQZ(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
-                break;
             case FUNCT7_FUNCT3_OPERATION_CZERONEZ:
-                RiscvEmulatorCZERONEZ(state, rdnum, rd, rs1num, rs1, rs2num, rs2);
+                RiscvEmulatorCZEROOperation(state, rdnum, rd, rs1num, rs1, rs2num, rs2, instruction_decoderhelper_rtype.funct7_3);
                 break;
 #endif
             default:

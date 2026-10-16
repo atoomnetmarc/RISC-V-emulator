@@ -71,22 +71,31 @@ static inline void RiscvEmulatorBREV8(
 }
 
 /**
- * Pack halfwords: pack the lower halfword of rs1 and the lower halfword of rs2 into rd.
- * rd = (rs1 & 0xFFFF) | (rs2 << 16)
+ * Pack funnel for the register variants pack and packh. variant is the
+ * combined funct7/funct3 decoder value (FUNCT7_FUNCT3_OPERATION_PACK/PACKH),
+ * decoded once by the caller and shared by a single call site.
  */
-static inline void RiscvEmulatorPACK(
+static inline void RiscvEmulatorPACKOperation(
     RiscvEmulatorState_t *state __attribute__((unused)),
     const uint8_t rdnum,
     void *rd,
     const uint8_t rs1num __attribute__((unused)),
     const void *rs1,
     const uint8_t rs2num __attribute__((unused)),
-    const void *rs2) {
+    const void *rs2,
+    const uint16_t variant) {
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     state->instructionhandled = 1;
     RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "pack";
+    switch (variant) {
+        case FUNCT7_FUNCT3_OPERATION_PACK:
+            hc.instruction = "pack";
+            break;
+        default: // FUNCT7_FUNCT3_OPERATION_PACKH
+            hc.instruction = "packh";
+            break;
+    }
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
     hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
@@ -108,56 +117,25 @@ static inline void RiscvEmulatorPACK(
         return;
     }
 
-    *(uint32_t *)rd = (*(const uint32_t *)rs1 & 0xFFFF) | (*(const uint32_t *)rs2 << 16);
+    const uint32_t rs1value = *(const uint32_t *)rs1;
+    const uint32_t rs2value = *(const uint32_t *)rs2;
 
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintRType(state, &hc);
-#endif
-#endif
-}
+    uint32_t result;
 
-/**
- * Pack bytes: pack the lower byte of rs1 and the lower byte of rs2 into rd.
- * rd = (rs1 & 0xFF) | ((rs2 & 0xFF) << 8)
- */
-static inline void RiscvEmulatorPACKH(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum,
-    void *rd,
-    const uint8_t rs1num __attribute__((unused)),
-    const void *rs1,
-    const uint8_t rs2num __attribute__((unused)),
-    const void *rs2) {
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    state->instructionhandled = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "packh";
-    hc.hook = HOOK_BEGIN;
-    hc.rdnum = rdnum;
-    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
-    hc.rd = rd;
-    hc.rs1num = rs1num;
-    hc.rs1name = RiscvEmulatorGetRegisterSymbolicName(rs1num);
-    hc.rs1 = rs1;
-    hc.rs2num = rs2num;
-    hc.rs2name = RiscvEmulatorGetRegisterSymbolicName(rs2num);
-    hc.rs2 = rs2;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintRType(state, &hc);
-#endif
-#endif
-
-    if (rdnum == 0) {
-        return;
+    switch (variant) {
+        case FUNCT7_FUNCT3_OPERATION_PACK:
+            // Pack halfwords: pack the lower halfword of rs1 and the lower
+            // halfword of rs2 into rd. rd = (rs1 & 0xFFFF) | (rs2 << 16)
+            result = (rs1value & 0xFFFF) | (rs2value << 16);
+            break;
+        default: // FUNCT7_FUNCT3_OPERATION_PACKH
+            // Pack bytes: pack the lower byte of rs1 and the lower byte of
+            // rs2 into rd. rd = (rs1 & 0xFF) | ((rs2 & 0xFF) << 8)
+            result = (rs1value & 0xFF) | ((rs2value & 0xFF) << 8);
+            break;
     }
 
-    *(uint32_t *)rd = (*(const uint32_t *)rs1 & 0xFF) | ((*(const uint32_t *)rs2 & 0xFF) << 8);
+    *(uint32_t *)rd = result;
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
