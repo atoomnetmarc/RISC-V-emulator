@@ -17,13 +17,15 @@ A funnel halves this duplication and guarantees that paired variants cannot drif
 5. **Respect decode-once.** The funnel receives already-decoded values (fields, pointers) as arguments and never reads `state->instruction.*` itself. See [decode-once.md](decode-once.md).
 6. **Report recognition.** The funnel returns whether it handled the instruction, so the caller keeps ownership of the `illegalinstruction` trap.
 7. **Natural style, no bit-magic.** Express signedness with casts, never with bit tricks. See [no-bit-magic.md](no-bit-magic.md).
-8. **Measure first.** Record flash size per build environment before and after (e.g. `avr-size` per PlatformIO env). A funnel that regresses size or speed is reverted.
-9. **Inspect the assembly.** Check the generated `.lss` listing to see what the compiler actually made of the funnel: whether reads were CSE'd, whether the dispatch became a jump table, and whether anything was inlined or duplicated unexpectedly. Size numbers alone do not explain *why* a change won or lost.
+8. **Share the call site.** The funnel body is only shared if the compiler shares the *call site*: collapse the case labels that select the same funnel into one fall-through call, and pass the already-decoded combined decoder constant (e.g. `funct7_3`, `imm11_5funct3`) as the variant argument. A funnel called from three separate call sites still gets inlined three times — confirmed in `.lss` during the shift tournament. Measured: −2,240 flash bytes over 22 AVR environments for the shift pairs, versus +638 for the same two funnels with separate call sites.
+9. **Measure first.** Record flash size per build environment before and after (e.g. `avr-size` per PlatformIO env). A funnel that regresses size or speed is reverted.
+10. **Inspect the assembly.** Check the generated `.lss` listing to see what the compiler actually made of the funnel: whether reads were CSE'd, whether the dispatch became a jump table, and whether anything was inlined or duplicated unexpectedly. Size numbers alone do not explain *why* a change won or lost.
 
 ## Proven examples
 
 - `RiscvEmulatorCSR()` (`include/RiscvEmulatorExtensionZicsr.h`) — the original funnel; ~900 bytes saved per environment.
 - Operation funnel for the R-type/I-type pairs `add/addi`, `slt/slti`, `sltu/sltiu`, `xor/xori`, `or/ori`, `and/andi` (`include/RiscvEmulatorExtensionI.h`) — hoisted load/store and natural cast compares; −3,434 flash bytes over 21 AVR environments, zero regressions.
+- Shift funnels `RiscvEmulatorShiftOperation`/`RiscvEmulatorShiftOperationImmediate` for `sll/slli`, `srl/srli`, `sra/srai` (`include/RiscvEmulatorExtensionI.h`) — one shared call site per funnel, decoded combined constant (`funct7_3` / `imm11_5funct3`) as variant; −2,240 flash bytes over 22 AVR environments, zero regressions (commit 77e2718).
 
 ## When not to funnel
 
