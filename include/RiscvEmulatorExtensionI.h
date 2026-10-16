@@ -485,23 +485,10 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state, uin
             case FUNCT7_FUNCT3_OPERATION_AND:
 #if (RVE_E_ZIHINTNTL == 1)
                 // ntl.p1/pall/s1/all are encoded as add x0, x0, x2/x3/x4/x5.
-                if (funct3 == FUNCT3_IMMEDIATE_ADDI && rdnum == 0 && rs1num == 0) {
-                    if (rs2num == FUNCT7_FUNCT3_RS2_NTL_P1) {
-                        RiscvEmulatorNTLP1(state);
-                        break;
-                    }
-                    if (rs2num == FUNCT7_FUNCT3_RS2_NTL_PALL) {
-                        RiscvEmulatorNTLPALL(state);
-                        break;
-                    }
-                    if (rs2num == FUNCT7_FUNCT3_RS2_NTL_S1) {
-                        RiscvEmulatorNTLS1(state);
-                        break;
-                    }
-                    if (rs2num == FUNCT7_FUNCT3_RS2_NTL_ALL) {
-                        RiscvEmulatorNTLALL(state);
-                        break;
-                    }
+                if (funct3 == FUNCT3_IMMEDIATE_ADDI && rdnum == 0 && rs1num == 0 &&
+                    rs2num >= FUNCT7_FUNCT3_RS2_NTL_P1 && rs2num <= FUNCT7_FUNCT3_RS2_NTL_ALL) {
+                    RiscvEmulatorNTLOperation(state, rs2num);
+                    break;
                 }
 #endif
                 if (RiscvEmulatorOperation(state, rdnum, rd, rs1num, rs1, rs2num, rs2, 0, 0, funct3) == 0) {
