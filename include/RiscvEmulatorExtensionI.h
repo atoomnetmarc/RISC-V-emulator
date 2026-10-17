@@ -16,6 +16,7 @@
 
 #include "RiscvEmulatorDefine.h"
 #include "RiscvEmulatorHook.h"
+#include "RiscvEmulatorTrapFlag.h"
 #include "RiscvEmulatorType.h"
 
 #include "RiscvEmulatorExtensionM.h"
@@ -102,7 +103,7 @@ static inline void RiscvEmulatorOpcodeJumpAndLinkRegister(RiscvEmulatorState_t *
     if (funct3 == FUNCT3_JUMPANDLINKREGISTER_JALR) {
         RiscvEmulatorJALR(state, rdnum, rd, rs1num, rs1, imm);
     } else {
-        state->trapflag.illegalinstruction = 1;
+        RiscvEmulatorTrapFlagIllegalInstruction(state);
     }
 }
 
@@ -594,7 +595,7 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state, uin
 #endif
 
     if (detectedUnknownInstruction == 1) {
-        state->trapflag.illegalinstruction = 1;
+        RiscvEmulatorTrapFlagIllegalInstruction(state);
     }
 }
 
@@ -701,7 +702,7 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state, uin
     }
 
     if (detectedUnknownInstruction == 1) {
-        state->trapflag.illegalinstruction = 1;
+        RiscvEmulatorTrapFlagIllegalInstruction(state);
     }
 }
 
@@ -749,7 +750,7 @@ static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state, uint8_t 
             length = sizeof(uint32_t);
             break;
         default:
-            state->trapflag.illegalinstruction = 1;
+            RiscvEmulatorTrapFlagIllegalInstruction(state);
             return;
     }
 
@@ -862,7 +863,7 @@ static inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state, uint8_t
             length = sizeof(uint8_t);
             break;
         default:
-            state->trapflag.illegalinstruction = 1;
+            RiscvEmulatorTrapFlagIllegalInstruction(state);
             return;
     }
 
@@ -981,7 +982,7 @@ static inline void RiscvEmulatorOpcodeBranch(RiscvEmulatorState_t *state, uint8_
             hc.instruction = "bltu";
             break;
         default:
-            state->trapflag.illegalinstruction = 1;
+            RiscvEmulatorTrapFlagIllegalInstruction(state);
             return;
     }
     hc.hook = HOOK_BEGIN;
@@ -1041,7 +1042,7 @@ static inline void RiscvEmulatorOpcodeBranch(RiscvEmulatorState_t *state, uint8_
             }
             break;
         default:
-            state->trapflag.illegalinstruction = 1;
+            RiscvEmulatorTrapFlagIllegalInstruction(state);
             return;
     }
 
@@ -1334,7 +1335,7 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state, uint8_
 #endif
 
     if (detectedUnknownInstruction == 1) {
-        state->trapflag.illegalinstruction = 1;
+        RiscvEmulatorTrapFlagIllegalInstruction(state);
     }
 }
 
@@ -1401,7 +1402,7 @@ static inline void RiscvEmulatorOpcodeMiscMem(RiscvEmulatorState_t *state, uint8
 #endif
 
     if (detectedUnknownInstruction == 1) {
-        state->trapflag.illegalinstruction = 1;
+        RiscvEmulatorTrapFlagIllegalInstruction(state);
     }
 }
 

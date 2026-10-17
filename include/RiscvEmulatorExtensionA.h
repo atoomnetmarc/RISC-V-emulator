@@ -17,6 +17,7 @@
 #include <RiscvEmulatorImplementationSpecific.h>
 
 #include "RiscvEmulatorDefine.h"
+#include "RiscvEmulatorTrapFlag.h"
 #include "RiscvEmulatorType.h"
 
 #include "RiscvEmulatorExtensionI.h"
@@ -306,7 +307,7 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(RiscvEmulatorState_t
             break;
 #endif
         default:
-            state->trapflag.illegalinstruction = 1;
+            RiscvEmulatorTrapFlagIllegalInstruction(state);
             skipstore = 1;
             break;
     }

@@ -17,6 +17,7 @@
 #include "RiscvEmulatorDefine.h"
 #include "RiscvEmulatorExtension.h"
 #include "RiscvEmulatorTrap.h"
+#include "RiscvEmulatorTrapFlag.h"
 #include "RiscvEmulatorType.h"
 
 /**
@@ -142,7 +143,7 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
                 break;
 #endif
             default:
-                state->trapflag.illegalinstruction = 1;
+                RiscvEmulatorTrapFlagIllegalInstruction(state);
                 break;
         }
     }

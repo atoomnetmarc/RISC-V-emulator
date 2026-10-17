@@ -18,6 +18,7 @@
 
 #include "RiscvEmulatorDefine.h"
 #include "RiscvEmulatorHook.h"
+#include "RiscvEmulatorTrapFlag.h"
 #include "RiscvEmulatorType.h"
 
 /**
@@ -225,7 +226,7 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
 #endif
 
         default:
-            state->trapflag.illegalinstruction = 1;
+            RiscvEmulatorTrapFlagIllegalInstruction(state);
             RiscvEmulatorUnknownCSR(state);
     }
 

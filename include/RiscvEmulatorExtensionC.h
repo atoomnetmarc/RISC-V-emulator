@@ -18,6 +18,7 @@
 #include "RiscvEmulatorExtensionZcb.h"
 #include "RiscvEmulatorExtensionZcmop.h"
 #include "RiscvEmulatorHook.h"
+#include "RiscvEmulatorTrapFlag.h"
 #include "RiscvEmulatorType.h"
 
 /**
@@ -1224,7 +1225,7 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state, ui
             if (imm != 0) {
                 RiscvEmulatorC_ADDI4SPN(state, (uint8_t)rdnum, rd, sp, (uint16_t)imm);
             } else {
-                state->trapflag.illegalinstruction = 1;
+                RiscvEmulatorTrapFlagIllegalInstruction(state);
             }
             break;
 #if ((RVE_E_ZCB == 1) && (RVE_E_C == 1))
@@ -1298,14 +1299,14 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state, ui
 #if (RVE_E_ZMMUL == 1)
                     RiscvEmulatorC_MUL(state, (uint8_t)rdnum, rd, (uint8_t)rs2num, rs2);
 #else
-                    state->trapflag.illegalinstruction = 1;
+                    RiscvEmulatorTrapFlagIllegalInstruction(state);
 #endif
                     break;
                 }
             }
 #endif
 
-            state->trapflag.illegalinstruction = 1;
+            RiscvEmulatorTrapFlagIllegalInstruction(state);
             break;
         case OPCODE16_J:
             RiscvEmulatorC_J(state, (int16_t)imm);
@@ -1350,7 +1351,7 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state, ui
             RiscvEmulatorC_SWSP(state, (uint8_t)rs2num, rs2, sp, (uint8_t)imm);
             break;
         default:
-            state->trapflag.illegalinstruction = 1;
+            RiscvEmulatorTrapFlagIllegalInstruction(state);
             break;
     }
 }

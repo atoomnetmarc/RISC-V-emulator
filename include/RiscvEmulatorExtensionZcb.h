@@ -18,6 +18,7 @@
 
 #include "RiscvEmulatorDefine.h"
 #include "RiscvEmulatorHook.h"
+#include "RiscvEmulatorTrapFlag.h"
 #include "RiscvEmulatorType.h"
 
 /**
@@ -53,7 +54,7 @@ static inline void RiscvEmulatorC_LoadOperation(
             length = sizeof(uint16_t);
             break;
         default:
-            state->trapflag.illegalinstruction = 1;
+            RiscvEmulatorTrapFlagIllegalInstruction(state);
             return;
     }
 
@@ -146,14 +147,14 @@ static inline void RiscvEmulatorC_StoreOperation(
         case FUNCT3_ZCB_SH:
             // c.sh. The offset is formed as uimm[1] = encoding[5].
             if (imm2 != 0) {
-                state->trapflag.illegalinstruction = 1;
+                RiscvEmulatorTrapFlagIllegalInstruction(state);
                 return;
             }
             offset = (uint8_t)(imm6 << 1);
             length = sizeof(uint16_t);
             break;
         default:
-            state->trapflag.illegalinstruction = 1;
+            RiscvEmulatorTrapFlagIllegalInstruction(state);
             return;
     }
 
@@ -232,7 +233,7 @@ static inline void RiscvEmulatorC_RdOperation(
             hc.instruction = "c.not";
             break;
         default:
-            state->trapflag.illegalinstruction = 1;
+            RiscvEmulatorTrapFlagIllegalInstruction(state);
             return;
     }
     hc.hook = HOOK_BEGIN;
@@ -273,7 +274,7 @@ static inline void RiscvEmulatorC_RdOperation(
             *(uint32_t *)rd = ~*(uint32_t *)rd;
             break;
         default:
-            state->trapflag.illegalinstruction = 1;
+            RiscvEmulatorTrapFlagIllegalInstruction(state);
             return;
     }
 
