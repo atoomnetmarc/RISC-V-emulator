@@ -1002,34 +1002,41 @@ static inline void RiscvEmulatorOpcodeBranch(RiscvEmulatorState_t *state, uint8_
 #endif
 #endif
 
+    // Load both operand values once, before the switch. The six branch
+    // variants only differ in the final comparison.
+    const int32_t rs1value = *(const int32_t *)rs1;
+    const int32_t rs2value = *(const int32_t *)rs2;
+    const uint32_t rs1valueu = (uint32_t)rs1value;
+    const uint32_t rs2valueu = (uint32_t)rs2value;
+
     switch (funct3) {
         case FUNCT3_BRANCH_BEQ:
-            if (*(const int32_t *)rs1 == *(const int32_t *)rs2) {
+            if (rs1value == rs2value) {
                 executebranch = BRANCH_YES;
             }
             break;
         case FUNCT3_BRANCH_BNE:
-            if (*(const int32_t *)rs1 != *(const int32_t *)rs2) {
+            if (rs1value != rs2value) {
                 executebranch = BRANCH_YES;
             }
             break;
         case FUNCT3_BRANCH_BGE:
-            if (*(const int32_t *)rs1 >= *(const int32_t *)rs2) {
+            if (rs1value >= rs2value) {
                 executebranch = BRANCH_YES;
             }
             break;
         case FUNCT3_BRANCH_BGEU:
-            if (*(const uint32_t *)rs1 >= *(const uint32_t *)rs2) {
+            if (rs1valueu >= rs2valueu) {
                 executebranch = BRANCH_YES;
             }
             break;
         case FUNCT3_BRANCH_BLT:
-            if (*(const int32_t *)rs1 < *(const int32_t *)rs2) {
+            if (rs1value < rs2value) {
                 executebranch = BRANCH_YES;
             }
             break;
         case FUNCT3_BRANCH_BLTU:
-            if (*(const uint32_t *)rs1 < *(const uint32_t *)rs2) {
+            if (rs1valueu < rs2valueu) {
                 executebranch = BRANCH_YES;
             }
             break;
