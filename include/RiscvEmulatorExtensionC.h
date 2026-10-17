@@ -251,7 +251,8 @@ static inline void RiscvEmulatorC_JAL(
 #endif
 
     *(uint32_t *)ra = state->programcounter + 2;
-    state->programcounternext = state->programcounter + (uint32_t)offset;
+    uint32_t offsetu = (uint32_t)offset;
+    state->programcounternext = state->programcounter + offsetu;
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
@@ -325,7 +326,8 @@ static inline void RiscvEmulatorC_J(
 #endif
 #endif
 
-    state->programcounternext = state->programcounter + (uint32_t)offset;
+    uint32_t offsetu = (uint32_t)offset;
+    state->programcounternext = state->programcounter + offsetu;
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
@@ -401,7 +403,8 @@ static inline void RiscvEmulatorC_BEQZ(
 #endif
 
     if (*(const int32_t *)rs1 == 0) {
-        state->programcounternext = state->programcounter + (uint32_t)imm;
+        uint32_t immu = (uint32_t)imm;
+        state->programcounternext = state->programcounter + immu;
     };
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
@@ -443,7 +446,8 @@ static inline void RiscvEmulatorC_BNEZ(
 #endif
 
     if (*(const int32_t *)rs1 != 0) {
-        state->programcounternext = state->programcounter + (uint32_t)imm;
+        uint32_t immu = (uint32_t)imm;
+        state->programcounternext = state->programcounter + immu;
     };
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
@@ -1052,10 +1056,7 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state, ui
     }
 #endif
 
-    RiscvInstructionTypeCDecoderOpcode_u decoderOpcode16 = {0};
-    decoderOpcode16.funct3 = funct3;
-    decoderOpcode16.op = op;
-    uint8_t opfunct3 = decoderOpcode16.opfunct3;
+    uint8_t opfunct3 = RiscvEmulatorDecodeOpFunct3(op, funct3);
 
     uint8_t funct3_funct2 = 0;
     uint8_t funct6_funct2 = 0;

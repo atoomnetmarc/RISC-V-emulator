@@ -471,12 +471,10 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state, uin
     int8_t detectedUnknownInstruction = 1;
 
     if (detectedUnknownInstruction == 1) {
-        RiscvInstructionTypeRDecoderFunct7Funct3_u instruction_decoderhelper_rtype = {0};
-        instruction_decoderhelper_rtype.funct3 = funct3;
-        instruction_decoderhelper_rtype.funct7 = funct7;
+        uint16_t funct7_3 = RiscvEmulatorDecodeFunct7Funct3(funct7, funct3);
 
         detectedUnknownInstruction = -1;
-        switch (instruction_decoderhelper_rtype.funct7_3) {
+        switch (funct7_3) {
             case FUNCT7_FUNCT3_OPERATION_ADD:
             case FUNCT7_FUNCT3_OPERATION_SLT:
             case FUNCT7_FUNCT3_OPERATION_SLTU:
@@ -501,7 +499,7 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state, uin
             case FUNCT7_FUNCT3_OPERATION_SLL:
             case FUNCT7_FUNCT3_OPERATION_SRL:
             case FUNCT7_FUNCT3_OPERATION_SRA:
-                RiscvEmulatorShiftOperation(state, rdnum, rd, rs1num, rs1, rs2num, rs2, instruction_decoderhelper_rtype.funct7_3);
+                RiscvEmulatorShiftOperation(state, rdnum, rd, rs1num, rs1, rs2num, rs2, funct7_3);
                 break;
 #if ((RVE_E_ZMMUL == 1) || (RVE_E_M == 1))
             case FUNCT7_FUNCT3_OPERATION_MUL:
@@ -514,7 +512,7 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state, uin
             case FUNCT7_FUNCT3_OPERATION_REM:
             case FUNCT7_FUNCT3_OPERATION_REMU:
 #endif
-                RiscvEmulatorMOperation(state, rdnum, rd, rs1num, rs1, rs2num, rs2, instruction_decoderhelper_rtype.funct7_3);
+                RiscvEmulatorMOperation(state, rdnum, rd, rs1num, rs1, rs2num, rs2, funct7_3);
                 break;
 #endif
 #if (RVE_E_ZBA == 1)
@@ -534,7 +532,7 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state, uin
             case FUNCT7_FUNCT3_OPERATION_MINU:
             case FUNCT7_FUNCT3_OPERATION_ROL:
             case FUNCT7_FUNCT3_OPERATION_ROR:
-                RiscvEmulatorRTypeOperation(state, rdnum, rd, rs1num, rs1, rs2num, rs2, instruction_decoderhelper_rtype.funct7_3);
+                RiscvEmulatorRTypeOperation(state, rdnum, rd, rs1num, rs1, rs2num, rs2, funct7_3);
                 break;
 #endif
 #if ((RVE_E_ZBC == 1) || (RVE_E_ZBKC == 1))
@@ -543,7 +541,7 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state, uin
 #if (RVE_E_ZBC == 1)
             case FUNCT7_FUNCT3_OPERATION_CMULR:
 #endif
-                RiscvEmulatorCLMULOperation(state, rdnum, rd, rs1num, rs1, rs2num, rs2, instruction_decoderhelper_rtype.funct7_3);
+                RiscvEmulatorCLMULOperation(state, rdnum, rd, rs1num, rs1, rs2num, rs2, funct7_3);
                 break;
 #endif
 #if (RVE_E_ZBS == 1)
@@ -551,25 +549,25 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state, uin
             case FUNCT7_FUNCT3_OPERATION_BEXT:
             case FUNCT7_FUNCT3_OPERATION_BINV:
             case FUNCT7_FUNCT3_OPERATION_BSET:
-                RiscvEmulatorBitOperation(state, rdnum, rd, rs1num, rs1, rs2num, rs2, instruction_decoderhelper_rtype.funct7_3);
+                RiscvEmulatorBitOperation(state, rdnum, rd, rs1num, rs1, rs2num, rs2, funct7_3);
                 break;
 #endif
 #if (RVE_E_ZBKB == 1)
             case FUNCT7_FUNCT3_OPERATION_PACK:
             case FUNCT7_FUNCT3_OPERATION_PACKH:
-                RiscvEmulatorPACKOperation(state, rdnum, rd, rs1num, rs1, rs2num, rs2, instruction_decoderhelper_rtype.funct7_3);
+                RiscvEmulatorPACKOperation(state, rdnum, rd, rs1num, rs1, rs2num, rs2, funct7_3);
                 break;
 #endif
 #if (RVE_E_ZBKX == 1)
             case FUNCT7_FUNCT3_OPERATION_XPERM8:
             case FUNCT7_FUNCT3_OPERATION_XPERM4:
-                RiscvEmulatorXPERMOperation(state, rdnum, rd, rs1num, rs1, rs2num, rs2, instruction_decoderhelper_rtype.funct7_3);
+                RiscvEmulatorXPERMOperation(state, rdnum, rd, rs1num, rs1, rs2num, rs2, funct7_3);
                 break;
 #endif
 #if (RVE_E_ZICOND == 1)
             case FUNCT7_FUNCT3_OPERATION_CZEROEQZ:
             case FUNCT7_FUNCT3_OPERATION_CZERONEZ:
-                RiscvEmulatorCZEROOperation(state, rdnum, rd, rs1num, rs1, rs2num, rs2, instruction_decoderhelper_rtype.funct7_3);
+                RiscvEmulatorCZEROOperation(state, rdnum, rd, rs1num, rs1, rs2num, rs2, funct7_3);
                 break;
 #endif
             default:
@@ -580,13 +578,10 @@ static inline void RiscvEmulatorOpcodeOperation(RiscvEmulatorState_t *state, uin
 
 #if (RVE_E_ZBB == 1)
     if (detectedUnknownInstruction == 1) {
-        RiscvInstructionTypeRDecoderFunct3Rs2Funct7_u instruction_decoderhelper_rtype_Funct3Rs2Funct7 = {0};
-        instruction_decoderhelper_rtype_Funct3Rs2Funct7.funct3 = funct3;
-        instruction_decoderhelper_rtype_Funct3Rs2Funct7.rs2 = rs2num;
-        instruction_decoderhelper_rtype_Funct3Rs2Funct7.funct7 = funct7;
+        uint16_t funct3_rs2_funct7 = RiscvEmulatorDecodeFunct3Rs2Funct7(funct3, rs2num, funct7);
 
         detectedUnknownInstruction = -1;
-        switch (instruction_decoderhelper_rtype_Funct3Rs2Funct7.funct3_rs2_funct7) {
+        switch (funct3_rs2_funct7) {
             case FUNCT7_RS2_FUNCT3_OPERATION_ZEXTH:
                 RiscvEmulatorZEXT_H(state, rdnum, rd, rs1num, rs1);
                 break;
@@ -614,18 +609,16 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state, uin
         // If funct3 == 0b001 or 0b101 then a whole set of functions are encoded in imm.
         if (funct3 == FUNCT3_IMMEDIATE_FUNCTIONS_1 ||
             funct3 == FUNCT3_IMMEDIATE_FUNCTIONS_5) {
-            RiscvInstructionTypeIDecoderImmFunct3ImmFunct3_u instruction_decoderhelper_itype_functiongroup = {0};
-            instruction_decoderhelper_itype_functiongroup.funct3 = funct3;
-            instruction_decoderhelper_itype_functiongroup.imm = imm;
+            uint16_t immfunct3 = RiscvEmulatorDecodeImmFunct3(imm, funct3);
 
             detectedUnknownInstruction = -1;
-            switch (instruction_decoderhelper_itype_functiongroup.immfunct3) {
+            switch (immfunct3) {
                 case IMM11_0_FUNCT3_IMMEDIATE_CLZ:
                 case IMM11_0_FUNCT3_IMMEDIATE_CTZ:
                 case IMM11_0_FUNCT3_IMMEDIATE_CPOP:
                 case IMM11_0_FUNCT3_IMMEDIATE_SEXTB:
                 case IMM11_0_FUNCT3_IMMEDIATE_SEXTH:
-                    RiscvEmulatorUnaryOperation(state, rdnum, rd, rs1num, rs1, instruction_decoderhelper_itype_functiongroup.immfunct3);
+                    RiscvEmulatorUnaryOperation(state, rdnum, rd, rs1num, rs1, immfunct3);
                     break;
                 case IMM11_0_FUNCT3_IMMEDIATE_ORCB:
                     RiscvEmulatorORC_B(state, rdnum, rd, rs1num, rs1);
@@ -653,17 +646,14 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state, uin
 
             uint8_t shamt = state->instruction.itypeshiftbyconstant.shamt;
 
-            RiscvInstructionTypeIDecoderImm11_7Funct3Imm11_7Funct3_u instruction_decoderhelper_itype_functions_shamt = {0};
-
-            instruction_decoderhelper_itype_functions_shamt.funct3 = funct3;
-            instruction_decoderhelper_itype_functions_shamt.imm11_5 = state->instruction.itypeshiftbyconstant.imm11_5;
+            uint16_t imm11_5funct3 = RiscvEmulatorDecodeImm11_5Funct3(state->instruction.itypeshiftbyconstant.imm11_5, funct3);
 
             detectedUnknownInstruction = -1;
-            switch (instruction_decoderhelper_itype_functions_shamt.imm11_5funct3) {
+            switch (imm11_5funct3) {
                 case IMM11_5_FUNCT3_IMMEDIATE_SLLI:
                 case IMM11_5_FUNCT3_IMMEDIATE_SRLI:
                 case IMM11_5_FUNCT3_IMMEDIATE_SRAI:
-                    RiscvEmulatorShiftOperationImmediate(state, rdnum, rd, rs1num, rs1, shamt, instruction_decoderhelper_itype_functions_shamt.imm11_5funct3);
+                    RiscvEmulatorShiftOperationImmediate(state, rdnum, rd, rs1num, rs1, shamt, imm11_5funct3);
                     break;
 #if (RVE_E_ZBB == 1)
                 case IMM11_5_FUNCT3_IMMEDIATE_RORI:
@@ -673,7 +663,7 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state, uin
 #if (RVE_E_ZBKB == 1)
                 case IMM11_5_FUNCT3_IMMEDIATE_ZIP:
                 case IMM11_5_FUNCT3_IMMEDIATE_UNZIP:
-                    RiscvEmulatorZIPUNZIPOperation(state, rdnum, rd, rs1num, rs1, instruction_decoderhelper_itype_functions_shamt.imm11_5funct3);
+                    RiscvEmulatorZIPUNZIPOperation(state, rdnum, rd, rs1num, rs1, imm11_5funct3);
                     break;
 #endif
 #if (RVE_E_ZBS == 1)
@@ -681,7 +671,7 @@ static inline void RiscvEmulatorOpcodeImmediate(RiscvEmulatorState_t *state, uin
                 case IMM11_5_FUNCT3_IMMEDIATE_BEXTI:
                 case IMM11_5_FUNCT3_IMMEDIATE_BINVI:
                 case IMM11_5_FUNCT3_IMMEDIATE_BSETI:
-                    RiscvEmulatorBitOperationImmediate(state, rdnum, rd, rs1num, rs1, shamt, instruction_decoderhelper_itype_functions_shamt.imm11_5funct3);
+                    RiscvEmulatorBitOperationImmediate(state, rdnum, rd, rs1num, rs1, shamt, imm11_5funct3);
                     break;
 #endif
                 default:

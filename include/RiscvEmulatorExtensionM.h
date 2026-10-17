@@ -90,17 +90,17 @@ static inline void RiscvEmulatorMOperation(
             break;
         case FUNCT7_FUNCT3_OPERATION_MULH: {
             int64_t result = (int64_t)(*(const int32_t *)rs1 * (int64_t)*(const int32_t *)rs2);
-            *(int32_t *)rd = (result >> 32);
+            *(int32_t *)rd = (int32_t)(result >> 32);
             break;
         }
         case FUNCT7_FUNCT3_OPERATION_MULHSU: {
             int64_t result = (int64_t)*(const int32_t *)rs1 * (int64_t)(uint64_t)*(const uint32_t *)rs2;
-            *(int32_t *)rd = (result >> 32);
+            *(int32_t *)rd = (int32_t)(result >> 32);
             break;
         }
         case FUNCT7_FUNCT3_OPERATION_MULHU: {
             uint64_t result = (uint64_t)(*(const uint32_t *)rs1 * (uint64_t)*(const uint32_t *)rs2);
-            *(uint32_t *)rd = (result >> 32);
+            *(uint32_t *)rd = (uint32_t)(result >> 32);
             break;
         }
 #if (RVE_E_M == 1)

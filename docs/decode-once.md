@@ -20,6 +20,9 @@ Repeated field reads therefore become real, repeated decodes in the generated as
 2. Pass the decoded value down to callees as a function argument.
 3. Never re-read `state->instruction.*` inside instruction handlers.
 4. Always use the fields of the instruction decoder struct/union to extract values. Manual bit logic is forbidden: no `& 0b11111`, no `>> 5`, no re-shifting or re-masking of already decoded fields. If a value is not directly available as a field, add or use the appropriate decoder struct/union (e.g. `RiscvInstructionTypeSDecoderImm_u`, `RiscvInstructionTypeBDecoderImm_u`, `RiscvInstructionTypeUDecoderImm_u`, `RiscvInstructionTypeJDecoderImm_u`, `RiscvInstructionTypeRShift_t`, `RiscvInstructionTypeIShiftByConstant_t`).
+
+   Exception: combining already-decoded fields into a single switch key (e.g. `funct7` + `funct3`, `op` + `funct3`) is done with a named compose helper (`RiscvEmulatorDecodeFunct7Funct3()` in `RiscvEmulatorTypeR.h`, `RiscvEmulatorDecodeOpFunct3()` in `RiscvEmulatorTypeC.h`, etc.) instead of a decoder union. GCC's `-Wconversion` warns for every runtime store of a wider integer into a narrower bitfield — even with a cast or mask — so the union idiom cannot be used for fields that were decoded into plain integers first. The shift/or lives in the decoder layer, written once, not at the call sites.
+
 5. Decode a field in the main loop switch only when multiple cases share it (multi-consumer). A field consumed by exactly one handler is decoded inside that handler, so the handler code looks like it did before the decode-once refactor.
 
 The main loop follows this rule: `rd`, `rs1`, `rs2`, `funct3`, `funct7` and the I-type `imm` are decoded once in `RiscvEmulatorLoop()` (`include/RiscvEmulator.h`) and passed down to the opcode handlers.

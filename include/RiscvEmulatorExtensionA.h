@@ -177,12 +177,11 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(RiscvEmulatorState_t
     // store at the end of this function.
     uint8_t skipstore = 0;
 
-    RiscvInstructionTypeRDecoderFunct5Funct3_u instruction_decoderhelper_rtypeatomicmemoryoperation = {0};
-    instruction_decoderhelper_rtypeatomicmemoryoperation.funct3 = funct3;
-    instruction_decoderhelper_rtypeatomicmemoryoperation.funct5 = state->instruction.rtypeatomicmemoryoperation.funct5;
+    uint8_t funct5 = state->instruction.rtypeatomicmemoryoperation.funct5;
+    uint8_t funct5_3 = RiscvEmulatorDecodeFunct5Funct3(funct5, funct3);
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    const uint8_t funct5disasm = instruction_decoderhelper_rtypeatomicmemoryoperation.funct5;
+    const uint8_t funct5disasm = funct5;
     const char *instructionname = "unknown";
     switch (funct5disasm) {
         case 0b00000:
@@ -254,7 +253,7 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(RiscvEmulatorState_t
     }
 #endif
 
-    switch (instruction_decoderhelper_rtypeatomicmemoryoperation.funct5_3) {
+    switch (funct5_3) {
 #if (RVE_E_ZALRSC == 1)
         case FUNCT5_FUNCT3_OPERATION_LR_W:
             if (rdnum != 0) {

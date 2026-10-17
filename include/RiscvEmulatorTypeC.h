@@ -432,18 +432,11 @@ typedef struct __attribute__((packed)) {
 } RiscvInstructionOpcodeC_t;
 
 /**
- * Union for decoding opcode of a compressed instruction.
+ * Combine op and funct3 field of a compressed instruction into a single switch key.
  */
-typedef union {
-    struct __attribute__((packed)) {
-        uint8_t op : 2;
-        uint8_t funct3 : 3;
-    };
-
-    struct __attribute__((packed)) {
-        uint8_t opfunct3 : 5;
-    };
-} RiscvInstructionTypeCDecoderOpcode_u;
+static inline uint8_t RiscvEmulatorDecodeOpFunct3(uint8_t op, uint8_t funct3) {
+    return (uint8_t)(((uint16_t)funct3 << 2) | (uint16_t)op);
+}
 
 #endif
 

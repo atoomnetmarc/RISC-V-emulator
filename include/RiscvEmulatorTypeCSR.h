@@ -24,12 +24,12 @@
  *
  * mepc: the low bit is always zero.
  */
-#define RVE_CSR_MEPC_WRITE_MASK (~0x1ul)
+#define RVE_CSR_MEPC_WRITE_MASK (~(uint32_t)0x1)
 
 /**
  * mtvec: mode 0 (direct) and 1 (vectored) are legal, bit 1 is reserved.
  */
-#define RVE_CSR_MTVEC_WRITE_MASK (~0x2ul)
+#define RVE_CSR_MTVEC_WRITE_MASK (~(uint32_t)0x2)
 
 /**
  * mie and mip: only the M-mode software, timer and external interrupt bits

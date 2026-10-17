@@ -83,33 +83,19 @@ typedef struct __attribute__((packed)) {
 } RiscvInstructionTypeIMiscMemt_t;
 
 /**
- * Union for combining imm11_5 and funct3 field of R-type instruction.
+ * Combine imm11_5 and funct3 field of I-type instruction into a single switch key.
  */
-typedef union {
-    struct __attribute__((packed)) {
-        uint8_t funct3 : 3;
-        uint16_t imm11_5 : 7;
-    };
-
-    struct __attribute__((packed)) {
-        uint16_t imm11_5funct3 : 10;
-    };
-} RiscvInstructionTypeIDecoderImm11_7Funct3Imm11_7Funct3_u;
+static inline uint16_t RiscvEmulatorDecodeImm11_5Funct3(uint8_t imm11_5, uint8_t funct3) {
+    return (uint16_t)(((uint16_t)imm11_5 << 3) | (uint16_t)funct3);
+}
 
 #if (RVE_E_ZBB == 1)
 /**
- * Union for combining imm and funct3 field of R-type instruction.
+ * Combine imm and funct3 field of I-type instruction into a single switch key.
  */
-typedef union {
-    struct __attribute__((packed)) {
-        uint8_t funct3 : 3;
-        int16_t imm : 12;
-    };
-
-    struct __attribute__((packed)) {
-        uint16_t immfunct3 : 15;
-    };
-} RiscvInstructionTypeIDecoderImmFunct3ImmFunct3_u;
+static inline uint16_t RiscvEmulatorDecodeImmFunct3(int16_t imm, uint8_t funct3) {
+    return (uint16_t)(((uint16_t)imm << 3) | (uint16_t)funct3);
+}
 #endif
 
 #endif

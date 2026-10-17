@@ -40,18 +40,11 @@ typedef struct __attribute__((packed)) {
 #endif
 
 /**
- * Union for combining funct3 and funct7 field of R-type instruction.
+ * Combine funct3 and funct7 field of R-type instruction into a single switch key.
  */
-typedef union {
-    struct __attribute__((packed)) {
-        uint8_t funct3 : 3;
-        uint8_t funct7 : 7;
-    };
-
-    struct __attribute__((packed)) {
-        uint16_t funct7_3 : 10;
-    };
-} RiscvInstructionTypeRDecoderFunct7Funct3_u;
+static inline uint16_t RiscvEmulatorDecodeFunct7Funct3(uint8_t funct7, uint8_t funct3) {
+    return (uint16_t)(((uint16_t)funct7 << 3) | (uint16_t)funct3);
+}
 
 #if ((RVE_E_ZAAMO == 1) || (RVE_E_ZALRSC == 1))
 /**
@@ -69,35 +62,20 @@ typedef struct __attribute__((packed)) {
 } RiscvInstructionTypeRAtomicMemoryOperation_t;
 
 /**
- * Union for combining funct3 and funct5 field of R-type instruction.
+ * Combine funct3 and funct5 field of R-type instruction into a single switch key.
  */
-typedef union {
-    struct __attribute__((packed)) {
-        uint8_t funct3 : 3;
-        uint8_t funct5 : 5;
-    };
-
-    struct __attribute__((packed)) {
-        uint16_t funct5_3 : 8;
-    };
-} RiscvInstructionTypeRDecoderFunct5Funct3_u;
+static inline uint8_t RiscvEmulatorDecodeFunct5Funct3(uint8_t funct5, uint8_t funct3) {
+    return (uint8_t)(((uint16_t)funct5 << 3) | (uint16_t)funct3);
+}
 #endif
 
 #if ((RVE_E_ZBB == 1) || (RVE_E_ZBKB == 1))
 /**
- * Union for combining funct3, rs2 and funct7 field of R-type instruction.
+ * Combine funct3, rs2 and funct7 field of R-type instruction into a single switch key.
  */
-typedef union {
-    struct __attribute__((packed)) {
-        uint8_t funct3 : 3;
-        uint8_t rs2 : 5;
-        uint8_t funct7 : 7;
-    };
-
-    struct __attribute__((packed)) {
-        uint16_t funct3_rs2_funct7 : 15;
-    };
-} RiscvInstructionTypeRDecoderFunct3Rs2Funct7_u;
+static inline uint16_t RiscvEmulatorDecodeFunct3Rs2Funct7(uint8_t funct3, uint8_t rs2, uint8_t funct7) {
+    return (uint16_t)(((uint16_t)funct7 << 8) | ((uint16_t)rs2 << 3) | (uint16_t)funct3);
+}
 #endif
 
 #endif

@@ -76,7 +76,7 @@ static inline uint32_t RiscvEmulatorCSRReadMask(RiscvEmulatorState_t *state __at
     switch (csrnum) {
         case 0x301:
             // misa: MXL is read-only RV32 and the I bit is always set.
-            value &= ~(3ul << 30);
+            value &= ~((uint32_t)3 << 30);
             value |= RVE_CSR_MISA_MXL_RV32 | RVE_CSR_MISA_I;
             break;
         case 0x341:
