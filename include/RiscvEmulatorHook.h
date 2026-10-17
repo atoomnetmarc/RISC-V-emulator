@@ -13,8 +13,10 @@
 #include "RiscvEmulatorDefine.h"
 #include "RiscvEmulatorTypeHook.h"
 
+#if defined(__GNUC__) && !defined(__TINYC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
 
 /**
  * Generic hook function.
@@ -28,6 +30,8 @@ __attribute__((weak)) void RiscvEmulatorHook(
     const RiscvEmulatorHookContext_t *context) {
 }
 
+#if defined(__GNUC__) && !defined(__TINYC__)
 #pragma GCC diagnostic pop
+#endif
 
 #endif
