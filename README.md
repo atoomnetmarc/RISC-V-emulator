@@ -8,7 +8,7 @@ Maybe I will add some more extensions when I feel like it. No, I am not going to
 
 This is my attempt at an RV32 RISC-V CPU emulator. I wrote it to better understand RISC-V instructions.
 
-The emulator has been written primarily to run on 8-bit AVR microcontrollers and to compile with GCC (GNU Compiler Collection), with the goal of being as small and somewhat fast as possible. It contains no dependencies on any specific CPU architecture. To prove independence, I also got the emulator running on a 32-bit ATSAMD21G18A as well as on [x86-64 Linux and Windows](https://github.com/atoomnetmarc/RISC-V-emulator-Native).
+The emulator has been written primarily to run on 8-bit AVR microcontrollers and to compile with GCC (GNU Compiler Collection) and Clang, with the goal of being as small and somewhat fast as possible. It contains no dependencies on any specific CPU architecture. To prove independence, I also got the emulator running on a 32-bit ATSAMD21G18A as well as on [x86-64 Linux and Windows](https://github.com/atoomnetmarc/RISC-V-emulator-Native).
 
 # Goal
 
