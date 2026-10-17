@@ -15,6 +15,7 @@ The emulator has been written primarily to run on 8-bit AVR microcontrollers wit
 - GCC (GNU Compiler Collection)
 - Clang
 - TinyCC
+- Intel oneAPI
 
 # Goal
 

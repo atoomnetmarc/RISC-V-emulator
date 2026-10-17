@@ -405,7 +405,7 @@ static inline void RiscvEmulatorC_BEQZ(
     if (*(const int32_t *)rs1 == 0) {
         uint32_t immu = (uint32_t)imm;
         state->programcounternext = state->programcounter + immu;
-    };
+    }
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
@@ -448,7 +448,7 @@ static inline void RiscvEmulatorC_BNEZ(
     if (*(const int32_t *)rs1 != 0) {
         uint32_t immu = (uint32_t)imm;
         state->programcounternext = state->programcounter + immu;
-    };
+    }
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
