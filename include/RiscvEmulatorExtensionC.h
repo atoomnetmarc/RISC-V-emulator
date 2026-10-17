@@ -781,7 +781,7 @@ static inline void RiscvEmulatorC_RTypeOperation(
     // One switch selects the instruction name and computes the result.
     switch (variant) {
         case FUNCT6_FUNCT2_SUB:
-            result = (int32_t)operand1 - (int32_t)operand2;
+            result = (uint32_t)((int32_t)operand1 - (int32_t)operand2);
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
             hc.instruction = "c.sub";
 #endif
