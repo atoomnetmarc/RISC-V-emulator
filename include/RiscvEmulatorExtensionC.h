@@ -641,19 +641,23 @@ static inline void RiscvEmulatorC_LUI(
 }
 
 /**
- * Shift right logical immediate: shift rd right by shamt, filling with zeros.
- * rd = rd >> shamt
+ * Shift right immediate funnel: shift rd right by shamt, logically or
+ * arithmetically, selected by the already-decoded combined funct3_funct2
+ * constant.
  */
-static inline void RiscvEmulatorC_SRLI(
+static inline void RiscvEmulatorC_ShiftRightOperation(
     RiscvEmulatorState_t *state __attribute__((unused)),
     const uint8_t rdnum __attribute__((unused)),
     void *rd,
-    uint8_t shamt) {
+    const uint8_t shamt,
+    const uint8_t variant) {
+
+    const uint32_t operand = *(const uint32_t *)rd;
+    uint32_t result = 0;
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     state->instructionhandled = 1;
     RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "c.srli";
     hc.hook = HOOK_BEGIN;
     hc.rdnum = rdnum;
     hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
@@ -661,6 +665,26 @@ static inline void RiscvEmulatorC_SRLI(
     hc.imm = shamt;
     hc.immlength = sizeof(shamt);
     hc.immname = "shamt";
+#endif
+
+    switch (variant) {
+        case FUNCT3_FUNCT2_SRLI:
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
+            hc.instruction = "c.srli";
+#endif
+            result = operand >> shamt;
+            break;
+        case FUNCT3_FUNCT2_SRAI:
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
+            hc.instruction = "c.srai";
+#endif
+            result = (uint32_t)((int32_t)operand >> shamt);
+            break;
+        default:
+            return;
+    }
+
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     RiscvEmulatorHook(state, &hc);
 #if (RVE_E_DISASM == 1)
     RiscvEmulatorDisasmPrintHeader(state);
@@ -672,50 +696,7 @@ static inline void RiscvEmulatorC_SRLI(
         return;
     }
 
-    *(uint32_t *)rd = *(uint32_t *)rd >> shamt;
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    hc.hook = HOOK_END;
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintIType(state, &hc);
-#endif
-#endif
-}
-
-/**
- * Shift right arithmetic immediate: shift rd right by shamt, preserving the sign bit.
- * rd = rd >> shamt
- */
-static inline void RiscvEmulatorC_SRAI(
-    RiscvEmulatorState_t *state __attribute__((unused)),
-    const uint8_t rdnum __attribute__((unused)),
-    void *rd,
-    uint8_t shamt) {
-
-#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
-    state->instructionhandled = 1;
-    RiscvEmulatorHookContext_t hc = {0};
-    hc.instruction = "c.srai";
-    hc.hook = HOOK_BEGIN;
-    hc.rdnum = rdnum;
-    hc.rdname = RiscvEmulatorGetRegisterSymbolicName(rdnum);
-    hc.rd = rd;
-    hc.imm = shamt;
-    hc.immlength = sizeof(shamt);
-    hc.immname = "shamt";
-    RiscvEmulatorHook(state, &hc);
-#if (RVE_E_DISASM == 1)
-    RiscvEmulatorDisasmPrintHeader(state);
-    RiscvEmulatorDisasmPrintIType(state, &hc);
-#endif
-#endif
-
-    if (rdnum == 0) {
-        return;
-    }
-
-    *(int32_t *)rd = *(int32_t *)rd >> shamt;
+    *(uint32_t *)rd = result;
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
@@ -1286,13 +1267,9 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state, ui
             break;
         }
         case OPCODE16_MISCALU:
-            if (funct3_funct2 == FUNCT3_FUNCT2_SRLI) {
-                RiscvEmulatorC_SRLI(state, (uint8_t)rdnum, rd, (uint8_t)imm);
-                break;
-            }
-
-            if (funct3_funct2 == FUNCT3_FUNCT2_SRAI) {
-                RiscvEmulatorC_SRAI(state, (uint8_t)rdnum, rd, (uint8_t)imm);
+            if (funct3_funct2 == FUNCT3_FUNCT2_SRLI ||
+                funct3_funct2 == FUNCT3_FUNCT2_SRAI) {
+                RiscvEmulatorC_ShiftRightOperation(state, (uint8_t)rdnum, rd, (uint8_t)imm, funct3_funct2);
                 break;
             }
 
