@@ -107,15 +107,10 @@ static inline void RiscvEmulatorMRET(RiscvEmulatorState_t *state) {
 #endif
 #endif
 
-    // TODO: Determine what the new privilege mode will be according to the values of MPP and MPV in mstatus.
-    // Could this always be M-mode for this emulator?
-
     state->csr.mstatush.mpv = 0;
     state->csr.mstatus.mpp = 0;
     state->csr.mstatus.mie = state->csr.mstatus.mpie;
     state->csr.mstatus.mpie = 1;
-
-    // TODO: Set the privilege mode as previously determined.
 
     state->programcounternext = RiscvEmulatorCSRReadMask(state, 0x341, state->csr.mepc);
 
