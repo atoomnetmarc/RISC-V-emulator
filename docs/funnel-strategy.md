@@ -6,7 +6,7 @@ A **funnel** is a single `static inline` handler that merges semantically identi
 
 Without a funnel, the body of each variant is duplicated in source and, after inlining, also duplicated in the generated code.
 
-A funnel halves this duplication and guarantees that paired variants cannot drift apart semantically.
+A funnel halves this duplication and keeps paired variants semantically equal.
 
 ## Rules for writing a funnel
 
@@ -17,9 +17,9 @@ A funnel halves this duplication and guarantees that paired variants cannot drif
 5. **Respect decode-once.** The funnel receives already-decoded values (fields, pointers) as arguments and never reads `state->instruction.*` itself. See [decode-once.md](decode-once.md).
 6. **Report recognition.** The funnel returns whether it handled the instruction, so the caller keeps ownership of the `illegalinstruction` trap.
 7. **Natural style, no bit-magic.** Express signedness with casts, never with bit tricks. See [no-bit-magic.md](no-bit-magic.md).
-8. **Share the call site.** The funnel body is only shared if the compiler shares the *call site*: collapse the case labels that select the same funnel into one fall-through call, and pass the already-decoded combined decoder constant (e.g. `funct7_3`, `imm11_5funct3`) as the variant argument. A funnel called from three separate call sites still gets inlined three times — confirmed in `.lss` during the shift tournament. Measured: −2,240 flash bytes over 22 AVR environments for the shift pairs, versus +638 for the same two funnels with separate call sites.
+8. **Share the call site.** The funnel body is only shared if the compiler shares the _call site_: collapse the case labels that select the same funnel into one fall-through call, and pass the already-decoded combined decoder constant (e.g. `funct7_3`, `imm11_5funct3`) as the variant argument. A funnel called from three separate call sites still gets inlined three times. The `.lss` listing of the shift funnels confirms this. Measured: −2,240 flash bytes over 22 AVR environments for the shift pairs, versus +638 for the same two funnels with separate call sites.
 9. **Measure first.** Record flash size per build environment before and after (e.g. `avr-size` per PlatformIO env). A funnel that regresses size or speed is reverted.
-10. **Inspect the assembly.** Check the generated `.lss` listing to see what the compiler actually made of the funnel: whether reads were CSE'd, whether the dispatch became a jump table, and whether anything was inlined or duplicated unexpectedly. Size numbers alone do not explain *why* a change won or lost.
+10. **Inspect the assembly.** Check the generated `.lss` listing to see what the compiler actually made of the funnel: whether reads were CSE'd, whether the dispatch became a jump table, and whether anything was inlined or duplicated unexpectedly. Size numbers alone do not explain _why_ a change won or lost.
 
 ## Proven examples
 
@@ -29,6 +29,6 @@ A funnel halves this duplication and guarantees that paired variants cannot drif
 
 ## When not to funnel
 
-Variants that only share `funct3` but differ by `funct7` (e.g. `sub` vs `add`) do not fit the "same funct3 = same behaviour" idea and stay outside the funnel.
+Variants that only share `funct3` but differ by `funct7` (e.g. `sub` vs `add`) have different behaviour and stay outside the funnel.
 
 Variants with a different encoding (shifts with `shamt`, branches) can still be funneled, but the funnel must dispatch on the encoding difference itself (e.g. a shift funnel taking the shift amount and the variant as decoded arguments), not pretend the encodings are the same. Measure first: the byte-loop cost that made a switch-inside-loop lose on the operation funnel applies here too.

@@ -13,4 +13,5 @@
 
 - Casts to select signedness: `(int32_t)x < (int32_t)y` vs `(uint32_t)x < y`.
 - Sign/zero-extension via the established idiom (`loadedvalue & 0x8000` → `|= 0xFFFF0000`), because that _is_ the ISA semantics, written once, in the extension handler.
+- Masks that implement ISA semantics on operand values, such as restricting a shift amount to its ISA-defined width (`amount & 0b11111` for rs2[4:0]). The mask expresses what the ISA specifies, it does not encode a compiler trick.
 - Named decoder constants and masks in `RiscvEmulatorDefine*.h` — encoding knowledge belongs in the decoder, not in operation bodies.
