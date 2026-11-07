@@ -94,8 +94,20 @@ static inline const char *RiscvEmulatorGetCSRName(const uint16_t csr) {
     const char *name;
     switch (csr) {
         // Machine Information Registers
+        case 0xF11:
+            name = "mvendorid";
+            break;
+        case 0xF12:
+            name = "marchid";
+            break;
+        case 0xF13:
+            name = "mimpid";
+            break;
         case 0xF14:
             name = "mhartid";
+            break;
+        case 0xF15:
+            name = "mconfigptr";
             break;
 
         // Machine Trap Setup
@@ -117,8 +129,17 @@ static inline const char *RiscvEmulatorGetCSRName(const uint16_t csr) {
         case 0x305:
             name = "mtvec";
             break;
+        case 0x306:
+            name = "mcounteren";
+            break;
+        case 0x30A:
+            name = "menvcfg";
+            break;
         case 0x310:
             name = "mstatush";
+            break;
+        case 0x320:
+            name = "mcountinhibit";
             break;
 
         // Machine Trap Handling
@@ -151,9 +172,46 @@ static inline const char *RiscvEmulatorGetCSRName(const uint16_t csr) {
             name = "mnstatus";
             break;
 
+        // Machine Security Configuration
+        case 0x747:
+            name = "mseccfg";
+            break;
+
         // Supervisor Protection and Translation
         case 0x180:
             name = "satp";
+            break;
+
+        // Counters
+        case 0xB00:
+            name = "mcycle";
+            break;
+        case 0xB02:
+            name = "minstret";
+            break;
+        case 0xB80:
+            name = "mcycleh";
+            break;
+        case 0xB82:
+            name = "minstreth";
+            break;
+        case 0xC00:
+            name = "cycle";
+            break;
+        case 0xC01:
+            name = "time";
+            break;
+        case 0xC02:
+            name = "instret";
+            break;
+        case 0xC80:
+            name = "cycleh";
+            break;
+        case 0xC81:
+            name = "timeh";
+            break;
+        case 0xC82:
+            name = "instreth";
             break;
 
         default:

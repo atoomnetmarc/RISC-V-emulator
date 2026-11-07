@@ -60,50 +60,28 @@ static inline void RiscvEmulatorTrapEnter(RiscvEmulatorState_t *state __attribut
 
 /**
  * Handle a synchronous trap.
+ *
+ * The exception cause and mtval were recorded by RiscvEmulatorRaiseException()
+ * while the instruction was executing. Only one exception can be pending.
  */
 static inline void RiscvEmulatorTrap(RiscvEmulatorState_t *state) {
 #if (RVE_E_ZICSR == 1)
-    uint32_t cause = 0;
-
-    // Instruction address misaligned
-    if (state->trapflag.instructionaddressmisaligned == 1) {
-        cause = MCAUSE_EXCEPTION_CODE_INSTRUCTION_ADDRESS_MISALIGNED;
+    if (state->trap.pending != 0) {
+        state->csr.mtval = state->trap.tval;
+        RiscvEmulatorTrapEnter(state, state->trap.pending, 0);
     }
 
-    // Breakpoint
-    if (state->trapflag.breakpoint == 1) {
-        cause = MCAUSE_EXCEPTION_CODE_BREAKPOINT;
-    }
-
-    // Load address misaligned
-    if (state->trapflag.loadaddressmisaligned == 1) {
-        cause = MCAUSE_EXCEPTION_CODE_LOAD_ADDRESS_MISALIGNED;
-    }
-
-    // Store/AMO address misaligned
-    if (state->trapflag.storeaddressmisaligned == 1) {
-        cause = MCAUSE_EXCEPTION_CODE_STORE_ADDRESS_MISALIGNED;
-    }
-
-    //  Environment call from M-mode
-    if (state->trapflag.environmentcallfrommmode == 1) {
-        cause = MCAUSE_EXCEPTION_CODE_ENVIRONMENT_CALL_FROM_MMODE;
-    }
-
-    // Illegal instruction
-    if (state->trapflag.illegalinstruction == 1) {
-        cause = MCAUSE_EXCEPTION_CODE_ILLEGAL_INSTRUCTION;
-        state->csr.mtval = state->instruction.value;
-    }
-
-    RiscvEmulatorTrapEnter(state, cause, 0);
-#endif
-
-    if (state->trapflag.illegalinstruction == 1) {
+    if (state->trap.pending == MCAUSE_EXCEPTION_CODE_ILLEGAL_INSTRUCTION) {
         RiscvEmulatorIllegalInstruction(state);
     }
+#else
+    // Without Zicsr there is no trap handler, so any exception is fatal.
+    if (state->trap.pending != 0) {
+        RiscvEmulatorIllegalInstruction(state);
+    }
+#endif
 
-    state->trapflag.value = 0;
+    state->trap.pending = 0;
 }
 
 #endif

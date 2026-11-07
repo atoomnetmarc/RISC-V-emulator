@@ -31,7 +31,7 @@ static inline uint32_t RiscvEmulatorCSRWriteMask(RiscvEmulatorState_t *state __a
             value |= RVE_CSR_MSTATUS_MPP_MMODE;
             break;
         case 0x301:
-            value &= RVE_CSR_MISA_WRITE_MASK;
+            value = (value & RVE_CSR_MISA_WRITE_MASK) | RVE_CSR_MISA_MXL_RV32;
             break;
         case 0x302:
             value &= RVE_CSR_MEDELEG_WRITE_MASK;
@@ -125,16 +125,28 @@ static inline void RiscvEmulatorMRET(RiscvEmulatorState_t *state) {
 }
 
 /**
- * Get the address of an CSR structure.
+ * Get the address of a CSR structure and its access flags.
  *
- * Do not forget to update RiscvEmulatorGetCSRName()
+ * An unimplemented CSR raises an illegal-instruction exception, sets *flags to
+ * 0 and returns NULL. The caller must not perform the access in that case.
+ *
+ * Do not forget to update RiscvEmulatorGetCSRName().
  */
-static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, const uint16_t csr) {
+static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, const uint16_t csr, uint8_t *flags) {
     void *address = 0;
+    uint8_t csrflags = 0;
 
     switch (csr) {
         // Machine Information Registers
-        case 0xF14:
+        case 0xF11: // mvendorid
+        case 0xF12: // marchid
+        case 0xF13: // mimpid
+        case 0xF15: // mconfigptr
+            csrflags = RVE_CSR_F_READONLY | RVE_CSR_F_ZERO;
+            address = &state->csr.zeroreg;
+            break;
+        case 0xF14: // mhartid
+            csrflags = RVE_CSR_F_READONLY;
             address = &state->csr.mhartid;
             break;
 
@@ -156,6 +168,13 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
             break;
         case 0x305:
             address = &state->csr.mtvec;
+            break;
+        case 0x306: // mcounteren
+        case 0x30A: // menvcfg
+        case 0x320: // mcountinhibit
+        case 0x747: // mseccfg
+            csrflags = RVE_CSR_F_ZERO;
+            address = &state->csr.zeroreg;
             break;
         case 0x310:
             address = &state->csr.mstatush;
@@ -196,10 +215,10 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
             address = &state->csr.satp;
             break;
 
-            // Machine Counter Setup
 #if (RVE_E_ZICNTR == 1)
+        // User counters
         case 0xC00:
-            address = (uint32_t *)(uintptr_t)&state->csr.cycle;
+            address = &state->csr.cycle;
             break;
         case 0xC80:
             // The 0x?80 CSRs are the upper half of the 64-bit counter. The
@@ -208,24 +227,53 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
             address = (uint32_t *)(uintptr_t)&state->csr.cycle + 1;
             break;
         case 0xC01:
-            address = (uint32_t *)(uintptr_t)&state->csr.time;
+            address = &state->csr.time;
             break;
         case 0xC81:
             address = (uint32_t *)(uintptr_t)&state->csr.time + 1;
             break;
         case 0xC02:
-            address = (uint32_t *)(uintptr_t)&state->csr.instret;
+            address = &state->csr.instret;
             break;
         case 0xC82:
+            address = (uint32_t *)(uintptr_t)&state->csr.instret + 1;
+            break;
+
+        // Machine counters
+        case 0xB00:
+            address = &state->csr.cycle;
+            break;
+        case 0xB80:
+            address = (uint32_t *)(uintptr_t)&state->csr.cycle + 1;
+            break;
+        case 0xB02:
+            address = &state->csr.instret;
+            break;
+        case 0xB82:
             address = (uint32_t *)(uintptr_t)&state->csr.instret + 1;
             break;
 #endif
 
         default:
-            RiscvEmulatorTrapFlagIllegalInstruction(state);
-            RiscvEmulatorUnknownCSR(state);
+            // The PMU, PMP and mstateen arrays are read-only-zero ranges.
+            if (((csr >= 0x323) && (csr <= 0x33F)) || // mhpmevent3-31
+                ((csr >= 0xB03) && (csr <= 0xB1F)) || // mhpmcounter3-31
+                ((csr >= 0xB83) && (csr <= 0xB9F)) || // mhpmcounterh3-31
+                ((csr >= 0x3A1) && (csr <= 0x3A3)) || // pmpcfg1-3
+                ((csr >= 0x3B1) && (csr <= 0x3BF)) || // pmpaddr1-15
+                ((csr >= 0x30C) && (csr <= 0x30F))) { // mstateen0-3
+                csrflags = RVE_CSR_F_ZERO;
+                address = &state->csr.zeroreg;
+                break;
+            }
+
+            RiscvEmulatorRaiseException(state,
+                MCAUSE_EXCEPTION_CODE_ILLEGAL_INSTRUCTION, state->instruction.value);
+            *flags = 0;
+            return NULL;
     }
 
+    *flags = csrflags;
     return address;
 }
 
@@ -243,6 +291,7 @@ static inline uint8_t RiscvEmulatorCSR(
     const void *rs1,
     const uint8_t funct3,
     void *csr,
+    const uint8_t csrflags,
     const uint16_t csrnum,
     const uint8_t imm) {
 
@@ -269,6 +318,19 @@ static inline uint8_t RiscvEmulatorCSR(
         value = imm;
     } else {
         value = *(const uint32_t *)rs1;
+    }
+
+    if (csr == NULL) {
+        return 1;
+    }
+
+    // A write to a read-only CSR raises an illegal-instruction exception and
+    // has no effect, so check before writing the destination register.
+    if ((csrflags & RVE_CSR_F_READONLY) &&
+        ((funct3 == FUNCT3_CSR_CSRRW) || (funct3 == FUNCT3_CSR_CSRRWI) || (value != 0))) {
+        RiscvEmulatorRaiseException(state,
+            MCAUSE_EXCEPTION_CODE_ILLEGAL_INSTRUCTION, state->instruction.value);
+        return 1;
     }
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
@@ -326,6 +388,10 @@ static inline uint8_t RiscvEmulatorCSR(
 
     // csrrw always writes; csrrs and csrrc only write when the value is nonzero.
     if ((funct3 == FUNCT3_CSR_CSRRW) || (funct3 == FUNCT3_CSR_CSRRWI) || (value != 0)) {
+        if (csrflags & RVE_CSR_F_ZERO) {
+            return 1; // Writes to read-only-zero CSRs are ignored.
+        }
+
         uint32_t oldvalue = *(uint32_t *)csr;
         uint32_t newvalue;
         if ((funct3 == FUNCT3_CSR_CSRRW) || (funct3 == FUNCT3_CSR_CSRRWI)) {

@@ -97,7 +97,11 @@ static inline void RiscvEmulatorC_LoadOperation(
     // Load into a zeroed local first so the upper bytes of the 32-bit
     // register are cleared.
     uint32_t loadedvalue = 0;
-    RiscvEmulatorLoad(memorylocation, &loadedvalue, length);
+    if (!RiscvEmulatorLoad(memorylocation, &loadedvalue, length)) {
+        RiscvEmulatorRaiseException(state,
+            MCAUSE_EXCEPTION_CODE_LOAD_ACCESS_FAULT, memorylocation);
+        return;
+    }
 
     // Sign extend the loaded halfword for c.lh.
     if (imm5_3 == FUNCT3_ZCB_LH && imm2 != 0) {
@@ -190,7 +194,11 @@ static inline void RiscvEmulatorC_StoreOperation(
 #endif
 #endif
 
-    RiscvEmulatorStore(memorylocation, rs2, length);
+    if (!RiscvEmulatorStore(memorylocation, rs2, length)) {
+        RiscvEmulatorRaiseException(state,
+            MCAUSE_EXCEPTION_CODE_STORE_ACCESS_FAULT, memorylocation);
+        return;
+    }
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;

@@ -70,11 +70,11 @@ static inline void RiscvEmulatorJALR(RiscvEmulatorState_t *state, uint8_t rdnum,
 #endif
 #endif
 
-#if (RVE_E_ZICSR == 1) && (RVE_E_C != 1)
-    // Check if jumptoprogramcounter is aligned.
-    if ((jumptoprogramcounter & 0b11) != 0) {
-        state->trapflag.instructionaddressmisaligned = 1;
-        state->csr.mtval = jumptoprogramcounter;
+#if (RVE_E_ZICSR == 1)
+    // Check if jumptoprogramcounter is aligned. With C, IALIGN is 16 bits.
+    if ((jumptoprogramcounter & RVE_IALIGN_MASK) != 0) {
+        RiscvEmulatorRaiseException(state,
+            MCAUSE_EXCEPTION_CODE_INSTRUCTION_ADDRESS_MISALIGNED, jumptoprogramcounter);
         return;
     }
 #endif
@@ -759,8 +759,8 @@ static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state, uint8_t 
     if (length > 1) {
         // Only the last few bits need to be checked.
         if ((memorylocation & (length - 1)) != 0) {
-            state->trapflag.loadaddressmisaligned = 1;
-            state->csr.mtval = memorylocation;
+            RiscvEmulatorRaiseException(state,
+                MCAUSE_EXCEPTION_CODE_LOAD_ADDRESS_MISALIGNED, memorylocation);
         }
     }
 #endif
@@ -791,13 +791,17 @@ static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state, uint8_t 
     }
 
 #if (RVE_E_ZICSR == 1) && (RVE_E_MISALIGNED == 0)
-    if (state->trapflag.loadaddressmisaligned == 1) {
+    if (state->trap.pending != 0) {
         return;
     }
 #endif
 
     uint32_t value = 0;
-    RiscvEmulatorLoad(memorylocation, &value, length);
+    if (!RiscvEmulatorLoad(memorylocation, &value, length)) {
+        RiscvEmulatorRaiseException(state,
+            MCAUSE_EXCEPTION_CODE_LOAD_ACCESS_FAULT, memorylocation);
+        return;
+    }
 
     switch (funct3) {
         case FUNCT3_LOAD_LB:
@@ -872,8 +876,8 @@ static inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state, uint8_t
     if (length > 1) {
         // Only the last few bits need to be checked.
         if ((memorylocation & (length - 1)) != 0) {
-            state->trapflag.storeaddressmisaligned = 1;
-            state->csr.mtval = memorylocation;
+            RiscvEmulatorRaiseException(state,
+                MCAUSE_EXCEPTION_CODE_STORE_ADDRESS_MISALIGNED, memorylocation);
         }
     }
 #endif
@@ -901,12 +905,16 @@ static inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state, uint8_t
 #endif
 
 #if (RVE_E_ZICSR == 1) && (RVE_E_MISALIGNED == 0)
-    if (state->trapflag.storeaddressmisaligned == 1) {
+    if (state->trap.pending != 0) {
         return;
     }
 #endif
 
-    RiscvEmulatorStore(memorylocation, rs2, length);
+    if (!RiscvEmulatorStore(memorylocation, rs2, length)) {
+        RiscvEmulatorRaiseException(state,
+            MCAUSE_EXCEPTION_CODE_STORE_ACCESS_FAULT, memorylocation);
+        return;
+    }
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
@@ -1050,11 +1058,11 @@ static inline void RiscvEmulatorOpcodeBranch(RiscvEmulatorState_t *state, uint8_
         uint32_t immu = (uint32_t)imm;
         state->programcounternext = state->programcounter + immu;
 
-#if (RVE_E_ZICSR == 1) && (RVE_E_C != 1)
-        // Check if programcounternext is aligned.
-        if ((state->programcounternext & 0b11) != 0) {
-            state->trapflag.instructionaddressmisaligned = 1;
-            state->csr.mtval = state->programcounternext;
+#if (RVE_E_ZICSR == 1)
+        // Check if programcounternext is aligned. With C, IALIGN is 16 bits.
+        if ((state->programcounternext & RVE_IALIGN_MASK) != 0) {
+            RiscvEmulatorRaiseException(state,
+                MCAUSE_EXCEPTION_CODE_INSTRUCTION_ADDRESS_MISALIGNED, state->programcounternext);
         }
 #endif
 
@@ -1182,11 +1190,11 @@ static inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state, uint8_t rdnum, 
     RiscvEmulatorDisasmPrintJType(state, &hc);
 #endif
 #endif
-#if (RVE_E_ZICSR == 1) && (RVE_E_C != 1)
-    // Check if jumptoprogramcounter is aligned.
-    if ((jumptoprogramcounter & 0b11) != 0) {
-        state->trapflag.instructionaddressmisaligned = 1;
-        state->csr.mtval = jumptoprogramcounter;
+#if (RVE_E_ZICSR == 1)
+    // Check if jumptoprogramcounter is aligned. With C, IALIGN is 16 bits.
+    if ((jumptoprogramcounter & RVE_IALIGN_MASK) != 0) {
+        RiscvEmulatorRaiseException(state,
+            MCAUSE_EXCEPTION_CODE_INSTRUCTION_ADDRESS_MISALIGNED, jumptoprogramcounter);
         return;
     }
 #endif
@@ -1227,7 +1235,8 @@ static inline void RiscvEmulatorECALL(RiscvEmulatorState_t *state) {
 #endif
 
 #if (RVE_E_ZICSR == 1)
-    state->trapflag.environmentcallfrommmode = 1;
+    RiscvEmulatorRaiseException(state,
+        MCAUSE_EXCEPTION_CODE_ENVIRONMENT_CALL_FROM_MMODE, 0);
 #endif
 
     RiscvEmulatorHandleECALL(state);
@@ -1252,8 +1261,8 @@ static inline void RiscvEmulatorEBREAK(RiscvEmulatorState_t *state) {
 #endif
 
 #if (RVE_E_ZICSR == 1)
-    state->trapflag.breakpoint = 1;
-    state->csr.mtval = state->programcounter;
+    RiscvEmulatorRaiseException(state,
+        MCAUSE_EXCEPTION_CODE_BREAKPOINT, state->programcounter);
 #endif
 
     RiscvEmulatorHandleEBREAK(state);
@@ -1317,9 +1326,10 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state, uint8_
         detectedUnknownInstruction = -1;
 
         uint16_t csrnum = funct12;
-        void *csr = RiscvEmulatorGetCSRAddress(state, csrnum);
+        uint8_t csrflags = 0;
+        void *csr = RiscvEmulatorGetCSRAddress(state, csrnum, &csrflags);
 
-        if (state->trapflag.value > 0) {
+        if (state->trap.pending != 0) {
             return;
         }
 
@@ -1327,7 +1337,7 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state, uint8_
         // 5-bit immediate in the rs1 field instead of a register number.
         const uint8_t imm = state->instruction.itypesystem.rs1;
 
-        if (RiscvEmulatorCSR(state, rdnum, rd, rs1num, rs1, funct3, csr, csrnum, imm) == 0) {
+        if (RiscvEmulatorCSR(state, rdnum, rd, rs1num, rs1, funct3, csr, csrflags, csrnum, imm) == 0) {
             detectedUnknownInstruction = 1;
         }
     }

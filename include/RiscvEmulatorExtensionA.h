@@ -138,7 +138,11 @@ static inline void RiscvEmulatorLR_W(
     RiscvEmulatorState_t *state,
     void *rd,
     uint32_t address) {
-    RiscvEmulatorLoad(address, rd, sizeof(uint32_t));
+    if (!RiscvEmulatorLoad(address, rd, sizeof(uint32_t))) {
+        RiscvEmulatorRaiseException(state,
+            MCAUSE_EXCEPTION_CODE_LOAD_ACCESS_FAULT, address);
+        return;
+    }
     state->reservationvalid = 1;
     state->reservationaddress = address;
 }
@@ -153,7 +157,12 @@ static inline void RiscvEmulatorSC_W(
     const void *rs2,
     uint32_t address) {
     if (state->reservationvalid == 1 && state->reservationaddress == address) {
-        RiscvEmulatorStore(address, rs2, sizeof(uint32_t));
+        if (!RiscvEmulatorStore(address, rs2, sizeof(uint32_t))) {
+            RiscvEmulatorRaiseException(state,
+                MCAUSE_EXCEPTION_CODE_STORE_ACCESS_FAULT, address);
+            state->reservationvalid = 0;
+            return;
+        }
         *(uint32_t *)rd = 0; // Success.
     } else {
         *(uint32_t *)rd = 1; // Failure code 1: unspecified failure.
@@ -246,7 +255,11 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(RiscvEmulatorState_t
     // Word AMOs operate on sizeof(uint32_t) bytes.
     uint8_t amolength = sizeof(uint32_t);
     uint32_t loadedvalue = 0;
-    RiscvEmulatorLoad(originaladdressrs1, &loadedvalue, amolength);
+    if (!RiscvEmulatorLoad(originaladdressrs1, &loadedvalue, amolength)) {
+        RiscvEmulatorRaiseException(state,
+            MCAUSE_EXCEPTION_CODE_LOAD_ACCESS_FAULT, originaladdressrs1);
+        return;
+    }
 
     if (rdnum != 0) {
         // Place loaded value of original address in rd.
@@ -314,7 +327,11 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(RiscvEmulatorState_t
 
 #if (RVE_E_ZAAMO == 1)
     if (skipstore == 0) {
-        RiscvEmulatorStore(originaladdressrs1, &loadedvalue, amolength);
+        if (!RiscvEmulatorStore(originaladdressrs1, &loadedvalue, amolength)) {
+            RiscvEmulatorRaiseException(state,
+                MCAUSE_EXCEPTION_CODE_STORE_ACCESS_FAULT, originaladdressrs1);
+            return;
+        }
     }
 #else
     // Suppress unused-variable warning in Zalrsc-only builds.

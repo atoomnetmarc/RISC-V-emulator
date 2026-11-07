@@ -63,7 +63,7 @@
 #define RVE_CSR_MISA_I (1u << 8)
 
 #if (RVE_E_M == 1)
-#define RVE_CSR_MISA_M (1u << 13)
+#define RVE_CSR_MISA_M (1u << 12)
 #else
 #define RVE_CSR_MISA_M 0u
 #endif
@@ -90,12 +90,23 @@
 #define RVE_CSR_MISA_MXL_RV32   (1ul << 30)
 
 /**
+ * misa value at reset: the maximum set of implemented extensions.
+ */
+#define RVE_CSR_MISA_VALUE (RVE_CSR_MISA_I | RVE_CSR_MISA_M | RVE_CSR_MISA_A | RVE_CSR_MISA_C | RVE_CSR_MISA_B)
+
+/**
  * WARL read masks: bits that are masked on reads.
  *
  * mepc: masking bit 1 on reads (IALIGN=32) is optional per the spec, and the
  * ACT reference model expects bit 1 to be readable, so nothing is masked.
  */
 #define RVE_CSR_MEPC_READ_MASK 0x0u
+
+/**
+ * CSR access flags, returned by RiscvEmulatorGetCSRAddress().
+ */
+#define RVE_CSR_F_READONLY (1u << 0) // Writes raise an illegal-instruction trap.
+#define RVE_CSR_F_ZERO     (1u << 1) // Reads as zero, writes are ignored.
 
 /**
  * Collection of control and status registers.
@@ -129,6 +140,9 @@ typedef struct __attribute__((packed)) {
 
     // Supervisor Protection and Translation
     RiscvCSRsatp_t satp;
+
+    // Shared storage for read-only-zero CSRs.
+    uint32_t zeroreg;
 
     // Machine Counter Setup
 #if (RVE_E_ZICNTR == 1)

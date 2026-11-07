@@ -77,6 +77,19 @@ As a sanity check, all combinations of extensions and subsets will be compiled. 
 Instruction decoding is done with packed bitfield structs. When bits need to be untangled, I use a union of two helper structs instead of trying to shift all the bits into the correct places.
 In a first pass, the opcode of the instruction is processed in a `switch()` located in `RiscvEmulatorLoop()` and roughly split into its instruction groups (like R-Type, I-Type, etc.). When needed, in a second nested `switch()`, the instruction is decoded and the operation is executed.
 
+Synchronous exceptions go through a single funnel: an instruction calls
+`RiscvEmulatorRaiseException(state, cause, tval)` and the core records the
+first pending cause. At the end of the instruction, `RiscvEmulatorTrap()`
+writes `mcause`, `mtval`, `mepc` and `mstatus`, and jumps to `mtvec`. Only one
+exception can be pending per instruction.
+
+CSR access goes through one `switch()` in `RiscvEmulatorGetCSRAddress()` that
+returns the address of the CSR and its access flags. A `switch()` keeps the
+metadata in flash on AVR, where a `static const` table would be copied to RAM.
+An unimplemented CSR raises an illegal-instruction trap; a write to a
+read-only CSR does the same. The PMU, PMP and `mstateen` arrays are handled as
+read-only-zero ranges.
+
 # Your implementation
 
 The emulator needs some implementation specific code in a file called `RiscvEmulatorImplementationSpecific.h` that you must program yourself in your own project:
@@ -88,9 +101,11 @@ The emulator needs some implementation specific code in a file called `RiscvEmul
  * @param address The byte address in memory.
  * @param destination The destination address to copy the data to.
  * @param length The length in bytes of the data.
+ * @return true when the address is mapped, false otherwise.
  */
-inline void RiscvEmulatorLoad(uint32_t address, void *destination, uint8_t length)
+inline bool RiscvEmulatorLoad(uint32_t address, void *destination, uint8_t length)
 {
+    return true;
 }
 
 /**
@@ -99,9 +114,11 @@ inline void RiscvEmulatorLoad(uint32_t address, void *destination, uint8_t lengt
  * @param address The byte address in memory.
  * @param source The source address to copy the data from.
  * @param length The length in bytes of the data.
+ * @return true when the address is mapped, false otherwise.
  */
-inline void RiscvEmulatorStore(uint32_t address, const void *source, uint8_t length)
+inline bool RiscvEmulatorStore(uint32_t address, const void *source, uint8_t length)
 {
+    return true;
 }
 
 /**
@@ -114,14 +131,6 @@ inline void RiscvEmulatorStore(uint32_t address, const void *source, uint8_t len
 inline void RiscvEmulatorIllegalInstruction(RiscvEmulatorState_t *state)
 {
 }
-
-#if (RVE_E_ZICSR == 1)
-/**
- * Handles a fault where the CSR is not recognized.
- */
-inline void RiscvEmulatorUnknownCSR(RiscvEmulatorState_t *state) {
-}
-#endif
 
 /**
  * Handles an ECALL.
@@ -136,6 +145,12 @@ inline void RiscvEmulatorHandleECALL(RiscvEmulatorState_t *state)
 inline void RiscvEmulatorHandleEBREAK(RiscvEmulatorState_t *state) {
 }
 ```
+
+`RiscvEmulatorLoad` and `RiscvEmulatorStore` return `false` for an unmapped
+address. The core turns that into an instruction, load or store access fault
+(`mcause` 1, 5 or 7) when `Zicsr` is enabled, and into a fatal trap otherwise.
+An unimplemented CSR is handled by the core as an illegal-instruction trap;
+there is no `RiscvEmulatorUnknownCSR` hook anymore.
 
 Your own program should provide some RAM, initialize the emulator, and then keep calling `RiscvEmulatorLoop()`. For inspiration:
 

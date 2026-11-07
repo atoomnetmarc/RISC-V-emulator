@@ -12,8 +12,10 @@
 
 #if (RVE_E_C == 1)
 #define IALIGN 16
+#define RVE_IALIGN_MASK 0x1u
 #else
 #define IALIGN 32
+#define RVE_IALIGN_MASK 0x3u
 #endif
 
 #define IO_ORIGIN   0x02000000

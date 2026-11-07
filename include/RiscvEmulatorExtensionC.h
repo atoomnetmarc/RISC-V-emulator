@@ -105,12 +105,16 @@ static inline void RiscvEmulatorC_LW(
 #endif
 
 #if (RVE_E_ZICSR == 1)
-    if (state->trapflag.storeaddressmisaligned == 1) {
+    if (state->trap.pending != 0) {
         return;
     }
 #endif
 
-    RiscvEmulatorLoad(memorylocation, rd, length);
+    if (!RiscvEmulatorLoad(memorylocation, rd, length)) {
+        RiscvEmulatorRaiseException(state,
+            MCAUSE_EXCEPTION_CODE_LOAD_ACCESS_FAULT, memorylocation);
+        return;
+    }
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
@@ -161,12 +165,16 @@ static inline void RiscvEmulatorC_SW(
 #endif
 
 #if (RVE_E_ZICSR == 1)
-    if (state->trapflag.storeaddressmisaligned == 1) {
+    if (state->trap.pending != 0) {
         return;
     }
 #endif
 
-    RiscvEmulatorStore(memorylocation, rs2, length);
+    if (!RiscvEmulatorStore(memorylocation, rs2, length)) {
+        RiscvEmulatorRaiseException(state,
+            MCAUSE_EXCEPTION_CODE_STORE_ACCESS_FAULT, memorylocation);
+        return;
+    }
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
@@ -875,7 +883,11 @@ static inline void RiscvEmulatorC_LWSP(
         return;
     }
 
-    RiscvEmulatorLoad(memorylocation, rd, sizeof(uint32_t));
+    if (!RiscvEmulatorLoad(memorylocation, rd, sizeof(uint32_t))) {
+        RiscvEmulatorRaiseException(state,
+            MCAUSE_EXCEPTION_CODE_LOAD_ACCESS_FAULT, memorylocation);
+        return;
+    }
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
@@ -949,8 +961,8 @@ static inline void RiscvEmulatorC_EBREAK(RiscvEmulatorState_t *state) {
 #endif
 
 #if (RVE_E_ZICSR == 1)
-    state->trapflag.breakpoint = 1;
-    state->csr.mtval = state->programcounter;
+    RiscvEmulatorRaiseException(state,
+        MCAUSE_EXCEPTION_CODE_BREAKPOINT, state->programcounter);
 #endif
 
     RiscvEmulatorHandleEBREAK(state);
@@ -1032,7 +1044,11 @@ static inline void RiscvEmulatorC_SWSP(
 #endif
 #endif
 
-    RiscvEmulatorStore(memorylocation, rs2, sizeof(uint32_t));
+    if (!RiscvEmulatorStore(memorylocation, rs2, sizeof(uint32_t))) {
+        RiscvEmulatorRaiseException(state,
+            MCAUSE_EXCEPTION_CODE_STORE_ACCESS_FAULT, memorylocation);
+        return;
+    }
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;

@@ -39,10 +39,15 @@ static inline void RiscvEmulatorInit(RiscvEmulatorState_t *state, uint32_t ram_l
 #if (RVE_E_ZICSR == 1)
     // Initialize CSR.
     memset(&state->csr, 0, sizeof(state->csr));
+
+    // misa reports the maximum set of implemented extensions at reset.
+    state->csr.misa.extensions = RVE_CSR_MISA_VALUE;
+    state->csr.misa.mxl = 1; // RV32
 #endif
 
-    // Initialize trap flags.
-    state->trapflag.value = 0;
+    // Initialize the pending trap.
+    state->trap.pending = 0;
+    state->trap.tval = 0;
 }
 
 /**
@@ -86,19 +91,29 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
 #if (RVE_E_C == 1)
     // Read 16 bits.
     state->instruction.H = 0;
-    RiscvEmulatorLoad(
-        state->programcounter,
-        &state->instruction.L,
-        sizeof(state->instruction.L));
+    if (!RiscvEmulatorLoad(
+            state->programcounter,
+            &state->instruction.L,
+            sizeof(state->instruction.L))) {
+        RiscvEmulatorRaiseException(state,
+            MCAUSE_EXCEPTION_CODE_INSTRUCTION_ACCESS_FAULT, state->programcounter);
+        RiscvEmulatorTrap(state);
+        return;
+    }
 
     state->programcounternext += sizeof(state->instruction.L);
 
     // Read another 16 bits when this is a 32-bit instruction.
     if (state->instruction.copcode.op == OPCODE16_QUADRANT_INVALID) {
-        RiscvEmulatorLoad(
-            state->programcounternext,
-            &state->instruction.H,
-            sizeof(state->instruction.L));
+        if (!RiscvEmulatorLoad(
+                state->programcounternext,
+                &state->instruction.H,
+                sizeof(state->instruction.L))) {
+            RiscvEmulatorRaiseException(state,
+                MCAUSE_EXCEPTION_CODE_INSTRUCTION_ACCESS_FAULT, state->programcounternext);
+            RiscvEmulatorTrap(state);
+            return;
+        }
 
         state->programcounternext += sizeof(state->instruction.L);
     } else {
@@ -106,7 +121,12 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
     }
 #else
     // Read 32 bits.
-    RiscvEmulatorLoad(state->programcounter, &state->instruction.value, sizeof(state->instruction.value));
+    if (!RiscvEmulatorLoad(state->programcounter, &state->instruction.value, sizeof(state->instruction.value))) {
+        RiscvEmulatorRaiseException(state,
+            MCAUSE_EXCEPTION_CODE_INSTRUCTION_ACCESS_FAULT, state->programcounter);
+        RiscvEmulatorTrap(state);
+        return;
+    }
     state->programcounternext += sizeof(state->instruction.value);
 #endif
 
@@ -180,7 +200,7 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
     state->csr.instret++;
 #endif
 
-    if (state->trapflag.value > 0) {
+    if (state->trap.pending != 0) {
         RiscvEmulatorTrap(state);
     }
 }

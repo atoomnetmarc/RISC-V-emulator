@@ -8,7 +8,6 @@
 #ifndef RiscvEmulatorDefineCSRMachineTrapHandling_H_
 #define RiscvEmulatorDefineCSRMachineTrapHandling_H_
 
-#if (RVE_E_ZICSR == 1)
 // Machine cause exception code.
 
 #define MCAUSE_EXCEPTION_CODE_INSTRUCTION_ADDRESS_MISALIGNED 0
@@ -31,7 +30,5 @@
 
 // Machine cause exception code field width.
 #define MCAUSE_EXCEPTION_CODE_MASK 0x7fffffffu
-
-#endif
 
 #endif
