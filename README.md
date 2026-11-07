@@ -152,6 +152,17 @@ address. The core turns that into an instruction, load or store access fault
 An unimplemented CSR is handled by the core as an illegal-instruction trap;
 there is no `RiscvEmulatorUnknownCSR` hook anymore.
 
+When `Zicntr` is enabled, the `time` CSR is a shadow of a platform time source.
+Define `RVE_TIME_SOURCE(state)` in your implementation-specific header to return
+a free-running counter, for example the host clock or CLINT `mtime`:
+
+```c
+#define RVE_TIME_SOURCE(state) my_platform_time()
+```
+
+When the macro is not defined, `time` falls back to counting instructions. That
+keeps the emulator self-contained, but it is not wall-clock accurate.
+
 Your own program should provide some RAM, initialize the emulator, and then keep calling `RiscvEmulatorLoop()`. For inspiration:
 
 ```c

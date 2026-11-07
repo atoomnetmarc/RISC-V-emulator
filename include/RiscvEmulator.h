@@ -103,10 +103,23 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
             RiscvEmulatorTrapEnter(state, cause, 1);
 #if (RVE_E_ZICNTR == 1)
             state->csr.cycle++;
+#if defined(RVE_TIME_SOURCE)
+            state->csr.time = RVE_TIME_SOURCE(state);
+#else
             state->csr.time++;
+#endif
 #endif
             return;
         }
+    }
+
+    // The fetch validates the target address. This catches MRET and any other
+    // PC source that does not check alignment itself (machine.adoc:1870).
+    if ((state->programcounter & RVE_IALIGN_MASK) != 0) {
+        RiscvEmulatorRaiseException(state,
+            MCAUSE_EXCEPTION_CODE_INSTRUCTION_ADDRESS_MISALIGNED, state->programcounter);
+        RiscvEmulatorTrap(state);
+        return;
     }
 #endif
 
@@ -220,7 +233,13 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
     // Update the counters. Zicntr implies Zicsr, so the CSR struct always
     // exists when this extension is enabled.
     state->csr.cycle++;
+#if defined(RVE_TIME_SOURCE)
+    // time is a shadow of the platform clock (or CLINT mtime), not an
+    // instruction counter (zicntr.adoc:116).
+    state->csr.time = RVE_TIME_SOURCE(state);
+#else
     state->csr.time++;
+#endif
     state->csr.instret++;
 #endif
 
