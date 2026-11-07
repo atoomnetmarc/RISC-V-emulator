@@ -29,6 +29,9 @@
 #define MCAUSE_EXCEPTION_CODE_SOFTWARE_CHECK                 18
 #define MCAUSE_EXCEPTION_CODE_HARDWARE_ERROR                 19
 
+// Machine cause exception code field width.
+#define MCAUSE_EXCEPTION_CODE_MASK 0x7fffffffu
+
 #endif
 
 #endif

@@ -55,7 +55,8 @@ static inline uint32_t RiscvEmulatorCSRWriteMask(RiscvEmulatorState_t *state __a
             value &= RVE_CSR_MEPC_WRITE_MASK;
             break;
         case 0x344:
-            value &= RVE_CSR_MIP_WRITE_MASK;
+            // mip.MEIP, mip.MTIP and mip.MSIP are read-only.
+            value = (state->csr.mip.mip & ~RVE_CSR_MIP_WRITE_MASK) | (value & RVE_CSR_MIP_WRITE_MASK);
             break;
         case 0x3A0:
             value &= RVE_CSR_PMPCFG0_WRITE_MASK;
@@ -108,7 +109,7 @@ static inline void RiscvEmulatorMRET(RiscvEmulatorState_t *state) {
 #endif
 
     state->csr.mstatush.mpv = 0;
-    state->csr.mstatus.mpp = 0;
+    state->csr.mstatus.mpp = 3; // Only M-mode is supported.
     state->csr.mstatus.mie = state->csr.mstatus.mpie;
     state->csr.mstatus.mpie = 1;
 

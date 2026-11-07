@@ -57,6 +57,30 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
 
     state->programcounter = state->programcounternext;
 
+#if (RVE_E_ZICSR == 1)
+    // Take the highest-priority pending interrupt before fetching the next
+    // instruction. M-mode priority: MEI, MSI, MTI.
+    if (state->csr.mstatus.mie != 0) {
+        uint32_t pending = state->csr.mip.mip & state->csr.mie.mie;
+        uint32_t cause = 0;
+        if ((pending & (1u << 11)) != 0) {
+            cause = 11; // Machine external interrupt.
+        } else if ((pending & (1u << 3)) != 0) {
+            cause = 3; // Machine software interrupt.
+        } else if ((pending & (1u << 7)) != 0) {
+            cause = 7; // Machine timer interrupt.
+        }
+        if (cause != 0) {
+            RiscvEmulatorTrapEnter(state, cause, 1);
+#if (RVE_E_ZICNTR == 1)
+            state->csr.cycle++;
+            state->csr.time++;
+#endif
+            return;
+        }
+    }
+#endif
+
     uint8_t instructionlength = 32;
 
 #if (RVE_E_C == 1)

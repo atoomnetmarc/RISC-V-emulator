@@ -32,11 +32,11 @@
 #define RVE_CSR_MTVEC_WRITE_MASK (~(uint32_t)0x2)
 
 /**
- * mie and mip: only the M-mode software, timer and external interrupt bits
- * are implemented (bits 3, 7 and 11).
+ * mie: only the M-mode software, timer and external interrupt bits are
+ * implemented (bits 3, 7 and 11). The matching mip bits are read-only.
  */
 #define RVE_CSR_MIE_WRITE_MASK 0x888u
-#define RVE_CSR_MIP_WRITE_MASK 0x888u
+#define RVE_CSR_MIP_WRITE_MASK 0x0u
 
 /**
  * mstatus: only MIE, MPIE and MPP are writable without S-mode, U-mode,
