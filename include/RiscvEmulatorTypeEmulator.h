@@ -48,6 +48,12 @@ typedef struct
 #endif
 
 #if (RVE_E_ZICSR == 1)
+    /**
+     * Set by WFI. The hart is parked until a locally enabled interrupt
+     * (mip & mie) is pending. Cleared by RiscvEmulatorLoop().
+     */
+    uint8_t waiting;
+
     RiscvCSR_t csr;
 #endif
 } RiscvEmulatorState_t;

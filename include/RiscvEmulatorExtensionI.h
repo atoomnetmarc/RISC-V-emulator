@@ -1269,6 +1269,30 @@ static inline void RiscvEmulatorEBREAK(RiscvEmulatorState_t *state) {
 }
 
 /**
+ * Wait for interrupt: park the hart until a locally enabled interrupt is
+ * pending. The spec allows a NOP, but parking models the hart state and lets
+ * the platform idle the host CPU.
+ */
+static inline void RiscvEmulatorWFI(
+    RiscvEmulatorState_t *state __attribute__((unused))) {
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
+    state->instructionhandled = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "wfi";
+    hc.hook = HOOK_BEGIN;
+    RiscvEmulatorHook(state, &hc);
+#if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintHeader(state);
+    RiscvEmulatorDisasmPrintPlain(state, &hc);
+#endif
+#endif
+
+#if (RVE_E_ZICSR == 1)
+    state->waiting = 1;
+#endif
+}
+
+/**
  * Process system opcodes.
  */
 static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state, uint8_t rdnum, void *rd __attribute__((unused)), uint8_t rs1num, void *rs1 __attribute__((unused)), uint8_t funct3) {
@@ -1297,6 +1321,9 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state, uint8_
                     break;
                 case FUNCT12_EBREAK:
                     RiscvEmulatorEBREAK(state);
+                    break;
+                case FUNCT12_WFI:
+                    RiscvEmulatorWFI(state);
                     break;
                 default:
                     detectedUnknownInstruction = 1;

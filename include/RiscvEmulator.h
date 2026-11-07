@@ -37,6 +37,9 @@ static inline void RiscvEmulatorInit(RiscvEmulatorState_t *state, uint32_t ram_l
     state->reg.Zero = 0;
 
 #if (RVE_E_ZICSR == 1)
+    // The hart starts running, not waiting.
+    state->waiting = 0;
+
     // Initialize CSR.
     memset(&state->csr, 0, sizeof(state->csr));
 
@@ -48,6 +51,18 @@ static inline void RiscvEmulatorInit(RiscvEmulatorState_t *state, uint32_t ram_l
     // Initialize the pending trap.
     state->trap.pending = 0;
     state->trap.tval = 0;
+}
+
+/**
+ * Returns non-zero when the hart is parked in WFI.
+ */
+static inline uint8_t RiscvEmulatorIsWaiting(const RiscvEmulatorState_t *state) {
+#if (RVE_E_ZICSR == 1)
+    return state->waiting;
+#else
+    (void)state;
+    return 0;
+#endif
 }
 
 /**
@@ -63,6 +78,15 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
     state->programcounter = state->programcounternext;
 
 #if (RVE_E_ZICSR == 1)
+    // WFI wake-up. The spec requires resuming on a locally enabled pending
+    // interrupt regardless of mstatus.mie (machine.adoc:2718).
+    if (state->waiting != 0) {
+        if ((state->csr.mip.mip & state->csr.mie.mie) == 0) {
+            return; // Hart is idle; no instruction retires.
+        }
+        state->waiting = 0;
+    }
+
     // Take the highest-priority pending interrupt before fetching the next
     // instruction. M-mode priority: MEI, MSI, MTI.
     if (state->csr.mstatus.mie != 0) {
