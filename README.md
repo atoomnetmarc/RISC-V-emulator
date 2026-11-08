@@ -217,6 +217,13 @@ void RiscvEmulatorHook(
 }
 ```
 
+Because a weak definition cannot be overridden in the same translation unit, also define `RVE_HOOK_OVERRIDE` before including the library when the hook lives in the same file:
+
+```c
+#define RVE_HOOK_OVERRIDE 1
+#include <RiscvEmulator.h>
+```
+
 The context contains the instruction name, register numbers/pointers/names, immediate, memory location, and more. You choose how much to use.
 
 ## Disassembly rendering (`RVE_E_DISASM`)
