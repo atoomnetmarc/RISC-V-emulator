@@ -54,6 +54,11 @@ typedef struct
      */
     uint8_t waiting;
 
+    /**
+     * Current privilege mode: 0 = U-mode, 3 = M-mode.
+     */
+    uint8_t privilege;
+
     RiscvCSR_t csr;
 #endif
 } RiscvEmulatorState_t;

@@ -39,11 +39,18 @@
 #define RVE_CSR_MIP_WRITE_MASK 0x0u
 
 /**
- * mstatus: only MIE, MPIE and MPP are writable without S-mode, U-mode,
- * the F extension or the V extension. MPP is forced to M-mode (0b11).
+ * mcounteren: only the CY, TM and IR bits are implemented.
+ */
+#define RVE_CSR_MCOUNTEREN_WRITE_MASK 0x7u
+
+/**
+ * mstatus: only MIE, MPIE and MPP are writable without S-mode, the F
+ * extension or the V extension. MPP is WARL and holds U-mode (0b00) or
+ * M-mode (0b11).
  */
 #define RVE_CSR_MSTATUS_WRITE_MASK 0x1888u
 #define RVE_CSR_MSTATUS_MPP_MMODE  0x1800u
+#define RVE_CSR_MSTATUS_MPP_HIGH   0x1000u
 
 /**
  * medeleg, mideleg, mstatush, satp, pmpcfg0 and pmpaddr0: without S-mode,
@@ -57,10 +64,11 @@
 #define RVE_CSR_PMPADDR0_WRITE_MASK 0x0u
 
 /**
- * misa: the extension bits of implemented extensions are writable. The I bit
- * (bit 8) is always set. MXL (bits 31:30) is read-only.
+ * misa: the extension bits of implemented extensions are writable. The I and
+ * U bits are always set. MXL (bits 31:30) is read-only.
  */
 #define RVE_CSR_MISA_I (1u << 8)
+#define RVE_CSR_MISA_U (1u << 20)
 
 #if (RVE_E_M == 1)
 #define RVE_CSR_MISA_M (1u << 12)
@@ -92,7 +100,7 @@
 /**
  * misa value at reset: the maximum set of implemented extensions.
  */
-#define RVE_CSR_MISA_VALUE (RVE_CSR_MISA_I | RVE_CSR_MISA_M | RVE_CSR_MISA_A | RVE_CSR_MISA_C | RVE_CSR_MISA_B)
+#define RVE_CSR_MISA_VALUE (RVE_CSR_MISA_I | RVE_CSR_MISA_U | RVE_CSR_MISA_M | RVE_CSR_MISA_A | RVE_CSR_MISA_C | RVE_CSR_MISA_B)
 
 /**
  * WARL read masks: bits that are masked on reads.
@@ -145,6 +153,8 @@ typedef struct __attribute__((packed)) {
     uint32_t zeroreg;
 
     // Machine Counter Setup
+    uint32_t mcounteren; // Machine counter enable.
+
 #if (RVE_E_ZICNTR == 1)
     uint64_t cycle;   // Machine cycle counter.
     uint64_t time;    // Machine real-time counter.

@@ -74,7 +74,7 @@ static inline void RiscvEmulatorJALR(RiscvEmulatorState_t *state, uint8_t rdnum,
     // Check if jumptoprogramcounter is aligned. With C, IALIGN is 16 bits.
     if ((jumptoprogramcounter & RVE_IALIGN_MASK) != 0) {
         RiscvEmulatorRaiseException(state,
-            MCAUSE_EXCEPTION_CODE_INSTRUCTION_ADDRESS_MISALIGNED, jumptoprogramcounter);
+                                    MCAUSE_EXCEPTION_CODE_INSTRUCTION_ADDRESS_MISALIGNED, jumptoprogramcounter);
         return;
     }
 #endif
@@ -760,7 +760,7 @@ static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state, uint8_t 
         // Only the last few bits need to be checked.
         if ((memorylocation & (length - 1)) != 0) {
             RiscvEmulatorRaiseException(state,
-                MCAUSE_EXCEPTION_CODE_LOAD_ADDRESS_MISALIGNED, memorylocation);
+                                        MCAUSE_EXCEPTION_CODE_LOAD_ADDRESS_MISALIGNED, memorylocation);
         }
     }
 #endif
@@ -799,7 +799,7 @@ static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state, uint8_t 
     uint32_t value = 0;
     if (!RiscvEmulatorLoad(memorylocation, &value, length)) {
         RiscvEmulatorRaiseException(state,
-            MCAUSE_EXCEPTION_CODE_LOAD_ACCESS_FAULT, memorylocation);
+                                    MCAUSE_EXCEPTION_CODE_LOAD_ACCESS_FAULT, memorylocation);
         return;
     }
 
@@ -877,7 +877,7 @@ static inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state, uint8_t
         // Only the last few bits need to be checked.
         if ((memorylocation & (length - 1)) != 0) {
             RiscvEmulatorRaiseException(state,
-                MCAUSE_EXCEPTION_CODE_STORE_ADDRESS_MISALIGNED, memorylocation);
+                                        MCAUSE_EXCEPTION_CODE_STORE_ADDRESS_MISALIGNED, memorylocation);
         }
     }
 #endif
@@ -912,7 +912,7 @@ static inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state, uint8_t
 
     if (!RiscvEmulatorStore(memorylocation, rs2, length)) {
         RiscvEmulatorRaiseException(state,
-            MCAUSE_EXCEPTION_CODE_STORE_ACCESS_FAULT, memorylocation);
+                                    MCAUSE_EXCEPTION_CODE_STORE_ACCESS_FAULT, memorylocation);
         return;
     }
 
@@ -1062,7 +1062,7 @@ static inline void RiscvEmulatorOpcodeBranch(RiscvEmulatorState_t *state, uint8_
         // Check if programcounternext is aligned. With C, IALIGN is 16 bits.
         if ((state->programcounternext & RVE_IALIGN_MASK) != 0) {
             RiscvEmulatorRaiseException(state,
-                MCAUSE_EXCEPTION_CODE_INSTRUCTION_ADDRESS_MISALIGNED, state->programcounternext);
+                                        MCAUSE_EXCEPTION_CODE_INSTRUCTION_ADDRESS_MISALIGNED, state->programcounternext);
         }
 #endif
 
@@ -1194,7 +1194,7 @@ static inline void RiscvEmulatorJAL(RiscvEmulatorState_t *state, uint8_t rdnum, 
     // Check if jumptoprogramcounter is aligned. With C, IALIGN is 16 bits.
     if ((jumptoprogramcounter & RVE_IALIGN_MASK) != 0) {
         RiscvEmulatorRaiseException(state,
-            MCAUSE_EXCEPTION_CODE_INSTRUCTION_ADDRESS_MISALIGNED, jumptoprogramcounter);
+                                    MCAUSE_EXCEPTION_CODE_INSTRUCTION_ADDRESS_MISALIGNED, jumptoprogramcounter);
         return;
     }
 #endif
@@ -1235,8 +1235,10 @@ static inline void RiscvEmulatorECALL(RiscvEmulatorState_t *state) {
 #endif
 
 #if (RVE_E_ZICSR == 1)
-    RiscvEmulatorRaiseException(state,
-        MCAUSE_EXCEPTION_CODE_ENVIRONMENT_CALL_FROM_MMODE, 0);
+    uint8_t cause = (uint8_t)((state->privilege == 0)
+                                  ? MCAUSE_EXCEPTION_CODE_ENVIRONMENT_CALL_FROM_UMODE
+                                  : MCAUSE_EXCEPTION_CODE_ENVIRONMENT_CALL_FROM_MMODE);
+    RiscvEmulatorRaiseException(state, cause, 0);
 #endif
 
     RiscvEmulatorHandleECALL(state);
@@ -1262,7 +1264,7 @@ static inline void RiscvEmulatorEBREAK(RiscvEmulatorState_t *state) {
 
 #if (RVE_E_ZICSR == 1)
     RiscvEmulatorRaiseException(state,
-        MCAUSE_EXCEPTION_CODE_BREAKPOINT, state->programcounter);
+                                MCAUSE_EXCEPTION_CODE_BREAKPOINT, state->programcounter);
 #endif
 
     RiscvEmulatorHandleEBREAK(state);

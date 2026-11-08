@@ -28,7 +28,14 @@ static inline uint32_t RiscvEmulatorCSRWriteMask(RiscvEmulatorState_t *state __a
     switch (csrnum) {
         case 0x300:
             value &= RVE_CSR_MSTATUS_WRITE_MASK;
-            value |= RVE_CSR_MSTATUS_MPP_MMODE;
+            // MPP is WARL: only U (0) and M (3) are implemented. A single
+            // storage bit represents the mode, so bit 12 selects M and bit 11
+            // mirrors it.
+            if ((value & RVE_CSR_MSTATUS_MPP_HIGH) != 0) {
+                value |= RVE_CSR_MSTATUS_MPP_MMODE;
+            } else {
+                value &= ~RVE_CSR_MSTATUS_MPP_MMODE;
+            }
             break;
         case 0x301:
             value = (value & RVE_CSR_MISA_WRITE_MASK) | RVE_CSR_MISA_MXL_RV32;
@@ -44,6 +51,9 @@ static inline uint32_t RiscvEmulatorCSRWriteMask(RiscvEmulatorState_t *state __a
             break;
         case 0x305:
             value &= RVE_CSR_MTVEC_WRITE_MASK;
+            break;
+        case 0x306:
+            value &= RVE_CSR_MCOUNTEREN_WRITE_MASK;
             break;
         case 0x310:
             value &= RVE_CSR_MSTATUSH_WRITE_MASK;
@@ -77,9 +87,9 @@ static inline uint32_t RiscvEmulatorCSRWriteMask(RiscvEmulatorState_t *state __a
 static inline uint32_t RiscvEmulatorCSRReadMask(RiscvEmulatorState_t *state __attribute__((unused)), const uint16_t csrnum, uint32_t value) {
     switch (csrnum) {
         case 0x301:
-            // misa: MXL is read-only RV32 and the I bit is always set.
+            // misa: MXL is read-only RV32 and the I and U bits are always set.
             value &= ~((uint32_t)3 << 30);
-            value |= RVE_CSR_MISA_MXL_RV32 | RVE_CSR_MISA_I;
+            value |= RVE_CSR_MISA_MXL_RV32 | RVE_CSR_MISA_I | RVE_CSR_MISA_U;
             break;
         case 0x341:
             value &= ~(uint32_t)RVE_CSR_MEPC_READ_MASK;
@@ -108,10 +118,18 @@ static inline void RiscvEmulatorMRET(RiscvEmulatorState_t *state) {
 #endif
 #endif
 
+    if (state->privilege != 3) {
+        RiscvEmulatorRaiseException(state,
+                                    MCAUSE_EXCEPTION_CODE_ILLEGAL_INSTRUCTION, state->instruction.value);
+        return;
+    }
+
+    uint8_t previous = state->csr.mstatus.mpp;
     state->csr.mstatush.mpv = 0;
-    state->csr.mstatus.mpp = 3; // Only M-mode is supported.
     state->csr.mstatus.mie = state->csr.mstatus.mpie;
+    state->privilege = previous;
     state->csr.mstatus.mpie = 1;
+    state->csr.mstatus.mpp = 0;
 
     state->programcounternext = RiscvEmulatorCSRReadMask(state, 0x341, state->csr.mepc);
 
@@ -135,6 +153,15 @@ static inline void RiscvEmulatorMRET(RiscvEmulatorState_t *state) {
 static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, const uint16_t csr, uint8_t *flags) {
     void *address = 0;
     uint8_t csrflags = 0;
+
+    // The CSR address encodes the lowest privilege level that can access it.
+    uint32_t minimumprivilege = ((uint32_t)csr >> 8) & 3u;
+    if ((uint32_t)state->privilege < minimumprivilege) {
+        RiscvEmulatorRaiseException(state,
+                                    MCAUSE_EXCEPTION_CODE_ILLEGAL_INSTRUCTION, state->instruction.value);
+        *flags = 0;
+        return NULL;
+    }
 
     switch (csr) {
         // Machine Information Registers
@@ -169,7 +196,9 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
         case 0x305:
             address = &state->csr.mtvec;
             break;
-        case 0x306: // mcounteren
+        case 0x306:
+            address = &state->csr.mcounteren;
+            break;
         case 0x30A: // menvcfg
         case 0x320: // mcountinhibit
         case 0x747: // mseccfg
@@ -268,10 +297,39 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
             }
 
             RiscvEmulatorRaiseException(state,
-                MCAUSE_EXCEPTION_CODE_ILLEGAL_INSTRUCTION, state->instruction.value);
+                                        MCAUSE_EXCEPTION_CODE_ILLEGAL_INSTRUCTION, state->instruction.value);
             *flags = 0;
             return NULL;
     }
+
+#if (RVE_E_ZICNTR == 1)
+    // U-mode counter access requires the matching mcounteren bit.
+    if (state->privilege == 0) {
+        uint32_t counterenable = 0;
+        switch (csr) {
+            case 0xC00:
+            case 0xC80:
+                counterenable = 1u << 0;
+                break;
+            case 0xC01:
+            case 0xC81:
+                counterenable = 1u << 1;
+                break;
+            case 0xC02:
+            case 0xC82:
+                counterenable = 1u << 2;
+                break;
+            default:
+                break;
+        }
+        if ((counterenable != 0) && ((state->csr.mcounteren & counterenable) == 0)) {
+            RiscvEmulatorRaiseException(state,
+                                        MCAUSE_EXCEPTION_CODE_ILLEGAL_INSTRUCTION, state->instruction.value);
+            *flags = 0;
+            return NULL;
+        }
+    }
+#endif
 
     *flags = csrflags;
     return address;
@@ -329,7 +387,7 @@ static inline uint8_t RiscvEmulatorCSR(
     if ((csrflags & RVE_CSR_F_READONLY) &&
         ((funct3 == FUNCT3_CSR_CSRRW) || (funct3 == FUNCT3_CSR_CSRRWI) || (value != 0))) {
         RiscvEmulatorRaiseException(state,
-            MCAUSE_EXCEPTION_CODE_ILLEGAL_INSTRUCTION, state->instruction.value);
+                                    MCAUSE_EXCEPTION_CODE_ILLEGAL_INSTRUCTION, state->instruction.value);
         return 1;
     }
 

@@ -33,9 +33,10 @@ static inline void RiscvEmulatorTrapEnter(RiscvEmulatorState_t *state __attribut
     state->csr.mcause.exceptioncode = (uint32_t)(cause & MCAUSE_EXCEPTION_CODE_MASK);
     state->csr.mepc = state->programcounter;
 
-    state->csr.mstatus.mpp = 3; // Previous privilege mode: M
+    state->csr.mstatus.mpp = (state->privilege == 0) ? 0 : 3; // Previous privilege mode.
     state->csr.mstatus.mpie = state->csr.mstatus.mie;
     state->csr.mstatus.mie = 0;
+    state->privilege = 3; // Traps enter M-mode.
 
     // Jump to the trap handler. Vectored mode offsets interrupts only.
     uint32_t base = (uint32_t)state->csr.mtvec.base << 2;

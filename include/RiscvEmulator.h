@@ -40,6 +40,9 @@ static inline void RiscvEmulatorInit(RiscvEmulatorState_t *state, uint32_t ram_l
     // The hart starts running, not waiting.
     state->waiting = 0;
 
+    // The hart starts in M-mode.
+    state->privilege = 3;
+
     // Initialize CSR.
     memset(&state->csr, 0, sizeof(state->csr));
 
@@ -88,8 +91,9 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
     }
 
     // Take the highest-priority pending interrupt before fetching the next
-    // instruction. M-mode priority: MEI, MSI, MTI.
-    if (state->csr.mstatus.mie != 0) {
+    // instruction. M-mode priority: MEI, MSI, MTI. M-mode interrupts are
+    // always globally enabled in a less-privileged mode.
+    if ((state->privilege < 3) || (state->csr.mstatus.mie != 0)) {
         uint32_t pending = state->csr.mip.mip & state->csr.mie.mie;
         uint32_t cause = 0;
         if ((pending & (1u << 11)) != 0) {
@@ -117,7 +121,7 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
     // PC source that does not check alignment itself (machine.adoc:1870).
     if ((state->programcounter & RVE_IALIGN_MASK) != 0) {
         RiscvEmulatorRaiseException(state,
-            MCAUSE_EXCEPTION_CODE_INSTRUCTION_ADDRESS_MISALIGNED, state->programcounter);
+                                    MCAUSE_EXCEPTION_CODE_INSTRUCTION_ADDRESS_MISALIGNED, state->programcounter);
         RiscvEmulatorTrap(state);
         return;
     }
@@ -133,7 +137,7 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
             &state->instruction.L,
             sizeof(state->instruction.L))) {
         RiscvEmulatorRaiseException(state,
-            MCAUSE_EXCEPTION_CODE_INSTRUCTION_ACCESS_FAULT, state->programcounter);
+                                    MCAUSE_EXCEPTION_CODE_INSTRUCTION_ACCESS_FAULT, state->programcounter);
         RiscvEmulatorTrap(state);
         return;
     }
@@ -147,7 +151,7 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
                 &state->instruction.H,
                 sizeof(state->instruction.L))) {
             RiscvEmulatorRaiseException(state,
-                MCAUSE_EXCEPTION_CODE_INSTRUCTION_ACCESS_FAULT, state->programcounternext);
+                                        MCAUSE_EXCEPTION_CODE_INSTRUCTION_ACCESS_FAULT, state->programcounternext);
             RiscvEmulatorTrap(state);
             return;
         }
@@ -160,7 +164,7 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
     // Read 32 bits.
     if (!RiscvEmulatorLoad(state->programcounter, &state->instruction.value, sizeof(state->instruction.value))) {
         RiscvEmulatorRaiseException(state,
-            MCAUSE_EXCEPTION_CODE_INSTRUCTION_ACCESS_FAULT, state->programcounter);
+                                    MCAUSE_EXCEPTION_CODE_INSTRUCTION_ACCESS_FAULT, state->programcounter);
         RiscvEmulatorTrap(state);
         return;
     }
