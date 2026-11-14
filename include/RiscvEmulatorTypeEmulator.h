@@ -20,10 +20,12 @@
  * Pending synchronous exception.
  *
  * Only one exception can be raised per instruction. The first raise wins;
- * later raises for the same instruction are ignored.
+ * later raises for the same instruction are ignored. The cause is kept apart
+ * from the pending flag because cause 0 is a valid exception code.
  */
 typedef struct {
-    uint8_t pending; // 0 = none, otherwise an mcause exception code.
+    uint8_t pending; // Nonzero when an exception is pending.
+    uint8_t cause;   // mcause exception code.
     uint32_t tval;   // Value for mtval.
 } RiscvEmulatorTrap_t;
 

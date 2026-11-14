@@ -39,12 +39,14 @@
 #define FUNCT3_ZCB_SB  0b010
 #define FUNCT3_ZCB_SH  0b011
 
-// Zcmop. c.mop.n instructions are encoded in the reserved c.lui xN, 0 space.
-// The n field selects the instruction variant but all variants behave the
-// same. The mask matches on the fixed bits only.
+// Zcmop. c.mop.n instructions are encoded in the reserved c.lui xN, 0 space,
+// where N is the odd rd field (1, 3, ..., 15) and the immediate is zero. The
+// mask matches the fixed bits only: quadrant 01, funct3 011, bit 12 zero and
+// bits 6:2 zero. The rd field is ignored here and checked for oddness by the
+// decoder.
 #if ((RVE_E_ZCMOP == 1) && (RVE_E_C == 1))
-#define MASK_ZCMOP_CMOP    0xF1FF
-#define PATTERN_ZCMOP_CMOP 0x6181
+#define MASK_ZCMOP_CMOP    0xF07F
+#define PATTERN_ZCMOP_CMOP 0x6001
 #endif
 
 // Compressed Branch.

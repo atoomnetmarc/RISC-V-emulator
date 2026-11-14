@@ -22,9 +22,16 @@
 /**
  * WARL write masks.
  *
- * mepc: the low bit is always zero.
+ * mepc and sepc: the low bit is always zero. With IALIGN=32 the two low bits
+ * are always zero.
  */
-#define RVE_CSR_MEPC_WRITE_MASK (~(uint32_t)0x1)
+#if (RVE_E_C == 1)
+#define RVE_CSR_XEPC_WRITE_MASK (~(uint32_t)0x1)
+#else
+#define RVE_CSR_XEPC_WRITE_MASK (~(uint32_t)0x3)
+#endif
+#define RVE_CSR_MEPC_WRITE_MASK RVE_CSR_XEPC_WRITE_MASK
+#define RVE_CSR_SEPC_WRITE_MASK RVE_CSR_XEPC_WRITE_MASK
 
 /**
  * mtvec: mode 0 (direct) and 1 (vectored) are legal, bit 1 is reserved.
@@ -50,12 +57,12 @@
 #define RVE_CSR_MCOUNTEREN_WRITE_MASK 0x7u
 
 /**
- * mstatus: MIE, MPIE, MPP, SIE, SPIE, SPP, SUM, MXR, TVM, TW and TSR are
- * writable. MPP is WARL and holds U-mode (0b00), S-mode (0b01) or M-mode
+ * mstatus: MIE, MPIE, MPP, SIE, SPIE, SPP, MPRV, SUM, MXR, TVM, TW and TSR
+ * are writable. MPP is WARL and holds U-mode (0b00), S-mode (0b01) or M-mode
  * (0b11); the reserved value 0b10 maps to M-mode.
  */
 #if (RVE_E_SV32 == 1)
-#define RVE_CSR_MSTATUS_WRITE_MASK 0x7C19AAu
+#define RVE_CSR_MSTATUS_WRITE_MASK 0x7E19AAu
 #else
 #define RVE_CSR_MSTATUS_WRITE_MASK 0x1888u
 #endif
@@ -71,12 +78,15 @@
 
 /**
  * stvec: mode 0 (direct) and 1 (vectored) are legal, bit 1 is reserved.
- * sepc: the low bit is always zero.
  * scounteren: only the CY, TM and IR bits are implemented.
+ * senvcfg: FIOM is writable because satp.MODE is not read-only zero. The
+ * cache-block, pointer-masking, Zicfilp and Zicfiss fields are read-only zero
+ * because those extensions are not implemented.
  */
 #define RVE_CSR_STVEC_WRITE_MASK      (~(uint32_t)0x2)
-#define RVE_CSR_SEPC_WRITE_MASK       (~(uint32_t)0x1)
 #define RVE_CSR_SCOUNTEREN_WRITE_MASK 0x7u
+#define RVE_CSR_SENVCFG_WRITE_MASK    0x1u
+#define RVE_CSR_SENVCFG_READ_MASK     0x1u
 
 /**
  * medeleg, mideleg, mstatush, satp, pmpcfg0 and pmpaddr0: without S-mode,
@@ -85,7 +95,7 @@
 #if (RVE_E_SV32 == 1)
 #define RVE_CSR_MEDELEG_WRITE_MASK 0xB1FFu
 #define RVE_CSR_MIDELEG_WRITE_MASK 0x222u
-#define RVE_CSR_SATP_WRITE_MASK    0x803FFFFFu
+#define RVE_CSR_SATP_WRITE_MASK    0xFFFFFFFFu
 #else
 #define RVE_CSR_MEDELEG_WRITE_MASK 0x0u
 #define RVE_CSR_MIDELEG_WRITE_MASK 0x0u
@@ -99,13 +109,13 @@
  * misa: the extension bits of implemented extensions are writable. The I and
  * U bits are always set. MXL (bits 31:30) is read-only.
  */
-#define RVE_CSR_MISA_I (1ul << 8)
-#define RVE_CSR_MISA_U (1ul << 20)
+#define RVE_CSR_MISA_I (UINT32_C(1) << 8)
+#define RVE_CSR_MISA_U (UINT32_C(1) << 20)
 
 #if (RVE_E_SV32 == 1)
-#define RVE_CSR_MISA_S (1ul << 18)
+#define RVE_CSR_MISA_S (UINT32_C(1) << 18)
 #else
-#define RVE_CSR_MISA_S 0ul
+#define RVE_CSR_MISA_S UINT32_C(0)
 #endif
 
 #if (RVE_E_M == 1)
@@ -133,7 +143,7 @@
 #endif
 
 #define RVE_CSR_MISA_WRITE_MASK (RVE_CSR_MISA_I | RVE_CSR_MISA_S | RVE_CSR_MISA_M | RVE_CSR_MISA_A | RVE_CSR_MISA_C | RVE_CSR_MISA_B)
-#define RVE_CSR_MISA_MXL_RV32   (1ul << 30)
+#define RVE_CSR_MISA_MXL_RV32   (UINT32_C(1) << 30)
 
 /**
  * misa value at reset: the maximum set of implemented extensions.
@@ -143,10 +153,12 @@
 /**
  * WARL read masks: bits that are masked on reads.
  *
- * mepc: masking bit 1 on reads (IALIGN=32) is optional per the spec, and the
- * ACT reference model expects bit 1 to be readable, so nothing is masked.
+ * mepc and sepc: masking bit 1 on reads (IALIGN=32) is optional per the spec,
+ * and the ACT reference model expects bit 1 to be readable, so nothing is
+ * masked.
  */
 #define RVE_CSR_MEPC_READ_MASK 0x0u
+#define RVE_CSR_SEPC_READ_MASK 0x0u
 
 /**
  * CSR access flags, returned by RiscvEmulatorGetCSRAddress().
@@ -187,6 +199,7 @@ typedef struct __attribute__((packed)) {
     // Supervisor Trap Setup
     RiscvCSRmtvec_t stvec;
     uint32_t scounteren; // Supervisor counter enable.
+    uint32_t senvcfg;    // Supervisor environment configuration.
 
     // Supervisor Trap Handling
     uint32_t sscratch; // Supervisor scratch register.

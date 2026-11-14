@@ -191,6 +191,9 @@ static inline const char *RiscvEmulatorGetCSRName(const uint16_t csr) {
         case 0x106:
             name = "scounteren";
             break;
+        case 0x10A:
+            name = "senvcfg";
+            break;
 
         // Supervisor Trap Handling
         case 0x140:

@@ -17,7 +17,7 @@
 - **Answer questions, execute commands** - Answer a question and offer follow-up choices when the user asks one. Act only when the user gives an explicit instruction.
 - **Concise completions** - State only the final result in `attempt_completion`. Do not re-explain steps, summarize previous outputs, or repeat information the user already saw.
 - **No fancy UTF-8 characters** - Use a simple ASCII character when one exists.
-- **ACT test framework** - Only the user may execute the test framework, ask when needed.
+- **ACT test framework** - Only the user may start the test framework server, ask when needed. You may start a single env test when server is running.
 - **RISC-V Instruction Set Manual** - Check every change or addition that touches ISA behaviour against the RISC-V Instruction Set Manual (privileged and unprivileged volumes). If the manual is not available locally, ask the user to download it in ~/Downloads.
 
 ## Code Quality Rules
@@ -42,7 +42,7 @@ All detailed coding rules are in the rule files under [docs/](docs/). Key remind
 
 - Detect and match existing file coding style
 - Run `/usr/bin/clang-format` (project `.clang-format`) on new/modified `.c` and `.h` files when done editing
-- Build with PlatformIO (`pio run`) and/or `python3 cmake/run-matrix.py --all` in the consuming project to verify compilation
+- Build with PlatformIO (`pio run`) and/or `python3 cmake/run-matrix.py --all` in the consuming project to verify compilation; also run `pio run` in the AVR and SAM projects
 - No historic references in comments or documentation: do not use "initial", "previously", "no longer", "now", "before", "after", "was", "became", "replaces the old", "the current", or "Fase X" markers. Write in the timeless present tense — describe the system as it is, not how it came to be. This ban covers the code's own history. References to program state are allowed: "the privilege mode determined earlier in the execution" describes runtime state, not code history.
 - No changelogs, phase markers, or technical decisions in source comments: changelogs belong in git commit messages, "Fase X" markers belong nowhere, and technical decisions belong in the rule files under docs/
 - Every `.c` and `.h` file must contain the copyright header with SPDX license identifier

@@ -73,6 +73,9 @@ static inline uint32_t RiscvEmulatorCSRWriteMask(RiscvEmulatorState_t *state __a
         case 0x106:
             value &= RVE_CSR_SCOUNTEREN_WRITE_MASK;
             break;
+        case 0x10A:
+            value &= RVE_CSR_SENVCFG_WRITE_MASK;
+            break;
         case 0x141:
             value &= RVE_CSR_SEPC_WRITE_MASK;
             break;
@@ -87,6 +90,10 @@ static inline uint32_t RiscvEmulatorCSRWriteMask(RiscvEmulatorState_t *state __a
             break;
         case 0x180:
             value &= RVE_CSR_SATP_WRITE_MASK;
+            // MODE is WARL: only Bare (0) and Sv32 (1) are implemented.
+            if ((value >> 31) > 1) {
+                value &= ~(UINT32_C(1) << 31);
+            }
             break;
         case 0x341:
             value &= RVE_CSR_MEPC_WRITE_MASK;
@@ -128,8 +135,11 @@ static inline uint32_t RiscvEmulatorCSRReadMask(RiscvEmulatorState_t *state __at
         case 0x104:
             value &= state->csr.mideleg.interrupts & RVE_CSR_MIE_WRITE_MASK;
             break;
+        case 0x10A:
+            value &= RVE_CSR_SENVCFG_READ_MASK;
+            break;
         case 0x141:
-            value &= RVE_CSR_SEPC_WRITE_MASK;
+            value &= ~(uint32_t)RVE_CSR_SEPC_READ_MASK;
             break;
         case 0x144:
             value &= state->csr.mideleg.interrupts & RVE_CSR_MIE_WRITE_MASK;
@@ -256,6 +266,16 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
         return NULL;
     }
 
+#if (RVE_E_SV32 == 1)
+    // TVM makes satp inaccessible in S-mode.
+    if ((csr == 0x180) && (state->csr.mstatus.tvm != 0) && (state->privilege == 1)) {
+        RiscvEmulatorRaiseException(state,
+                                    MCAUSE_EXCEPTION_CODE_ILLEGAL_INSTRUCTION, state->instruction.value);
+        *flags = 0;
+        return NULL;
+    }
+#endif
+
     switch (csr) {
         // Machine Information Registers
         case 0xF11: // mvendorid
@@ -293,6 +313,7 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
             address = &state->csr.mcounteren;
             break;
         case 0x30A: // menvcfg
+        case 0x31A: // menvcfgh
         case 0x320: // mcountinhibit
         case 0x747: // mseccfg
             csrflags = RVE_CSR_F_ZERO;
@@ -345,6 +366,9 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
             break;
         case 0x106:
             address = &state->csr.scounteren;
+            break;
+        case 0x10A: // senvcfg
+            address = &state->csr.senvcfg;
             break;
 
         // Supervisor Trap Handling

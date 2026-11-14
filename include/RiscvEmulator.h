@@ -53,6 +53,7 @@ static inline void RiscvEmulatorInit(RiscvEmulatorState_t *state, uint32_t ram_l
 
     // Initialize the pending trap.
     state->trap.pending = 0;
+    state->trap.cause = 0;
     state->trap.tval = 0;
 }
 

@@ -136,11 +136,11 @@ static inline void RiscvEmulatorTrapEnter(RiscvEmulatorState_t *state, uint32_t 
 static inline void RiscvEmulatorTrap(RiscvEmulatorState_t *state) {
 #if (RVE_E_ZICSR == 1)
     if (state->trap.pending != 0) {
-        RiscvEmulatorTrapEnter(state, state->trap.pending, 0);
-    }
+        RiscvEmulatorTrapEnter(state, state->trap.cause, 0);
 
-    if (state->trap.pending == MCAUSE_EXCEPTION_CODE_ILLEGAL_INSTRUCTION) {
-        RiscvEmulatorIllegalInstruction(state);
+        if (state->trap.cause == MCAUSE_EXCEPTION_CODE_ILLEGAL_INSTRUCTION) {
+            RiscvEmulatorIllegalInstruction(state);
+        }
     }
 #else
     // Without Zicsr there is no trap handler, so any exception is fatal.

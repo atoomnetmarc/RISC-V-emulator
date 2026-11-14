@@ -83,18 +83,18 @@ static inline uint8_t RiscvEmulatorSv32AccessFaultCause(RiscvEmulatorSv32Access_
 }
 
 /**
- * Returns non-zero when the PTE permits the access.
+ * Returns non-zero when the PTE permits the access for the effective privilege.
  */
-static inline uint8_t RiscvEmulatorSv32Permitted(RiscvEmulatorState_t *state, uint32_t pte, RiscvEmulatorSv32Access_t access) {
+static inline uint8_t RiscvEmulatorSv32Permitted(RiscvEmulatorState_t *state, uint8_t privilege, uint32_t pte, RiscvEmulatorSv32Access_t access) {
     uint8_t user = (uint8_t)((pte & RVE_SV32_PTE_U) != 0);
 
     // U-mode requires U=1.
-    if ((state->privilege == 0) && (user == 0)) {
+    if ((privilege == 0) && (user == 0)) {
         return 0;
     }
 
     // S-mode requires U=0, except for load and store when SUM is set.
-    if ((state->privilege == 1) && (user != 0)) {
+    if ((privilege == 1) && (user != 0)) {
         if ((access == RVE_SV32_ACCESS_FETCH) || (state->csr.mstatus.sum == 0)) {
             return 0;
         }
@@ -113,11 +113,19 @@ static inline uint8_t RiscvEmulatorSv32Permitted(RiscvEmulatorState_t *state, ui
 /**
  * Translate a virtual address to a physical address.
  *
- * M-mode and Bare translation return the virtual address unchanged. A failed
- * walk raises a page fault or access fault and returns false.
+ * M-mode and Bare translation return the virtual address unchanged. MPRV makes
+ * loads and stores use MPP as the effective privilege. A failed walk raises a
+ * page fault or access fault and returns false.
  */
 static inline bool RiscvEmulatorTranslate(RiscvEmulatorState_t *state, uint32_t virtualaddress, RiscvEmulatorSv32Access_t access, uint32_t *physicaladdress) {
-    if ((state->privilege == 3) || (state->csr.satp.mode == 0)) {
+    uint8_t privilege = state->privilege;
+
+    // MPRV applies to loads and stores, not to instruction fetches.
+    if ((privilege == 3) && (access != RVE_SV32_ACCESS_FETCH) && (state->csr.mstatus.mprv != 0)) {
+        privilege = state->csr.mstatus.mpp;
+    }
+
+    if ((privilege == 3) || (state->csr.satp.mode == 0)) {
         *physicaladdress = virtualaddress;
         return true;
     }
@@ -144,13 +152,15 @@ static inline bool RiscvEmulatorTranslate(RiscvEmulatorState_t *state, uint32_t 
 
         // A leaf PTE has R or X set.
         if ((pte & (RVE_SV32_PTE_R | RVE_SV32_PTE_X)) != 0) {
-            // A level-1 leaf is a 4 MiB superpage, which is not supported.
-            if (level != 0) {
+            uint32_t ppn = (pte & RVE_SV32_PTE_PPN_MASK) >> RVE_SV32_PTE_PPN_SHIFT;
+
+            // A level-1 leaf is a 4 MiB megapage. Its low PPN bits must be zero.
+            if ((level != 0) && ((ppn & ((UINT32_C(1) << (10 * level)) - 1)) != 0)) {
                 RiscvEmulatorRaiseException(state, RiscvEmulatorSv32PageFaultCause(access), virtualaddress);
                 return false;
             }
 
-            if (RiscvEmulatorSv32Permitted(state, pte, access) == 0) {
+            if (RiscvEmulatorSv32Permitted(state, privilege, pte, access) == 0) {
                 RiscvEmulatorRaiseException(state, RiscvEmulatorSv32PageFaultCause(access), virtualaddress);
                 return false;
             }
@@ -161,9 +171,15 @@ static inline bool RiscvEmulatorTranslate(RiscvEmulatorState_t *state, uint32_t 
                 return false;
             }
 
-            uint32_t ppn = (pte & RVE_SV32_PTE_PPN_MASK) >> RVE_SV32_PTE_PPN_SHIFT;
-            *physicaladdress = (ppn << RVE_SV32_PAGE_SHIFT) | (virtualaddress & RVE_SV32_PAGE_MASK);
+            uint32_t pagemask = (UINT32_C(1) << (RVE_SV32_PAGE_SHIFT + (10 * level))) - 1;
+            *physicaladdress = (ppn << RVE_SV32_PAGE_SHIFT) | (virtualaddress & pagemask);
             return true;
+        }
+
+        // A non-leaf PTE must not have the reserved D, A or U bits set.
+        if ((pte & (RVE_SV32_PTE_D | RVE_SV32_PTE_A | RVE_SV32_PTE_U)) != 0) {
+            RiscvEmulatorRaiseException(state, RiscvEmulatorSv32PageFaultCause(access), virtualaddress);
+            return false;
         }
 
         // A pointer to the next level.

@@ -1057,10 +1057,11 @@ static inline void RiscvEmulatorC_SWSP(
  */
 static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state, uint8_t op, uint8_t funct3) {
 #if ((RVE_E_ZCMOP == 1) && (RVE_E_C == 1))
-    // c.mop instructions are quadrant 1 instructions with funct3 3 and a
-    // fixed bit pattern. The n field selects the instruction variant but all
-    // variants behave the same.
-    if ((state->instruction.L & MASK_ZCMOP_CMOP) == PATTERN_ZCMOP_CMOP) {
+    // c.mop.n is encoded as c.lui xN, 0 with an odd N (1, 3, ..., 15). The
+    // mask matches the fixed bits; the rd field selects the variant and must
+    // be odd. All variants behave the same.
+    if (((state->instruction.L & MASK_ZCMOP_CMOP) == PATTERN_ZCMOP_CMOP) &&
+        ((state->instruction.cilui.rd & 1) != 0)) {
         RiscvEmulatorCMOP(state);
         return;
     }
