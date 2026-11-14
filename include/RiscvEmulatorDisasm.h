@@ -41,7 +41,7 @@
  * the weak definition below is skipped (a weak definition cannot be
  * overridden within the same TU).
  */
-void RiscvEmulatorDisasmPrintf(const char *fmt, ...) __attribute__((weak));
+void RiscvEmulatorDisasmPrintf(const char *fmt, ...) __attribute__((weak, format(printf, 1, 2)));
 
 #ifndef RVE_DISASM_PRINTF_OVERRIDE
 void RiscvEmulatorDisasmPrintf(const char *fmt, ...) {
