@@ -436,6 +436,33 @@ static inline void RiscvEmulatorDisasmPrintCLwsp(
  */
 static inline void RiscvEmulatorDisasmPrintTrap(
     const RiscvEmulatorState_t *state) {
+#if (RVE_E_SV32 == 1)
+    if (state->privilege == 1) {
+        const char *causedescription = RiscvEmulatorGetMcauseException(
+            state->csr.scause.interrupt,
+            state->csr.scause.exceptioncode);
+
+        RiscvEmulatorDisasmPrintf(
+            RVE_DISASM_FMT(", trap, interrupt: %d, exception code %d: %s\n"),
+            (int)state->csr.scause.interrupt,
+            (int)state->csr.scause.exceptioncode,
+            causedescription);
+        RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT("                                         stval = 0x%08lX\n"),
+                                  (unsigned long)state->csr.stval);
+        RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT("                                         sstatus.spp = %d\n"),
+                                  state->csr.mstatus.spp);
+        RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT("                                         sstatus.spie = %d\n"),
+                                  state->csr.mstatus.spie);
+        RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT("                                         sstatus.sie = %d\n"),
+                                  state->csr.mstatus.sie);
+        RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT("                                         sepc = 0x%08lX\n"),
+                                  (unsigned long)state->csr.sepc);
+        RiscvEmulatorDisasmPrintf(RVE_DISASM_FMT("                                         pc = 0x%08lX\n"),
+                                  (unsigned long)state->programcounternext);
+        return;
+    }
+#endif
+
     const char *causedescription = RiscvEmulatorGetMcauseException(
         state->csr.mcause.interrupt,
         state->csr.mcause.exceptioncode);

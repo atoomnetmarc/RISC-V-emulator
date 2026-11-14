@@ -28,13 +28,10 @@ static inline uint32_t RiscvEmulatorCSRWriteMask(RiscvEmulatorState_t *state __a
     switch (csrnum) {
         case 0x300:
             value &= RVE_CSR_MSTATUS_WRITE_MASK;
-            // MPP is WARL: only U (0) and M (3) are implemented. A single
-            // storage bit represents the mode, so bit 12 selects M and bit 11
-            // mirrors it.
-            if ((value & RVE_CSR_MSTATUS_MPP_HIGH) != 0) {
+            // MPP is WARL: U (0), S (1) and M (3) are implemented; the
+            // reserved value 2 maps to M.
+            if ((value & RVE_CSR_MSTATUS_MPP_MASK) == RVE_CSR_MSTATUS_MPP_RESERVED) {
                 value |= RVE_CSR_MSTATUS_MPP_MMODE;
-            } else {
-                value &= ~RVE_CSR_MSTATUS_MPP_MMODE;
             }
             break;
         case 0x301:
@@ -55,6 +52,36 @@ static inline uint32_t RiscvEmulatorCSRWriteMask(RiscvEmulatorState_t *state __a
         case 0x306:
             value &= RVE_CSR_MCOUNTEREN_WRITE_MASK;
             break;
+#if (RVE_E_SV32 == 1)
+        case 0x100: {
+            // sstatus is a view on mstatus: keep the M-mode bits.
+            uint32_t preserved = ((uint32_t)state->csr.mstatus.mie << 3) |
+                                 ((uint32_t)state->csr.mstatus.mpie << 7) |
+                                 ((uint32_t)state->csr.mstatus.mpp << 11);
+            value = preserved | (value & RVE_CSR_SSTATUS_WRITE_MASK);
+            break;
+        }
+        case 0x104: {
+            // sie is a view on mie: keep the M-mode bits.
+            uint32_t writable = state->csr.mideleg.interrupts & RVE_CSR_MIE_WRITE_MASK;
+            value = (state->csr.mie.mie & ~writable) | (value & writable);
+            break;
+        }
+        case 0x105:
+            value &= RVE_CSR_STVEC_WRITE_MASK;
+            break;
+        case 0x106:
+            value &= RVE_CSR_SCOUNTEREN_WRITE_MASK;
+            break;
+        case 0x141:
+            value &= RVE_CSR_SEPC_WRITE_MASK;
+            break;
+        case 0x144: {
+            uint32_t writable = state->csr.mideleg.interrupts & RVE_CSR_MIP_WRITE_MASK;
+            value = (state->csr.mip.mip & ~writable) | (value & writable);
+            break;
+        }
+#endif
         case 0x310:
             value &= RVE_CSR_MSTATUSH_WRITE_MASK;
             break;
@@ -94,6 +121,23 @@ static inline uint32_t RiscvEmulatorCSRReadMask(RiscvEmulatorState_t *state __at
         case 0x341:
             value &= ~(uint32_t)RVE_CSR_MEPC_READ_MASK;
             break;
+#if (RVE_E_SV32 == 1)
+        case 0x100:
+            value &= RVE_CSR_SSTATUS_READ_MASK;
+            break;
+        case 0x104:
+            value &= state->csr.mideleg.interrupts & RVE_CSR_MIE_WRITE_MASK;
+            break;
+        case 0x141:
+            value &= RVE_CSR_SEPC_WRITE_MASK;
+            break;
+        case 0x144:
+            value &= state->csr.mideleg.interrupts & RVE_CSR_MIE_WRITE_MASK;
+            break;
+        case 0x180:
+            value &= RVE_CSR_SATP_WRITE_MASK;
+            break;
+#endif
         default:
             break;
     }
@@ -141,6 +185,55 @@ static inline void RiscvEmulatorMRET(RiscvEmulatorState_t *state) {
 #endif
 #endif
 }
+
+#if (RVE_E_SV32 == 1)
+/**
+ * Supervisor return: return from a trap in supervisor mode by restoring
+ * sstatus and jumping to sepc.
+ * pc = sepc
+ */
+static inline void RiscvEmulatorSRET(RiscvEmulatorState_t *state) {
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
+    state->instructionhandled = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "sret";
+    hc.hook = HOOK_BEGIN;
+    RiscvEmulatorHook(state, &hc);
+#if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintHeader(state);
+    RiscvEmulatorDisasmPrintPlain(state, &hc);
+#endif
+#endif
+
+    if (state->privilege < 1) {
+        RiscvEmulatorRaiseException(state,
+                                    MCAUSE_EXCEPTION_CODE_ILLEGAL_INSTRUCTION, state->instruction.value);
+        return;
+    }
+
+    if ((state->csr.mstatus.tsr != 0) && (state->privilege == 1)) {
+        RiscvEmulatorRaiseException(state,
+                                    MCAUSE_EXCEPTION_CODE_ILLEGAL_INSTRUCTION, state->instruction.value);
+        return;
+    }
+
+    uint8_t previous = state->csr.mstatus.spp;
+    state->csr.mstatus.sie = state->csr.mstatus.spie;
+    state->csr.mstatus.spie = 1;
+    state->csr.mstatus.spp = 0;
+    state->privilege = (previous != 0) ? 1 : 0;
+
+    state->programcounternext = RiscvEmulatorCSRReadMask(state, 0x141, state->csr.sepc);
+
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintPlain(state, &hc);
+#endif
+#endif
+}
+#endif
 
 /**
  * Get the address of a CSR structure and its access flags.
@@ -239,6 +332,39 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
             address = &state->csr.mnstatus;
             break;
 
+#if (RVE_E_SV32 == 1)
+        // Supervisor Trap Setup
+        case 0x100:
+            address = &state->csr.mstatus;
+            break;
+        case 0x104:
+            address = &state->csr.mie;
+            break;
+        case 0x105:
+            address = &state->csr.stvec;
+            break;
+        case 0x106:
+            address = &state->csr.scounteren;
+            break;
+
+        // Supervisor Trap Handling
+        case 0x140:
+            address = &state->csr.sscratch;
+            break;
+        case 0x141:
+            address = &state->csr.sepc;
+            break;
+        case 0x142:
+            address = &state->csr.scause;
+            break;
+        case 0x143:
+            address = &state->csr.stval;
+            break;
+        case 0x144:
+            address = &state->csr.mip;
+            break;
+#endif
+
         // Supervisor Protection and Translation
         case 0x180:
             address = &state->csr.satp;
@@ -303,8 +429,9 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
     }
 
 #if (RVE_E_ZICNTR == 1)
-    // U-mode counter access requires the matching mcounteren bit.
-    if (state->privilege == 0) {
+    // Counter access requires the matching mcounteren bit; U-mode also
+    // requires the matching scounteren bit.
+    if (state->privilege < 3) {
         uint32_t counterenable = 0;
         switch (csr) {
             case 0xC00:
@@ -328,6 +455,14 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
             *flags = 0;
             return NULL;
         }
+#if (RVE_E_SV32 == 1)
+        if ((state->privilege == 0) && (counterenable != 0) && ((state->csr.scounteren & counterenable) == 0)) {
+            RiscvEmulatorRaiseException(state,
+                                        MCAUSE_EXCEPTION_CODE_ILLEGAL_INSTRUCTION, state->instruction.value);
+            *flags = 0;
+            return NULL;
+        }
+#endif
     }
 #endif
 

@@ -20,6 +20,7 @@
 #include "RiscvEmulatorType.h"
 
 #include "RiscvEmulatorExtensionM.h"
+#include "RiscvEmulatorExtensionSv32.h"
 #include "RiscvEmulatorExtensionZba.h"
 #include "RiscvEmulatorExtensionZbb.h"
 #include "RiscvEmulatorExtensionZbc.h"
@@ -797,9 +798,7 @@ static inline void RiscvEmulatorOpcodeLoad(RiscvEmulatorState_t *state, uint8_t 
 #endif
 
     uint32_t value = 0;
-    if (!RiscvEmulatorLoad(memorylocation, &value, length)) {
-        RiscvEmulatorRaiseException(state,
-                                    MCAUSE_EXCEPTION_CODE_LOAD_ACCESS_FAULT, memorylocation);
+    if (!RiscvEmulatorLoadVirtual(state, memorylocation, &value, length, RVE_SV32_ACCESS_LOAD)) {
         return;
     }
 
@@ -910,9 +909,7 @@ static inline void RiscvEmulatorOpcodeStore(RiscvEmulatorState_t *state, uint8_t
     }
 #endif
 
-    if (!RiscvEmulatorStore(memorylocation, rs2, length)) {
-        RiscvEmulatorRaiseException(state,
-                                    MCAUSE_EXCEPTION_CODE_STORE_ACCESS_FAULT, memorylocation);
+    if (!RiscvEmulatorStoreVirtual(state, memorylocation, rs2, length, RVE_SV32_ACCESS_STORE)) {
         return;
     }
 
@@ -1235,13 +1232,25 @@ static inline void RiscvEmulatorECALL(RiscvEmulatorState_t *state) {
 #endif
 
 #if (RVE_E_ZICSR == 1)
-    uint8_t cause = (uint8_t)((state->privilege == 0)
-                                  ? MCAUSE_EXCEPTION_CODE_ENVIRONMENT_CALL_FROM_UMODE
-                                  : MCAUSE_EXCEPTION_CODE_ENVIRONMENT_CALL_FROM_MMODE);
+    uint8_t cause;
+    if (state->privilege == 0) {
+        cause = MCAUSE_EXCEPTION_CODE_ENVIRONMENT_CALL_FROM_UMODE;
+    } else if (state->privilege == 1) {
+        cause = MCAUSE_EXCEPTION_CODE_ENVIRONMENT_CALL_FROM_SMODE;
+    } else {
+        cause = MCAUSE_EXCEPTION_CODE_ENVIRONMENT_CALL_FROM_MMODE;
+    }
     RiscvEmulatorRaiseException(state, cause, 0);
 #endif
 
+#if (RVE_E_SV32 == 1)
+    // An S-mode ECALL is an SBI call; it traps until the SBI handler exists.
+    if (state->privilege != 1) {
+        RiscvEmulatorHandleECALL(state);
+    }
+#else
     RiscvEmulatorHandleECALL(state);
+#endif
 }
 
 /**
@@ -1290,9 +1299,50 @@ static inline void RiscvEmulatorWFI(
 #endif
 
 #if (RVE_E_ZICSR == 1)
+#if (RVE_E_SV32 == 1)
+    if ((state->csr.mstatus.tw != 0) && (state->privilege == 1)) {
+        RiscvEmulatorRaiseException(state,
+                                    MCAUSE_EXCEPTION_CODE_ILLEGAL_INSTRUCTION, state->instruction.value);
+        return;
+    }
+#endif
     state->waiting = 1;
 #endif
 }
+
+#if (RVE_E_SV32 == 1)
+/**
+ * Supervisor fence: invalidate the address-translation cache. The
+ * implementation has no translation cache, so this is a no-op.
+ */
+static inline void RiscvEmulatorSFENCEVMA(RiscvEmulatorState_t *state) {
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
+    state->instructionhandled = 1;
+    RiscvEmulatorHookContext_t hc = {0};
+    hc.instruction = "sfence.vma";
+    hc.hook = HOOK_BEGIN;
+    RiscvEmulatorHook(state, &hc);
+#if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintHeader(state);
+    RiscvEmulatorDisasmPrintPlain(state, &hc);
+#endif
+#endif
+
+    if ((state->csr.mstatus.tvm != 0) && (state->privilege == 1)) {
+        RiscvEmulatorRaiseException(state,
+                                    MCAUSE_EXCEPTION_CODE_ILLEGAL_INSTRUCTION, state->instruction.value);
+        return;
+    }
+
+#if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
+    hc.hook = HOOK_END;
+    RiscvEmulatorHook(state, &hc);
+#if (RVE_E_DISASM == 1)
+    RiscvEmulatorDisasmPrintPlain(state, &hc);
+#endif
+#endif
+}
+#endif
 
 /**
  * Process system opcodes.
@@ -1301,6 +1351,16 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state, uint8_
     uint16_t funct12 = state->instruction.itypesystem.funct12;
 
     int8_t detectedUnknownInstruction = 1;
+
+#if (RVE_E_SV32 == 1)
+    if (detectedUnknownInstruction == 1) {
+        if ((rdnum == 0) && (funct3 == 0) &&
+            ((state->instruction.value & MASK_SFENCE_VMA) == PATTERN_SFENCE_VMA)) {
+            detectedUnknownInstruction = -1;
+            RiscvEmulatorSFENCEVMA(state);
+        }
+    }
+#endif
 
     if (detectedUnknownInstruction == 1) {
         if (rdnum == 0 &&
@@ -1311,6 +1371,11 @@ static inline void RiscvEmulatorOpcodeSystem(RiscvEmulatorState_t *state, uint8_
 #if (RVE_E_ZICSR == 1)
                 case FUNCT12_MRET:
                     RiscvEmulatorMRET(state);
+                    break;
+#endif
+#if (RVE_E_SV32 == 1)
+                case FUNCT12_SRET:
+                    RiscvEmulatorSRET(state);
                     break;
 #endif
 #if (RVE_E_ZIHINTPAUSE == 1)

@@ -115,6 +115,11 @@
 #define RVE_E_ZICNTR 0
 #endif
 
+// Supervisor-mode address translation (Sv32).
+#ifndef RVE_E_SV32
+#define RVE_E_SV32 0
+#endif
+
 // Non-Temporal Locality Hint extension.
 #ifndef RVE_E_ZIHINTNTL
 #define RVE_E_ZIHINTNTL 0
@@ -199,6 +204,12 @@
 
 // Zicntr implies Zicsr.
 #if (RVE_E_ZICNTR == 1)
+#undef RVE_E_ZICSR
+#define RVE_E_ZICSR 1
+#endif
+
+// Sv32 implies Zicsr.
+#if (RVE_E_SV32 == 1)
 #undef RVE_E_ZICSR
 #define RVE_E_ZICSR 1
 #endif

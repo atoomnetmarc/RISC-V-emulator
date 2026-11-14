@@ -132,10 +132,12 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
 #if (RVE_E_C == 1)
     // Read 16 bits.
     state->instruction.H = 0;
-    if (!RiscvEmulatorLoad(
+    if (!RiscvEmulatorLoadVirtual(
+            state,
             state->programcounter,
             &state->instruction.L,
-            sizeof(state->instruction.L))) {
+            sizeof(state->instruction.L),
+            RVE_SV32_ACCESS_FETCH)) {
         RiscvEmulatorRaiseException(state,
                                     MCAUSE_EXCEPTION_CODE_INSTRUCTION_ACCESS_FAULT, state->programcounter);
         RiscvEmulatorTrap(state);
@@ -146,10 +148,12 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
 
     // Read another 16 bits when this is a 32-bit instruction.
     if (state->instruction.copcode.op == OPCODE16_QUADRANT_INVALID) {
-        if (!RiscvEmulatorLoad(
+        if (!RiscvEmulatorLoadVirtual(
+                state,
                 state->programcounternext,
                 &state->instruction.H,
-                sizeof(state->instruction.L))) {
+                sizeof(state->instruction.L),
+                RVE_SV32_ACCESS_FETCH)) {
             RiscvEmulatorRaiseException(state,
                                         MCAUSE_EXCEPTION_CODE_INSTRUCTION_ACCESS_FAULT, state->programcounternext);
             RiscvEmulatorTrap(state);
@@ -162,7 +166,7 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
     }
 #else
     // Read 32 bits.
-    if (!RiscvEmulatorLoad(state->programcounter, &state->instruction.value, sizeof(state->instruction.value))) {
+    if (!RiscvEmulatorLoadVirtual(state, state->programcounter, &state->instruction.value, sizeof(state->instruction.value), RVE_SV32_ACCESS_FETCH)) {
         RiscvEmulatorRaiseException(state,
                                     MCAUSE_EXCEPTION_CODE_INSTRUCTION_ACCESS_FAULT, state->programcounter);
         RiscvEmulatorTrap(state);

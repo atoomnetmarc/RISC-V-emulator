@@ -21,6 +21,7 @@
 #include "RiscvEmulatorType.h"
 
 #include "RiscvEmulatorExtensionI.h"
+#include "RiscvEmulatorExtensionSv32.h"
 
 /**
  * Atomic add: atomically load the word in rd and write back the sum of rd and rs2.
@@ -138,9 +139,7 @@ static inline void RiscvEmulatorLR_W(
     RiscvEmulatorState_t *state,
     void *rd,
     uint32_t address) {
-    if (!RiscvEmulatorLoad(address, rd, sizeof(uint32_t))) {
-        RiscvEmulatorRaiseException(state,
-            MCAUSE_EXCEPTION_CODE_LOAD_ACCESS_FAULT, address);
+    if (!RiscvEmulatorLoadVirtual(state, address, rd, sizeof(uint32_t), RVE_SV32_ACCESS_LOAD)) {
         return;
     }
     state->reservationvalid = 1;
@@ -157,9 +156,7 @@ static inline void RiscvEmulatorSC_W(
     const void *rs2,
     uint32_t address) {
     if (state->reservationvalid == 1 && state->reservationaddress == address) {
-        if (!RiscvEmulatorStore(address, rs2, sizeof(uint32_t))) {
-            RiscvEmulatorRaiseException(state,
-                MCAUSE_EXCEPTION_CODE_STORE_ACCESS_FAULT, address);
+        if (!RiscvEmulatorStoreVirtual(state, address, rs2, sizeof(uint32_t), RVE_SV32_ACCESS_STORE)) {
             state->reservationvalid = 0;
             return;
         }
@@ -255,9 +252,7 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(RiscvEmulatorState_t
     // Word AMOs operate on sizeof(uint32_t) bytes.
     uint8_t amolength = sizeof(uint32_t);
     uint32_t loadedvalue = 0;
-    if (!RiscvEmulatorLoad(originaladdressrs1, &loadedvalue, amolength)) {
-        RiscvEmulatorRaiseException(state,
-            MCAUSE_EXCEPTION_CODE_LOAD_ACCESS_FAULT, originaladdressrs1);
+    if (!RiscvEmulatorLoadVirtual(state, originaladdressrs1, &loadedvalue, amolength, RVE_SV32_ACCESS_LOAD)) {
         return;
     }
 
@@ -327,9 +322,7 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(RiscvEmulatorState_t
 
 #if (RVE_E_ZAAMO == 1)
     if (skipstore == 0) {
-        if (!RiscvEmulatorStore(originaladdressrs1, &loadedvalue, amolength)) {
-            RiscvEmulatorRaiseException(state,
-                MCAUSE_EXCEPTION_CODE_STORE_ACCESS_FAULT, originaladdressrs1);
+        if (!RiscvEmulatorStoreVirtual(state, originaladdressrs1, &loadedvalue, amolength, RVE_SV32_ACCESS_STORE)) {
             return;
         }
     }

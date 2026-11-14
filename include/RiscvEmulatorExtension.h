@@ -14,6 +14,7 @@
 #include "RiscvEmulatorExtensionC.h"
 #include "RiscvEmulatorExtensionI.h"
 #include "RiscvEmulatorExtensionM.h"
+#include "RiscvEmulatorExtensionSv32.h"
 #include "RiscvEmulatorExtensionZba.h"
 #include "RiscvEmulatorExtensionZbb.h"
 #include "RiscvEmulatorExtensionZbc.h"

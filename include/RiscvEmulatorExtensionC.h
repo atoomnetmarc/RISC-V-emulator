@@ -15,6 +15,7 @@
 #include <stdint.h>
 
 #include "RiscvEmulatorDefine.h"
+#include "RiscvEmulatorExtensionSv32.h"
 #include "RiscvEmulatorExtensionZcb.h"
 #include "RiscvEmulatorExtensionZcmop.h"
 #include "RiscvEmulatorHook.h"
@@ -110,9 +111,7 @@ static inline void RiscvEmulatorC_LW(
     }
 #endif
 
-    if (!RiscvEmulatorLoad(memorylocation, rd, length)) {
-        RiscvEmulatorRaiseException(state,
-            MCAUSE_EXCEPTION_CODE_LOAD_ACCESS_FAULT, memorylocation);
+    if (!RiscvEmulatorLoadVirtual(state, memorylocation, rd, length, RVE_SV32_ACCESS_LOAD)) {
         return;
     }
 
@@ -170,9 +169,7 @@ static inline void RiscvEmulatorC_SW(
     }
 #endif
 
-    if (!RiscvEmulatorStore(memorylocation, rs2, length)) {
-        RiscvEmulatorRaiseException(state,
-            MCAUSE_EXCEPTION_CODE_STORE_ACCESS_FAULT, memorylocation);
+    if (!RiscvEmulatorStoreVirtual(state, memorylocation, rs2, length, RVE_SV32_ACCESS_STORE)) {
         return;
     }
 
@@ -883,9 +880,7 @@ static inline void RiscvEmulatorC_LWSP(
         return;
     }
 
-    if (!RiscvEmulatorLoad(memorylocation, rd, sizeof(uint32_t))) {
-        RiscvEmulatorRaiseException(state,
-            MCAUSE_EXCEPTION_CODE_LOAD_ACCESS_FAULT, memorylocation);
+    if (!RiscvEmulatorLoadVirtual(state, memorylocation, rd, sizeof(uint32_t), RVE_SV32_ACCESS_LOAD)) {
         return;
     }
 
@@ -962,7 +957,7 @@ static inline void RiscvEmulatorC_EBREAK(RiscvEmulatorState_t *state) {
 
 #if (RVE_E_ZICSR == 1)
     RiscvEmulatorRaiseException(state,
-        MCAUSE_EXCEPTION_CODE_BREAKPOINT, state->programcounter);
+                                MCAUSE_EXCEPTION_CODE_BREAKPOINT, state->programcounter);
 #endif
 
     RiscvEmulatorHandleEBREAK(state);
@@ -1044,9 +1039,7 @@ static inline void RiscvEmulatorC_SWSP(
 #endif
 #endif
 
-    if (!RiscvEmulatorStore(memorylocation, rs2, sizeof(uint32_t))) {
-        RiscvEmulatorRaiseException(state,
-            MCAUSE_EXCEPTION_CODE_STORE_ACCESS_FAULT, memorylocation);
+    if (!RiscvEmulatorStoreVirtual(state, memorylocation, rs2, sizeof(uint32_t), RVE_SV32_ACCESS_STORE)) {
         return;
     }
 

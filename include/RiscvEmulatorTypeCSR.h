@@ -32,11 +32,17 @@
 #define RVE_CSR_MTVEC_WRITE_MASK (~(uint32_t)0x2)
 
 /**
- * mie: only the M-mode software, timer and external interrupt bits are
- * implemented (bits 3, 7 and 11). The matching mip bits are read-only.
+ * mie: the S-mode and M-mode software, timer and external interrupt bits
+ * are implemented (bits 1, 3, 5, 7, 9 and 11). mip.SSIP is writable;
+ * mip.STIP and mip.SEIP are set by the devices.
  */
+#if (RVE_E_SV32 == 1)
+#define RVE_CSR_MIE_WRITE_MASK 0xAAAu
+#define RVE_CSR_MIP_WRITE_MASK 0x2u
+#else
 #define RVE_CSR_MIE_WRITE_MASK 0x888u
 #define RVE_CSR_MIP_WRITE_MASK 0x0u
+#endif
 
 /**
  * mcounteren: only the CY, TM and IR bits are implemented.
@@ -44,22 +50,48 @@
 #define RVE_CSR_MCOUNTEREN_WRITE_MASK 0x7u
 
 /**
- * mstatus: only MIE, MPIE and MPP are writable without S-mode, the F
- * extension or the V extension. MPP is WARL and holds U-mode (0b00) or
- * M-mode (0b11).
+ * mstatus: MIE, MPIE, MPP, SIE, SPIE, SPP, SUM, MXR, TVM, TW and TSR are
+ * writable. MPP is WARL and holds U-mode (0b00), S-mode (0b01) or M-mode
+ * (0b11); the reserved value 0b10 maps to M-mode.
  */
+#if (RVE_E_SV32 == 1)
+#define RVE_CSR_MSTATUS_WRITE_MASK 0x7C19AAu
+#else
 #define RVE_CSR_MSTATUS_WRITE_MASK 0x1888u
-#define RVE_CSR_MSTATUS_MPP_MMODE  0x1800u
-#define RVE_CSR_MSTATUS_MPP_HIGH   0x1000u
+#endif
+#define RVE_CSR_MSTATUS_MPP_MASK     0x1800u
+#define RVE_CSR_MSTATUS_MPP_RESERVED 0x1000u
+#define RVE_CSR_MSTATUS_MPP_MMODE    0x1800u
+
+/**
+ * sstatus: the S-mode view of mstatus. FS, XS, UBE and SD read as zero.
+ */
+#define RVE_CSR_SSTATUS_WRITE_MASK 0xC0122u
+#define RVE_CSR_SSTATUS_READ_MASK  0xC0122u
+
+/**
+ * stvec: mode 0 (direct) and 1 (vectored) are legal, bit 1 is reserved.
+ * sepc: the low bit is always zero.
+ * scounteren: only the CY, TM and IR bits are implemented.
+ */
+#define RVE_CSR_STVEC_WRITE_MASK      (~(uint32_t)0x2)
+#define RVE_CSR_SEPC_WRITE_MASK       (~(uint32_t)0x1)
+#define RVE_CSR_SCOUNTEREN_WRITE_MASK 0x7u
 
 /**
  * medeleg, mideleg, mstatush, satp, pmpcfg0 and pmpaddr0: without S-mode,
  * the hypervisor extension or PMP enforcement, these are read-only zero.
  */
-#define RVE_CSR_MEDELEG_WRITE_MASK  0x0u
-#define RVE_CSR_MIDELEG_WRITE_MASK  0x0u
+#if (RVE_E_SV32 == 1)
+#define RVE_CSR_MEDELEG_WRITE_MASK 0xB1FFu
+#define RVE_CSR_MIDELEG_WRITE_MASK 0x222u
+#define RVE_CSR_SATP_WRITE_MASK    0x803FFFFFu
+#else
+#define RVE_CSR_MEDELEG_WRITE_MASK 0x0u
+#define RVE_CSR_MIDELEG_WRITE_MASK 0x0u
+#define RVE_CSR_SATP_WRITE_MASK    0x0u
+#endif
 #define RVE_CSR_MSTATUSH_WRITE_MASK 0x0u
-#define RVE_CSR_SATP_WRITE_MASK     0x0u
 #define RVE_CSR_PMPCFG0_WRITE_MASK  0x0u
 #define RVE_CSR_PMPADDR0_WRITE_MASK 0x0u
 
@@ -67,8 +99,14 @@
  * misa: the extension bits of implemented extensions are writable. The I and
  * U bits are always set. MXL (bits 31:30) is read-only.
  */
-#define RVE_CSR_MISA_I (1u << 8)
-#define RVE_CSR_MISA_U (1u << 20)
+#define RVE_CSR_MISA_I (1ul << 8)
+#define RVE_CSR_MISA_U (1ul << 20)
+
+#if (RVE_E_SV32 == 1)
+#define RVE_CSR_MISA_S (1ul << 18)
+#else
+#define RVE_CSR_MISA_S 0ul
+#endif
 
 #if (RVE_E_M == 1)
 #define RVE_CSR_MISA_M (1u << 12)
@@ -94,13 +132,13 @@
 #define RVE_CSR_MISA_B 0u
 #endif
 
-#define RVE_CSR_MISA_WRITE_MASK (RVE_CSR_MISA_I | RVE_CSR_MISA_M | RVE_CSR_MISA_A | RVE_CSR_MISA_C | RVE_CSR_MISA_B)
+#define RVE_CSR_MISA_WRITE_MASK (RVE_CSR_MISA_I | RVE_CSR_MISA_S | RVE_CSR_MISA_M | RVE_CSR_MISA_A | RVE_CSR_MISA_C | RVE_CSR_MISA_B)
 #define RVE_CSR_MISA_MXL_RV32   (1ul << 30)
 
 /**
  * misa value at reset: the maximum set of implemented extensions.
  */
-#define RVE_CSR_MISA_VALUE (RVE_CSR_MISA_I | RVE_CSR_MISA_U | RVE_CSR_MISA_M | RVE_CSR_MISA_A | RVE_CSR_MISA_C | RVE_CSR_MISA_B)
+#define RVE_CSR_MISA_VALUE (RVE_CSR_MISA_I | RVE_CSR_MISA_S | RVE_CSR_MISA_U | RVE_CSR_MISA_M | RVE_CSR_MISA_A | RVE_CSR_MISA_C | RVE_CSR_MISA_B)
 
 /**
  * WARL read masks: bits that are masked on reads.
@@ -145,6 +183,16 @@ typedef struct __attribute__((packed)) {
 
     // Machine Non-Maskable Interrupt Handling
     RiscvCSRmnstatus_t mnstatus;
+
+    // Supervisor Trap Setup
+    RiscvCSRmtvec_t stvec;
+    uint32_t scounteren; // Supervisor counter enable.
+
+    // Supervisor Trap Handling
+    uint32_t sscratch; // Supervisor scratch register.
+    uint32_t sepc;     // Supervisor exception program counter.
+    RiscvCSRmcause_t scause;
+    uint32_t stval; // Supervisor bad address or instruction.
 
     // Supervisor Protection and Translation
     RiscvCSRsatp_t satp;

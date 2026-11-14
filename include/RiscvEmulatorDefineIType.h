@@ -93,6 +93,12 @@
 #define FUNCT12_MNRET  0b011100000010
 #define FUNCT12_WFI    0b000100000101
 
+// SFENCE.VMA: funct7 0x09, funct3 0, rd 0. rs1 and rs2 are operands.
+#if (RVE_E_SV32 == 1)
+#define MASK_SFENCE_VMA    0xFE007FFF
+#define PATTERN_SFENCE_VMA 0x12000073
+#endif
+
 #define FUNCT3_FENCE 0b000
 #endif
 

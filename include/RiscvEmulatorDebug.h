@@ -177,6 +177,39 @@ static inline const char *RiscvEmulatorGetCSRName(const uint16_t csr) {
             name = "mseccfg";
             break;
 
+            // Supervisor Trap Setup
+#if (RVE_E_SV32 == 1)
+        case 0x100:
+            name = "sstatus";
+            break;
+        case 0x104:
+            name = "sie";
+            break;
+        case 0x105:
+            name = "stvec";
+            break;
+        case 0x106:
+            name = "scounteren";
+            break;
+
+        // Supervisor Trap Handling
+        case 0x140:
+            name = "sscratch";
+            break;
+        case 0x141:
+            name = "sepc";
+            break;
+        case 0x142:
+            name = "scause";
+            break;
+        case 0x143:
+            name = "stval";
+            break;
+        case 0x144:
+            name = "sip";
+            break;
+#endif
+
         // Supervisor Protection and Translation
         case 0x180:
             name = "satp";
