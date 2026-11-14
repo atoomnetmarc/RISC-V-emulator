@@ -40,12 +40,13 @@
 
 /**
  * mie: the S-mode and M-mode software, timer and external interrupt bits
- * are implemented (bits 1, 3, 5, 7, 9 and 11). mip.SSIP is writable;
- * mip.STIP and mip.SEIP are set by the devices.
+ * are implemented (bits 1, 3, 5, 7, 9 and 11). mip.SSIP, mip.STIP and
+ * mip.SEIP are writable; stimecmp is not implemented, so mip.STIP is
+ * writable in mip.
  */
 #if (RVE_E_SV32 == 1)
 #define RVE_CSR_MIE_WRITE_MASK 0xAAAu
-#define RVE_CSR_MIP_WRITE_MASK 0x2u
+#define RVE_CSR_MIP_WRITE_MASK 0x222u
 #else
 #define RVE_CSR_MIE_WRITE_MASK 0x888u
 #define RVE_CSR_MIP_WRITE_MASK 0x0u
@@ -87,13 +88,17 @@
 #define RVE_CSR_SCOUNTEREN_WRITE_MASK 0x7u
 #define RVE_CSR_SENVCFG_WRITE_MASK    0x1u
 #define RVE_CSR_SENVCFG_READ_MASK     0x1u
+#define RVE_CSR_MENVCFG_WRITE_MASK    0x1u
+#define RVE_CSR_MENVCFG_READ_MASK     0x1u
 
 /**
- * medeleg, mideleg, mstatush, satp, pmpcfg0 and pmpaddr0: without S-mode,
- * the hypervisor extension or PMP enforcement, these are read-only zero.
+ * medeleg: the standard exceptions plus software check (18) and hardware
+ * error (19) are delegatable. mideleg, mstatush, satp, pmpcfg0 and pmpaddr0:
+ * without S-mode, the hypervisor extension or PMP enforcement, these are
+ * read-only zero.
  */
 #if (RVE_E_SV32 == 1)
-#define RVE_CSR_MEDELEG_WRITE_MASK 0xB1FFu
+#define RVE_CSR_MEDELEG_WRITE_MASK 0xCB1FFu
 #define RVE_CSR_MIDELEG_WRITE_MASK 0x222u
 #define RVE_CSR_SATP_WRITE_MASK    0xFFFFFFFFu
 #else
@@ -172,6 +177,7 @@
 typedef struct __attribute__((packed)) {
     // Machine Information Registers
     RiscvCSRmhartid_t mhartid;
+    uint32_t marchid; // Machine architecture ID.
 
     // Machine Trap Setup
     RiscvCSRmstatus_t mstatus;
@@ -181,6 +187,7 @@ typedef struct __attribute__((packed)) {
     RiscvCSRmie_u mie;
     RiscvCSRmtvec_t mtvec;
     RiscvCSRmstatush_t mstatush;
+    uint32_t menvcfg; // Machine environment configuration.
 
     // Machine Trap Handling
     RiscvCSRmscratch_t mscratch;
@@ -217,9 +224,10 @@ typedef struct __attribute__((packed)) {
     uint32_t mcounteren; // Machine counter enable.
 
 #if (RVE_E_ZICNTR == 1)
-    uint64_t cycle;   // Machine cycle counter.
-    uint64_t time;    // Machine real-time counter.
-    uint64_t instret; // Machine instructions-retired counter.
+    uint64_t cycle;        // Machine cycle counter.
+    uint64_t time;         // Machine real-time counter.
+    uint64_t instret;      // Machine instructions-retired counter.
+    uint64_t mhpmcounter3; // Machine performance-monitoring counter 3.
 #endif
 } RiscvCSR_t;
 

@@ -138,6 +138,21 @@ static inline const char *RiscvEmulatorGetCSRName(const uint16_t csr) {
         case 0x310:
             name = "mstatush";
             break;
+        case 0x312:
+            name = "medelegh";
+            break;
+        case 0x313:
+            name = "midelegh";
+            break;
+        case 0x314:
+            name = "mieh";
+            break;
+        case 0x318:
+            name = "mvienh";
+            break;
+        case 0x319:
+            name = "mviph";
+            break;
         case 0x320:
             name = "mcountinhibit";
             break;
@@ -225,11 +240,17 @@ static inline const char *RiscvEmulatorGetCSRName(const uint16_t csr) {
         case 0xB02:
             name = "minstret";
             break;
+        case 0xB03:
+            name = "mhpmcounter3";
+            break;
         case 0xB80:
             name = "mcycleh";
             break;
         case 0xB82:
             name = "minstreth";
+            break;
+        case 0xB83:
+            name = "mhpmcounter3h";
             break;
         case 0xC00:
             name = "cycle";

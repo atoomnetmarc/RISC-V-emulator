@@ -46,6 +46,9 @@ static inline void RiscvEmulatorInit(RiscvEmulatorState_t *state, uint32_t ram_l
     // Initialize CSR.
     memset(&state->csr, 0, sizeof(state->csr));
 
+    // marchid reports the emulator's architecture ID.
+    state->csr.marchid = 1;
+
     // misa reports the maximum set of implemented extensions at reset.
     state->csr.misa.extensions = RVE_CSR_MISA_VALUE;
     state->csr.misa.mxl = 1; // RV32

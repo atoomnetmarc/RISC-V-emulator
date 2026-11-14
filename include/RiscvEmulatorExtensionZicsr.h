@@ -52,6 +52,9 @@ static inline uint32_t RiscvEmulatorCSRWriteMask(RiscvEmulatorState_t *state __a
         case 0x306:
             value &= RVE_CSR_MCOUNTEREN_WRITE_MASK;
             break;
+        case 0x30A:
+            value &= RVE_CSR_MENVCFG_WRITE_MASK;
+            break;
 #if (RVE_E_SV32 == 1)
         case 0x100: {
             // sstatus is a view on mstatus: keep the M-mode bits.
@@ -80,7 +83,8 @@ static inline uint32_t RiscvEmulatorCSRWriteMask(RiscvEmulatorState_t *state __a
             value &= RVE_CSR_SEPC_WRITE_MASK;
             break;
         case 0x144: {
-            uint32_t writable = state->csr.mideleg.interrupts & RVE_CSR_MIP_WRITE_MASK;
+            // sip.SSIP is writable; sip.STIP and sip.SEIP are read-only.
+            uint32_t writable = state->csr.mideleg.interrupts & 0x2u;
             value = (state->csr.mip.mip & ~writable) | (value & writable);
             break;
         }
@@ -124,6 +128,9 @@ static inline uint32_t RiscvEmulatorCSRReadMask(RiscvEmulatorState_t *state __at
             // misa: MXL is read-only RV32 and the I and U bits are always set.
             value &= ~((uint32_t)3 << 30);
             value |= RVE_CSR_MISA_MXL_RV32 | RVE_CSR_MISA_I | RVE_CSR_MISA_U;
+            break;
+        case 0x30A:
+            value &= RVE_CSR_MENVCFG_READ_MASK;
             break;
         case 0x341:
             value &= ~(uint32_t)RVE_CSR_MEPC_READ_MASK;
@@ -184,6 +191,10 @@ static inline void RiscvEmulatorMRET(RiscvEmulatorState_t *state) {
     state->privilege = previous;
     state->csr.mstatus.mpie = 1;
     state->csr.mstatus.mpp = 0;
+    // Returning to a mode less privileged than M clears MPRV.
+    if (previous != 3) {
+        state->csr.mstatus.mprv = 0;
+    }
 
     state->programcounternext = RiscvEmulatorCSRReadMask(state, 0x341, state->csr.mepc);
 
@@ -232,6 +243,8 @@ static inline void RiscvEmulatorSRET(RiscvEmulatorState_t *state) {
     state->csr.mstatus.spie = 1;
     state->csr.mstatus.spp = 0;
     state->privilege = (previous != 0) ? 1 : 0;
+    // Returning to a mode less privileged than M clears MPRV.
+    state->csr.mstatus.mprv = 0;
 
     state->programcounternext = RiscvEmulatorCSRReadMask(state, 0x141, state->csr.sepc);
 
@@ -279,11 +292,14 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
     switch (csr) {
         // Machine Information Registers
         case 0xF11: // mvendorid
-        case 0xF12: // marchid
         case 0xF13: // mimpid
         case 0xF15: // mconfigptr
             csrflags = RVE_CSR_F_READONLY | RVE_CSR_F_ZERO;
             address = &state->csr.zeroreg;
+            break;
+        case 0xF12: // marchid
+            csrflags = RVE_CSR_F_READONLY;
+            address = &state->csr.marchid;
             break;
         case 0xF14: // mhartid
             csrflags = RVE_CSR_F_READONLY;
@@ -312,7 +328,11 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
         case 0x306:
             address = &state->csr.mcounteren;
             break;
+#if (RVE_E_SV32 == 1)
         case 0x30A: // menvcfg
+            address = &state->csr.menvcfg;
+            break;
+#endif
         case 0x31A: // menvcfgh
         case 0x320: // mcountinhibit
         case 0x747: // mseccfg
@@ -395,26 +415,32 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
             break;
 
 #if (RVE_E_ZICNTR == 1)
-        // User counters
+        // User counters are read-only shadows of the machine counters.
         case 0xC00:
+            csrflags = RVE_CSR_F_READONLY;
             address = &state->csr.cycle;
             break;
         case 0xC80:
             // The 0x?80 CSRs are the upper half of the 64-bit counter. The
             // counters are little-endian, so the upper half is the second
             // uint32_t of the uint64_t.
+            csrflags = RVE_CSR_F_READONLY;
             address = (uint32_t *)(uintptr_t)&state->csr.cycle + 1;
             break;
         case 0xC01:
+            csrflags = RVE_CSR_F_READONLY;
             address = &state->csr.time;
             break;
         case 0xC81:
+            csrflags = RVE_CSR_F_READONLY;
             address = (uint32_t *)(uintptr_t)&state->csr.time + 1;
             break;
         case 0xC02:
+            csrflags = RVE_CSR_F_READONLY;
             address = &state->csr.instret;
             break;
         case 0xC82:
+            csrflags = RVE_CSR_F_READONLY;
             address = (uint32_t *)(uintptr_t)&state->csr.instret + 1;
             break;
 
@@ -431,6 +457,12 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
         case 0xB82:
             address = (uint32_t *)(uintptr_t)&state->csr.instret + 1;
             break;
+        case 0xB03:
+            address = &state->csr.mhpmcounter3;
+            break;
+        case 0xB83:
+            address = (uint32_t *)(uintptr_t)&state->csr.mhpmcounter3 + 1;
+            break;
 #endif
 
         default:
@@ -440,7 +472,9 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
                 ((csr >= 0xB83) && (csr <= 0xB9F)) || // mhpmcounterh3-31
                 ((csr >= 0x3A1) && (csr <= 0x3A3)) || // pmpcfg1-3
                 ((csr >= 0x3B1) && (csr <= 0x3BF)) || // pmpaddr1-15
-                ((csr >= 0x30C) && (csr <= 0x30F))) { // mstateen0-3
+                ((csr >= 0x30C) && (csr <= 0x30F)) || // mstateen0-3
+                ((csr >= 0x312) && (csr <= 0x314)) || // medelegh, midelegh, mieh
+                ((csr >= 0x318) && (csr <= 0x319))) { // mvienh, mviph
                 csrflags = RVE_CSR_F_ZERO;
                 address = &state->csr.zeroreg;
                 break;
