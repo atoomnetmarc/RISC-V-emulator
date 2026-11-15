@@ -57,10 +57,15 @@ static inline uint32_t RiscvEmulatorCSRWriteMask(RiscvEmulatorState_t *state __a
             break;
 #if (RVE_E_SV32 == 1)
         case 0x100: {
-            // sstatus is a view on mstatus: keep the M-mode bits.
+            // sstatus is a view on mstatus: keep the M-mode bits, including
+            // TSR, TVM, TW and MPRV.
             uint32_t preserved = ((uint32_t)state->csr.mstatus.mie << 3) |
                                  ((uint32_t)state->csr.mstatus.mpie << 7) |
-                                 ((uint32_t)state->csr.mstatus.mpp << 11);
+                                 ((uint32_t)state->csr.mstatus.mpp << 11) |
+                                 ((uint32_t)state->csr.mstatus.mprv << 17) |
+                                 ((uint32_t)state->csr.mstatus.tvm << 20) |
+                                 ((uint32_t)state->csr.mstatus.tw << 21) |
+                                 ((uint32_t)state->csr.mstatus.tsr << 22);
             value = preserved | (value & RVE_CSR_SSTATUS_WRITE_MASK);
             break;
         }
@@ -125,15 +130,18 @@ static inline uint32_t RiscvEmulatorCSRWriteMask(RiscvEmulatorState_t *state __a
 static inline uint32_t RiscvEmulatorCSRReadMask(RiscvEmulatorState_t *state __attribute__((unused)), const uint16_t csrnum, uint32_t value) {
     switch (csrnum) {
         case 0x301:
-            // misa: MXL is read-only RV32 and the I and U bits are always set.
+            // misa: MXL is read-only RV32 and the I, U and C bits are always set.
             value &= ~((uint32_t)3 << 30);
-            value |= RVE_CSR_MISA_MXL_RV32 | RVE_CSR_MISA_I | RVE_CSR_MISA_U;
+            value |= RVE_CSR_MISA_MXL_RV32 | RVE_CSR_MISA_I | RVE_CSR_MISA_U | RVE_CSR_MISA_C;
             break;
         case 0x30A:
             value &= RVE_CSR_MENVCFG_READ_MASK;
             break;
         case 0x341:
             value &= ~(uint32_t)RVE_CSR_MEPC_READ_MASK;
+            break;
+        case 0x344:
+            value |= state->csr.mip_platform | state->csr.mip_platform_software;
             break;
 #if (RVE_E_SV32 == 1)
         case 0x100:
@@ -149,6 +157,7 @@ static inline uint32_t RiscvEmulatorCSRReadMask(RiscvEmulatorState_t *state __at
             value &= ~(uint32_t)RVE_CSR_SEPC_READ_MASK;
             break;
         case 0x144:
+            value |= state->csr.mip_platform | state->csr.mip_platform_software;
             value &= state->csr.mideleg.interrupts & RVE_CSR_MIE_WRITE_MASK;
             break;
         case 0x180:
@@ -358,6 +367,13 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
             break;
         case 0x344:
             address = &state->csr.mip;
+            break;
+
+        // Platform interrupt set and clear CSRs. A write to 0x8C0 sets and a
+        // write to 0x8C1 clears the software-set platform bits.
+        case 0x8C0:
+        case 0x8C1:
+            address = &state->csr.mip_platform_software;
             break;
 
         // Machine Memory Protection
@@ -632,6 +648,19 @@ static inline uint8_t RiscvEmulatorCSR(
 #endif
 #endif
 
+    // The platform interrupt CSRs set and clear the software-set platform bits.
+    if ((csrnum == 0x8C0) || (csrnum == 0x8C1)) {
+        if (rdnum != 0) {
+            *(uint32_t *)rd = state->csr.mip_platform_software;
+        }
+        if (csrnum == 0x8C0) {
+            state->csr.mip_platform_software |= value;
+        } else {
+            state->csr.mip_platform_software &= ~value;
+        }
+        return 1;
+    }
+
     // Read old value into destination register when requested.
     if (rdnum != 0) {
         *(uint32_t *)rd = RiscvEmulatorCSRReadMask(state, csrnum, *(uint32_t *)csr);
@@ -653,6 +682,12 @@ static inline uint8_t RiscvEmulatorCSR(
             newvalue = oldvalue & ~value;
         }
         *(uint32_t *)csr = RiscvEmulatorCSRWriteMask(state, csrnum, newvalue);
+#if (RVE_E_ZICNTR == 1)
+        // A write to mcycle or minstret is the final counter value.
+        if ((csrnum == 0xB00) || (csrnum == 0xB02) || (csrnum == 0xB80) || (csrnum == 0xB82)) {
+            state->counterwritten = 1;
+        }
+#endif
     }
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)

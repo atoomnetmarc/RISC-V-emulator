@@ -174,6 +174,14 @@ static inline const char *RiscvEmulatorGetCSRName(const uint16_t csr) {
             name = "mip";
             break;
 
+        // Platform interrupt set and clear CSRs
+        case 0x8C0:
+            name = "mipset";
+            break;
+        case 0x8C1:
+            name = "mipclr";
+            break;
+
         // Machine Memory Protection
         case 0x3A0:
             name = "pmpcfg0";

@@ -195,6 +195,8 @@ typedef struct __attribute__((packed)) {
     RiscvCSRmcause_t mcause;
     uint32_t mtval; // Machine bad address or instruction.
     RiscvCSRmip_t mip;
+    uint32_t mip_platform;          // Platform interrupt signals, ORed into mip reads.
+    uint32_t mip_platform_software; // Software-set platform bits, ORed into mip reads.
 
     // Machine Memory Protection
     RiscvCSRpmpcfg0_t pmpcfg0;

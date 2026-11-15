@@ -1299,14 +1299,8 @@ static inline void RiscvEmulatorWFI(
 #endif
 
 #if (RVE_E_ZICSR == 1)
-#if (RVE_E_SV32 == 1)
-    if ((state->csr.mstatus.tw != 0) && (state->privilege == 1)) {
-        RiscvEmulatorRaiseException(state,
-                                    MCAUSE_EXCEPTION_CODE_ILLEGAL_INSTRUCTION, state->instruction.value);
-        return;
-    }
-#endif
     state->waiting = 1;
+    state->wfi_timeout = 1;
 #endif
 }
 

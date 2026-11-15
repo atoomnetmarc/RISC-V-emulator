@@ -57,6 +57,20 @@ typedef struct
     uint8_t waiting;
 
     /**
+     * Remaining idle iterations before a finite WFI returns. The platform
+     * declares WFI_FINITE, so the hart must resume without an interrupt.
+     */
+    uint8_t wfi_timeout;
+
+#if (RVE_E_ZICNTR == 1)
+    /**
+     * Set when the instruction writes mcycle or minstret. The write is the
+     * final counter value, so the end-of-instruction increment is skipped.
+     */
+    uint8_t counterwritten;
+#endif
+
+    /**
      * Current privilege mode: 0 = U-mode, 3 = M-mode.
      */
     uint8_t privilege;
