@@ -33,14 +33,14 @@ typedef enum {
 /**
  * Sv32 page-table entry bits.
  */
-#define RVE_SV32_PTE_V         (1u << 0)
-#define RVE_SV32_PTE_R         (1u << 1)
-#define RVE_SV32_PTE_W         (1u << 2)
-#define RVE_SV32_PTE_X         (1u << 3)
-#define RVE_SV32_PTE_U         (1u << 4)
-#define RVE_SV32_PTE_G         (1u << 5)
-#define RVE_SV32_PTE_A         (1u << 6)
-#define RVE_SV32_PTE_D         (1u << 7)
+#define RVE_SV32_PTE_V         (UINT32_C(1) << 0)
+#define RVE_SV32_PTE_R         (UINT32_C(1) << 1)
+#define RVE_SV32_PTE_W         (UINT32_C(1) << 2)
+#define RVE_SV32_PTE_X         (UINT32_C(1) << 3)
+#define RVE_SV32_PTE_U         (UINT32_C(1) << 4)
+#define RVE_SV32_PTE_G         (UINT32_C(1) << 5)
+#define RVE_SV32_PTE_A         (UINT32_C(1) << 6)
+#define RVE_SV32_PTE_D         (UINT32_C(1) << 7)
 #define RVE_SV32_PTE_PPN_SHIFT 10
 #define RVE_SV32_PTE_PPN_MASK  0xFFFFFC00u
 

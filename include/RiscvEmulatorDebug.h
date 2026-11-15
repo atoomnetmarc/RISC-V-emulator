@@ -87,6 +87,8 @@ static inline const char *RiscvEmulatorGetRegisterSymbolicName(const uint8_t r) 
 }
 
 #if (RVE_E_ZICSR == 1)
+#include "RiscvEmulatorTypeCSR.h"
+
 /**
  * Debug function for returning the name of a CSR.
  */
@@ -94,188 +96,188 @@ static inline const char *RiscvEmulatorGetCSRName(const uint16_t csr) {
     const char *name;
     switch (csr) {
         // Machine Information Registers
-        case 0xF11:
+        case RVE_CSR_MVENDORID:
             name = "mvendorid";
             break;
-        case 0xF12:
+        case RVE_CSR_MARCHID:
             name = "marchid";
             break;
-        case 0xF13:
+        case RVE_CSR_MIMPID:
             name = "mimpid";
             break;
-        case 0xF14:
+        case RVE_CSR_MHARTID:
             name = "mhartid";
             break;
-        case 0xF15:
+        case RVE_CSR_MCONFIGPTR:
             name = "mconfigptr";
             break;
 
         // Machine Trap Setup
-        case 0x300:
+        case RVE_CSR_MSTATUS:
             name = "mstatus";
             break;
-        case 0x301:
+        case RVE_CSR_MISA:
             name = "misa";
             break;
-        case 0x302:
+        case RVE_CSR_MEDELEG:
             name = "medeleg";
             break;
-        case 0x303:
+        case RVE_CSR_MIDELEG:
             name = "mideleg";
             break;
-        case 0x304:
+        case RVE_CSR_MIE:
             name = "mie";
             break;
-        case 0x305:
+        case RVE_CSR_MTVEC:
             name = "mtvec";
             break;
-        case 0x306:
+        case RVE_CSR_MCOUNTEREN:
             name = "mcounteren";
             break;
-        case 0x30A:
+        case RVE_CSR_MENVCFG:
             name = "menvcfg";
             break;
-        case 0x310:
+        case RVE_CSR_MSTATUSH:
             name = "mstatush";
             break;
-        case 0x312:
+        case RVE_CSR_MEDELEGH:
             name = "medelegh";
             break;
-        case 0x313:
+        case RVE_CSR_MIDELEGH:
             name = "midelegh";
             break;
-        case 0x314:
+        case RVE_CSR_MIEH:
             name = "mieh";
             break;
-        case 0x318:
+        case RVE_CSR_MVIENH:
             name = "mvienh";
             break;
-        case 0x319:
+        case RVE_CSR_MVIPH:
             name = "mviph";
             break;
-        case 0x320:
+        case RVE_CSR_MCOUNTINHIBIT:
             name = "mcountinhibit";
             break;
 
         // Machine Trap Handling
-        case 0x340:
+        case RVE_CSR_MSCRATCH:
             name = "mscratch";
             break;
-        case 0x341:
+        case RVE_CSR_MEPC:
             name = "mepc";
             break;
-        case 0x342:
+        case RVE_CSR_MCAUSE:
             name = "mcause";
             break;
-        case 0x343:
+        case RVE_CSR_MTVAL:
             name = "mtval";
             break;
-        case 0x344:
+        case RVE_CSR_MIP:
             name = "mip";
             break;
 
         // Platform interrupt set and clear CSRs
-        case 0x8C0:
+        case RVE_CSR_MIPSET:
             name = "mipset";
             break;
-        case 0x8C1:
+        case RVE_CSR_MIPCLR:
             name = "mipclr";
             break;
 
         // Machine Memory Protection
-        case 0x3A0:
+        case RVE_CSR_PMPCFG0:
             name = "pmpcfg0";
             break;
-        case 0x3B0:
+        case RVE_CSR_PMPADDR0:
             name = "pmpaddr0";
             break;
 
         // Machine Non-Maskable Interrupt Handling
-        case 0x744:
+        case RVE_CSR_MNSTATUS:
             name = "mnstatus";
             break;
 
         // Machine Security Configuration
-        case 0x747:
+        case RVE_CSR_MSECCFG:
             name = "mseccfg";
             break;
 
             // Supervisor Trap Setup
 #if (RVE_E_SV32 == 1)
-        case 0x100:
+        case RVE_CSR_SSTATUS:
             name = "sstatus";
             break;
-        case 0x104:
+        case RVE_CSR_SIE:
             name = "sie";
             break;
-        case 0x105:
+        case RVE_CSR_STVEC:
             name = "stvec";
             break;
-        case 0x106:
+        case RVE_CSR_SCOUNTEREN:
             name = "scounteren";
             break;
-        case 0x10A:
+        case RVE_CSR_SENVCFG:
             name = "senvcfg";
             break;
 
         // Supervisor Trap Handling
-        case 0x140:
+        case RVE_CSR_SSCRATCH:
             name = "sscratch";
             break;
-        case 0x141:
+        case RVE_CSR_SEPC:
             name = "sepc";
             break;
-        case 0x142:
+        case RVE_CSR_SCAUSE:
             name = "scause";
             break;
-        case 0x143:
+        case RVE_CSR_STVAL:
             name = "stval";
             break;
-        case 0x144:
+        case RVE_CSR_SIP:
             name = "sip";
             break;
 #endif
 
         // Supervisor Protection and Translation
-        case 0x180:
+        case RVE_CSR_SATP:
             name = "satp";
             break;
 
         // Counters
-        case 0xB00:
+        case RVE_CSR_MCYCLE:
             name = "mcycle";
             break;
-        case 0xB02:
+        case RVE_CSR_MINSTRET:
             name = "minstret";
             break;
-        case 0xB03:
+        case RVE_CSR_MHPMCOUNTER3:
             name = "mhpmcounter3";
             break;
-        case 0xB80:
+        case RVE_CSR_MCYCLEH:
             name = "mcycleh";
             break;
-        case 0xB82:
+        case RVE_CSR_MINSTRETH:
             name = "minstreth";
             break;
-        case 0xB83:
+        case RVE_CSR_MHPMCOUNTER3H:
             name = "mhpmcounter3h";
             break;
-        case 0xC00:
+        case RVE_CSR_CYCLE:
             name = "cycle";
             break;
-        case 0xC01:
+        case RVE_CSR_TIME:
             name = "time";
             break;
-        case 0xC02:
+        case RVE_CSR_INSTRET:
             name = "instret";
             break;
-        case 0xC80:
+        case RVE_CSR_CYCLEH:
             name = "cycleh";
             break;
-        case 0xC81:
+        case RVE_CSR_TIMEH:
             name = "timeh";
             break;
-        case 0xC82:
+        case RVE_CSR_INSTRETH:
             name = "instreth";
             break;
 

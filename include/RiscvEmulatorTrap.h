@@ -40,7 +40,7 @@ static inline void RiscvEmulatorTrapEnterMachine(RiscvEmulatorState_t *state __a
     state->privilege = 3; // Traps enter M-mode.
 
     // Jump to the trap handler. Vectored mode offsets interrupts only.
-    uint32_t base = (uint32_t)state->csr.mtvec.base << 2;
+    uint32_t base = (uint32_t)state->csr.mtvec.base << RVE_CSR_MTVEC_BASE_SHIFT;
     if ((state->csr.mtvec.mode == 1) && (isinterrupt != 0)) {
         state->programcounternext = base + (4u * cause);
     } else {
@@ -76,7 +76,7 @@ static inline void RiscvEmulatorTrapEnterSupervisor(RiscvEmulatorState_t *state,
     state->privilege = 1;
 
     // Jump to the trap handler. Vectored mode offsets interrupts only.
-    uint32_t base = (uint32_t)state->csr.stvec.base << 2;
+    uint32_t base = (uint32_t)state->csr.stvec.base << RVE_CSR_STVEC_BASE_SHIFT;
     if ((state->csr.stvec.mode == 1) && (isinterrupt != 0)) {
         state->programcounternext = base + (4u * cause);
     } else {
@@ -104,9 +104,9 @@ static inline uint8_t RiscvEmulatorTrapDelegated(RiscvEmulatorState_t *state, ui
         return 0;
     }
     if (isinterrupt != 0) {
-        return (uint8_t)((state->csr.mideleg.interrupts >> cause) & 1u);
+        return (uint8_t)((state->csr.mideleg.interrupts >> cause) & UINT32_C(1));
     }
-    return (uint8_t)((state->csr.medeleg.synchronousexceptions >> cause) & 1u);
+    return (uint8_t)((state->csr.medeleg.synchronousexceptions >> cause) & UINT32_C(1));
 }
 #endif
 

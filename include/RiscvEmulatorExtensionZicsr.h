@@ -26,7 +26,7 @@
  */
 static inline uint32_t RiscvEmulatorCSRWriteMask(RiscvEmulatorState_t *state __attribute__((unused)), const uint16_t csrnum, uint32_t value) {
     switch (csrnum) {
-        case 0x300:
+        case RVE_CSR_MSTATUS:
             value &= RVE_CSR_MSTATUS_WRITE_MASK;
             // MPP is WARL: U (0), S (1) and M (3) are implemented; the
             // reserved value 2 maps to M.
@@ -34,87 +34,84 @@ static inline uint32_t RiscvEmulatorCSRWriteMask(RiscvEmulatorState_t *state __a
                 value |= RVE_CSR_MSTATUS_MPP_MMODE;
             }
             break;
-        case 0x301:
+        case RVE_CSR_MISA:
             value = (value & RVE_CSR_MISA_WRITE_MASK) | RVE_CSR_MISA_MXL_RV32;
             break;
-        case 0x302:
+        case RVE_CSR_MEDELEG:
             value &= RVE_CSR_MEDELEG_WRITE_MASK;
             break;
-        case 0x303:
+        case RVE_CSR_MIDELEG:
             value &= RVE_CSR_MIDELEG_WRITE_MASK;
             break;
-        case 0x304:
+        case RVE_CSR_MIE:
             value &= RVE_CSR_MIE_WRITE_MASK;
             break;
-        case 0x305:
+        case RVE_CSR_MTVEC:
             value &= RVE_CSR_MTVEC_WRITE_MASK;
             break;
-        case 0x306:
+        case RVE_CSR_MCOUNTEREN:
             value &= RVE_CSR_MCOUNTEREN_WRITE_MASK;
             break;
-        case 0x30A:
+        case RVE_CSR_MENVCFG:
             value &= RVE_CSR_MENVCFG_WRITE_MASK;
             break;
 #if (RVE_E_SV32 == 1)
-        case 0x100: {
+        case RVE_CSR_SSTATUS: {
             // sstatus is a view on mstatus: keep the M-mode bits, including
             // TSR, TVM, TW and MPRV.
-            uint32_t preserved = ((uint32_t)state->csr.mstatus.mie << 3) |
-                                 ((uint32_t)state->csr.mstatus.mpie << 7) |
-                                 ((uint32_t)state->csr.mstatus.mpp << 11) |
-                                 ((uint32_t)state->csr.mstatus.mprv << 17) |
-                                 ((uint32_t)state->csr.mstatus.tvm << 20) |
-                                 ((uint32_t)state->csr.mstatus.tw << 21) |
-                                 ((uint32_t)state->csr.mstatus.tsr << 22);
+            uint32_t preserved = ((uint32_t)state->csr.mstatus.mie << RVE_CSR_MSTATUS_MIE_SHIFT) |
+                                 ((uint32_t)state->csr.mstatus.mpie << RVE_CSR_MSTATUS_MPIE_SHIFT) |
+                                 ((uint32_t)state->csr.mstatus.mpp << RVE_CSR_MSTATUS_MPP_SHIFT) |
+                                 ((uint32_t)state->csr.mstatus.mprv << RVE_CSR_MSTATUS_MPRV_SHIFT) |
+                                 ((uint32_t)state->csr.mstatus.tvm << RVE_CSR_MSTATUS_TVM_SHIFT) |
+                                 ((uint32_t)state->csr.mstatus.tw << RVE_CSR_MSTATUS_TW_SHIFT) |
+                                 ((uint32_t)state->csr.mstatus.tsr << RVE_CSR_MSTATUS_TSR_SHIFT);
             value = preserved | (value & RVE_CSR_SSTATUS_WRITE_MASK);
             break;
         }
-        case 0x104: {
+        case RVE_CSR_SIE: {
             // sie is a view on mie: keep the M-mode bits.
             uint32_t writable = state->csr.mideleg.interrupts & RVE_CSR_MIE_WRITE_MASK;
             value = (state->csr.mie.mie & ~writable) | (value & writable);
             break;
         }
-        case 0x105:
+        case RVE_CSR_STVEC:
             value &= RVE_CSR_STVEC_WRITE_MASK;
             break;
-        case 0x106:
+        case RVE_CSR_SCOUNTEREN:
             value &= RVE_CSR_SCOUNTEREN_WRITE_MASK;
             break;
-        case 0x10A:
+        case RVE_CSR_SENVCFG:
             value &= RVE_CSR_SENVCFG_WRITE_MASK;
             break;
-        case 0x141:
+        case RVE_CSR_SEPC:
             value &= RVE_CSR_SEPC_WRITE_MASK;
             break;
-        case 0x144: {
+        case RVE_CSR_SIP: {
             // sip.SSIP is writable; sip.STIP and sip.SEIP are read-only.
-            uint32_t writable = state->csr.mideleg.interrupts & 0x2u;
+            uint32_t writable = state->csr.mideleg.interrupts & RVE_CSR_MIP_SSIP;
             value = (state->csr.mip.mip & ~writable) | (value & writable);
             break;
         }
 #endif
-        case 0x310:
+        case RVE_CSR_MSTATUSH:
             value &= RVE_CSR_MSTATUSH_WRITE_MASK;
             break;
-        case 0x180:
+        case RVE_CSR_SATP:
             value &= RVE_CSR_SATP_WRITE_MASK;
-            // MODE is WARL: only Bare (0) and Sv32 (1) are implemented.
-            if ((value >> 31) > 1) {
-                value &= ~(UINT32_C(1) << 31);
-            }
+            // MODE is WARL: Bare (0) and Sv32 (1) are the only RV32 encodings.
             break;
-        case 0x341:
+        case RVE_CSR_MEPC:
             value &= RVE_CSR_MEPC_WRITE_MASK;
             break;
-        case 0x344:
+        case RVE_CSR_MIP:
             // mip.MEIP, mip.MTIP and mip.MSIP are read-only.
             value = (state->csr.mip.mip & ~RVE_CSR_MIP_WRITE_MASK) | (value & RVE_CSR_MIP_WRITE_MASK);
             break;
-        case 0x3A0:
+        case RVE_CSR_PMPCFG0:
             value &= RVE_CSR_PMPCFG0_WRITE_MASK;
             break;
-        case 0x3B0:
+        case RVE_CSR_PMPADDR0:
             value &= RVE_CSR_PMPADDR0_WRITE_MASK;
             break;
         default:
@@ -129,38 +126,38 @@ static inline uint32_t RiscvEmulatorCSRWriteMask(RiscvEmulatorState_t *state __a
  */
 static inline uint32_t RiscvEmulatorCSRReadMask(RiscvEmulatorState_t *state __attribute__((unused)), const uint16_t csrnum, uint32_t value) {
     switch (csrnum) {
-        case 0x301:
+        case RVE_CSR_MISA:
             // misa: MXL is read-only RV32 and the I, U and C bits are always set.
-            value &= ~((uint32_t)3 << 30);
+            value &= ~RVE_CSR_MISA_MXL_MASK;
             value |= RVE_CSR_MISA_MXL_RV32 | RVE_CSR_MISA_I | RVE_CSR_MISA_U | RVE_CSR_MISA_C;
             break;
-        case 0x30A:
+        case RVE_CSR_MENVCFG:
             value &= RVE_CSR_MENVCFG_READ_MASK;
             break;
-        case 0x341:
+        case RVE_CSR_MEPC:
             value &= ~(uint32_t)RVE_CSR_MEPC_READ_MASK;
             break;
-        case 0x344:
+        case RVE_CSR_MIP:
             value |= state->csr.mip_platform | state->csr.mip_platform_software;
             break;
 #if (RVE_E_SV32 == 1)
-        case 0x100:
+        case RVE_CSR_SSTATUS:
             value &= RVE_CSR_SSTATUS_READ_MASK;
             break;
-        case 0x104:
+        case RVE_CSR_SIE:
             value &= state->csr.mideleg.interrupts & RVE_CSR_MIE_WRITE_MASK;
             break;
-        case 0x10A:
+        case RVE_CSR_SENVCFG:
             value &= RVE_CSR_SENVCFG_READ_MASK;
             break;
-        case 0x141:
+        case RVE_CSR_SEPC:
             value &= ~(uint32_t)RVE_CSR_SEPC_READ_MASK;
             break;
-        case 0x144:
+        case RVE_CSR_SIP:
             value |= state->csr.mip_platform | state->csr.mip_platform_software;
             value &= state->csr.mideleg.interrupts & RVE_CSR_MIE_WRITE_MASK;
             break;
-        case 0x180:
+        case RVE_CSR_SATP:
             value &= RVE_CSR_SATP_WRITE_MASK;
             break;
 #endif
@@ -205,7 +202,7 @@ static inline void RiscvEmulatorMRET(RiscvEmulatorState_t *state) {
         state->csr.mstatus.mprv = 0;
     }
 
-    state->programcounternext = RiscvEmulatorCSRReadMask(state, 0x341, state->csr.mepc);
+    state->programcounternext = RiscvEmulatorCSRReadMask(state, RVE_CSR_MEPC, state->csr.mepc);
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
@@ -255,7 +252,7 @@ static inline void RiscvEmulatorSRET(RiscvEmulatorState_t *state) {
     // Returning to a mode less privileged than M clears MPRV.
     state->csr.mstatus.mprv = 0;
 
-    state->programcounternext = RiscvEmulatorCSRReadMask(state, 0x141, state->csr.sepc);
+    state->programcounternext = RiscvEmulatorCSRReadMask(state, RVE_CSR_SEPC, state->csr.sepc);
 
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     hc.hook = HOOK_END;
@@ -280,7 +277,7 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
     uint8_t csrflags = 0;
 
     // The CSR address encodes the lowest privilege level that can access it.
-    uint32_t minimumprivilege = ((uint32_t)csr >> 8) & 3u;
+    uint32_t minimumprivilege = ((uint32_t)csr & RVE_CSR_ADDRESS_PRIVILEGE_MASK) >> RVE_CSR_ADDRESS_PRIVILEGE_SHIFT;
     if ((uint32_t)state->privilege < minimumprivilege) {
         RiscvEmulatorRaiseException(state,
                                     MCAUSE_EXCEPTION_CODE_ILLEGAL_INSTRUCTION, state->instruction.value);
@@ -290,7 +287,7 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
 
 #if (RVE_E_SV32 == 1)
     // TVM makes satp inaccessible in S-mode.
-    if ((csr == 0x180) && (state->csr.mstatus.tvm != 0) && (state->privilege == 1)) {
+    if ((csr == RVE_CSR_SATP) && (state->csr.mstatus.tvm != 0) && (state->privilege == 1)) {
         RiscvEmulatorRaiseException(state,
                                     MCAUSE_EXCEPTION_CODE_ILLEGAL_INSTRUCTION, state->instruction.value);
         *flags = 0;
@@ -300,197 +297,197 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
 
     switch (csr) {
         // Machine Information Registers
-        case 0xF11: // mvendorid
-        case 0xF13: // mimpid
-        case 0xF15: // mconfigptr
+        case RVE_CSR_MVENDORID:
+        case RVE_CSR_MIMPID:
+        case RVE_CSR_MCONFIGPTR:
             csrflags = RVE_CSR_F_READONLY | RVE_CSR_F_ZERO;
             address = &state->csr.zeroreg;
             break;
-        case 0xF12: // marchid
+        case RVE_CSR_MARCHID:
             csrflags = RVE_CSR_F_READONLY;
             address = &state->csr.marchid;
             break;
-        case 0xF14: // mhartid
+        case RVE_CSR_MHARTID:
             csrflags = RVE_CSR_F_READONLY;
             address = &state->csr.mhartid;
             break;
 
         // Machine Trap Setup
-        case 0x300:
+        case RVE_CSR_MSTATUS:
             address = &state->csr.mstatus;
             break;
-        case 0x301:
+        case RVE_CSR_MISA:
             address = &state->csr.misa;
             break;
-        case 0x302:
+        case RVE_CSR_MEDELEG:
             address = &state->csr.medeleg;
             break;
-        case 0x303:
+        case RVE_CSR_MIDELEG:
             address = &state->csr.mideleg;
             break;
-        case 0x304:
+        case RVE_CSR_MIE:
             address = &state->csr.mie;
             break;
-        case 0x305:
+        case RVE_CSR_MTVEC:
             address = &state->csr.mtvec;
             break;
-        case 0x306:
+        case RVE_CSR_MCOUNTEREN:
             address = &state->csr.mcounteren;
             break;
 #if (RVE_E_SV32 == 1)
-        case 0x30A: // menvcfg
+        case RVE_CSR_MENVCFG:
             address = &state->csr.menvcfg;
             break;
 #endif
-        case 0x31A: // menvcfgh
-        case 0x320: // mcountinhibit
-        case 0x747: // mseccfg
+        case RVE_CSR_MENVCFGH:
+        case RVE_CSR_MCOUNTINHIBIT:
+        case RVE_CSR_MSECCFG:
             csrflags = RVE_CSR_F_ZERO;
             address = &state->csr.zeroreg;
             break;
-        case 0x310:
+        case RVE_CSR_MSTATUSH:
             address = &state->csr.mstatush;
             break;
 
         // Machine Trap Handling
-        case 0x340:
+        case RVE_CSR_MSCRATCH:
             address = &state->csr.mscratch;
             break;
-        case 0x341:
+        case RVE_CSR_MEPC:
             address = &state->csr.mepc;
             break;
-        case 0x342:
+        case RVE_CSR_MCAUSE:
             address = &state->csr.mcause;
             break;
-        case 0x343:
+        case RVE_CSR_MTVAL:
             address = &state->csr.mtval;
             break;
-        case 0x344:
+        case RVE_CSR_MIP:
             address = &state->csr.mip;
             break;
 
-        // Platform interrupt set and clear CSRs. A write to 0x8C0 sets and a
-        // write to 0x8C1 clears the software-set platform bits.
-        case 0x8C0:
-        case 0x8C1:
+        // Platform interrupt set and clear CSRs. A write to mipset sets and a
+        // write to mipclr clears the software-set platform bits.
+        case RVE_CSR_MIPSET:
+        case RVE_CSR_MIPCLR:
             address = &state->csr.mip_platform_software;
             break;
 
         // Machine Memory Protection
-        case 0x3A0:
+        case RVE_CSR_PMPCFG0:
             address = &state->csr.pmpcfg0;
             break;
-        case 0x3B0:
+        case RVE_CSR_PMPADDR0:
             address = &state->csr.pmpaddr0;
             break;
 
         // Machine Non-Maskable Interrupt Handling
-        case 0x744:
+        case RVE_CSR_MNSTATUS:
             address = &state->csr.mnstatus;
             break;
 
 #if (RVE_E_SV32 == 1)
         // Supervisor Trap Setup
-        case 0x100:
+        case RVE_CSR_SSTATUS:
             address = &state->csr.mstatus;
             break;
-        case 0x104:
+        case RVE_CSR_SIE:
             address = &state->csr.mie;
             break;
-        case 0x105:
+        case RVE_CSR_STVEC:
             address = &state->csr.stvec;
             break;
-        case 0x106:
+        case RVE_CSR_SCOUNTEREN:
             address = &state->csr.scounteren;
             break;
-        case 0x10A: // senvcfg
+        case RVE_CSR_SENVCFG:
             address = &state->csr.senvcfg;
             break;
 
         // Supervisor Trap Handling
-        case 0x140:
+        case RVE_CSR_SSCRATCH:
             address = &state->csr.sscratch;
             break;
-        case 0x141:
+        case RVE_CSR_SEPC:
             address = &state->csr.sepc;
             break;
-        case 0x142:
+        case RVE_CSR_SCAUSE:
             address = &state->csr.scause;
             break;
-        case 0x143:
+        case RVE_CSR_STVAL:
             address = &state->csr.stval;
             break;
-        case 0x144:
+        case RVE_CSR_SIP:
             address = &state->csr.mip;
             break;
 #endif
 
         // Supervisor Protection and Translation
-        case 0x180:
+        case RVE_CSR_SATP:
             address = &state->csr.satp;
             break;
 
 #if (RVE_E_ZICNTR == 1)
         // User counters are read-only shadows of the machine counters.
-        case 0xC00:
+        case RVE_CSR_CYCLE:
             csrflags = RVE_CSR_F_READONLY;
             address = &state->csr.cycle;
             break;
-        case 0xC80:
+        case RVE_CSR_CYCLEH:
             // The 0x?80 CSRs are the upper half of the 64-bit counter. The
             // counters are little-endian, so the upper half is the second
             // uint32_t of the uint64_t.
             csrflags = RVE_CSR_F_READONLY;
             address = (uint32_t *)(uintptr_t)&state->csr.cycle + 1;
             break;
-        case 0xC01:
+        case RVE_CSR_TIME:
             csrflags = RVE_CSR_F_READONLY;
             address = &state->csr.time;
             break;
-        case 0xC81:
+        case RVE_CSR_TIMEH:
             csrflags = RVE_CSR_F_READONLY;
             address = (uint32_t *)(uintptr_t)&state->csr.time + 1;
             break;
-        case 0xC02:
+        case RVE_CSR_INSTRET:
             csrflags = RVE_CSR_F_READONLY;
             address = &state->csr.instret;
             break;
-        case 0xC82:
+        case RVE_CSR_INSTRETH:
             csrflags = RVE_CSR_F_READONLY;
             address = (uint32_t *)(uintptr_t)&state->csr.instret + 1;
             break;
 
         // Machine counters
-        case 0xB00:
+        case RVE_CSR_MCYCLE:
             address = &state->csr.cycle;
             break;
-        case 0xB80:
+        case RVE_CSR_MCYCLEH:
             address = (uint32_t *)(uintptr_t)&state->csr.cycle + 1;
             break;
-        case 0xB02:
+        case RVE_CSR_MINSTRET:
             address = &state->csr.instret;
             break;
-        case 0xB82:
+        case RVE_CSR_MINSTRETH:
             address = (uint32_t *)(uintptr_t)&state->csr.instret + 1;
             break;
-        case 0xB03:
+        case RVE_CSR_MHPMCOUNTER3:
             address = &state->csr.mhpmcounter3;
             break;
-        case 0xB83:
+        case RVE_CSR_MHPMCOUNTER3H:
             address = (uint32_t *)(uintptr_t)&state->csr.mhpmcounter3 + 1;
             break;
 #endif
 
         default:
             // The PMU, PMP and mstateen arrays are read-only-zero ranges.
-            if (((csr >= 0x323) && (csr <= 0x33F)) || // mhpmevent3-31
-                ((csr >= 0xB03) && (csr <= 0xB1F)) || // mhpmcounter3-31
-                ((csr >= 0xB83) && (csr <= 0xB9F)) || // mhpmcounterh3-31
-                ((csr >= 0x3A1) && (csr <= 0x3A3)) || // pmpcfg1-3
-                ((csr >= 0x3B1) && (csr <= 0x3BF)) || // pmpaddr1-15
-                ((csr >= 0x30C) && (csr <= 0x30F)) || // mstateen0-3
-                ((csr >= 0x312) && (csr <= 0x314)) || // medelegh, midelegh, mieh
-                ((csr >= 0x318) && (csr <= 0x319))) { // mvienh, mviph
+            if (((csr >= RVE_CSR_MHPMEVENT3) && (csr <= RVE_CSR_MHPMEVENT31)) ||
+                ((csr >= RVE_CSR_MHPMCOUNTER3) && (csr <= RVE_CSR_MHPMCOUNTER31)) ||
+                ((csr >= RVE_CSR_MHPMCOUNTER3H) && (csr <= RVE_CSR_MHPMCOUNTERH31)) ||
+                ((csr >= RVE_CSR_PMPCFG1) && (csr <= RVE_CSR_PMPCFG3)) ||
+                ((csr >= RVE_CSR_PMPADDR1) && (csr <= RVE_CSR_PMPADDR15)) ||
+                ((csr >= RVE_CSR_MSTATEEN0) && (csr <= RVE_CSR_MSTATEEN3)) ||
+                ((csr >= RVE_CSR_MEDELEGH) && (csr <= RVE_CSR_MIEH)) ||
+                ((csr >= RVE_CSR_MVIENH) && (csr <= RVE_CSR_MVIPH))) {
                 csrflags = RVE_CSR_F_ZERO;
                 address = &state->csr.zeroreg;
                 break;
@@ -508,17 +505,17 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
     if (state->privilege < 3) {
         uint32_t counterenable = 0;
         switch (csr) {
-            case 0xC00:
-            case 0xC80:
-                counterenable = 1u << 0;
+            case RVE_CSR_CYCLE:
+            case RVE_CSR_CYCLEH:
+                counterenable = RVE_CSR_MCOUNTEREN_CY;
                 break;
-            case 0xC01:
-            case 0xC81:
-                counterenable = 1u << 1;
+            case RVE_CSR_TIME:
+            case RVE_CSR_TIMEH:
+                counterenable = RVE_CSR_MCOUNTEREN_TM;
                 break;
-            case 0xC02:
-            case 0xC82:
-                counterenable = 1u << 2;
+            case RVE_CSR_INSTRET:
+            case RVE_CSR_INSTRETH:
+                counterenable = RVE_CSR_MCOUNTEREN_IR;
                 break;
             default:
                 break;
@@ -649,11 +646,11 @@ static inline uint8_t RiscvEmulatorCSR(
 #endif
 
     // The platform interrupt CSRs set and clear the software-set platform bits.
-    if ((csrnum == 0x8C0) || (csrnum == 0x8C1)) {
+    if ((csrnum == RVE_CSR_MIPSET) || (csrnum == RVE_CSR_MIPCLR)) {
         if (rdnum != 0) {
             *(uint32_t *)rd = state->csr.mip_platform_software;
         }
-        if (csrnum == 0x8C0) {
+        if (csrnum == RVE_CSR_MIPSET) {
             state->csr.mip_platform_software |= value;
         } else {
             state->csr.mip_platform_software &= ~value;
@@ -684,7 +681,7 @@ static inline uint8_t RiscvEmulatorCSR(
         *(uint32_t *)csr = RiscvEmulatorCSRWriteMask(state, csrnum, newvalue);
 #if (RVE_E_ZICNTR == 1)
         // A write to mcycle or minstret is the final counter value.
-        if ((csrnum == 0xB00) || (csrnum == 0xB02) || (csrnum == 0xB80) || (csrnum == 0xB82)) {
+        if ((csrnum == RVE_CSR_MCYCLE) || (csrnum == RVE_CSR_MINSTRET) || (csrnum == RVE_CSR_MCYCLEH) || (csrnum == RVE_CSR_MINSTRETH)) {
             state->counterwritten = 1;
         }
 #endif

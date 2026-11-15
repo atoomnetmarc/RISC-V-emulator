@@ -127,7 +127,7 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
         for (uint8_t pass = 0; (pass < 2) && (cause == 0); pass++) {
             for (uint8_t i = 0; i < sizeof(causes); i++) {
                 uint32_t candidate = causes[i];
-                if ((pending & (1u << candidate)) == 0) {
+                if ((pending & (UINT32_C(1) << candidate)) == 0) {
                     continue;
                 }
 #if (RVE_E_SV32 == 1)

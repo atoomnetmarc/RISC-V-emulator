@@ -1071,6 +1071,10 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state, ui
 
     uint8_t funct3_funct2 = 0;
     uint8_t funct6_funct2 = 0;
+#if ((RVE_E_ZCB == 1) && (RVE_E_C == 1))
+    uint8_t funct6 = 0;
+    uint8_t funct2 = 0;
+#endif
     int8_t rdnum = -1;
     int8_t rs1num = -1;
     int8_t rs2num = -1;
@@ -1116,6 +1120,10 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state, ui
             RiscvInstructionTypeCADecoderFunct6Funct2.funct6 = state->instruction.catype.funct6;
             RiscvInstructionTypeCADecoderFunct6Funct2.funct2 = state->instruction.catype.funct2;
             funct6_funct2 = RiscvInstructionTypeCADecoderFunct6Funct2.funct6_funct2;
+#if ((RVE_E_ZCB == 1) && (RVE_E_C == 1))
+            funct6 = RiscvInstructionTypeCADecoderFunct6Funct2.funct6;
+            funct2 = RiscvInstructionTypeCADecoderFunct6Funct2.funct2;
+#endif
 
             if (funct6_funct2 == FUNCT6_FUNCT2_SUB ||
                 funct6_funct2 == FUNCT6_FUNCT2_XOR ||
@@ -1127,7 +1135,7 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state, ui
             }
 
 #if ((RVE_E_ZCB == 1) && (RVE_E_C == 1))
-            if ((funct6_funct2 >> 2) == FUNCT6_ZCB) {
+            if (funct6 == FUNCT6_ZCB) {
                 rdnum = (int8_t)(state->instruction.catype.rdp + 8);
                 rs2num = (int8_t)(state->instruction.catype.rs2p + 8);
                 break;
@@ -1299,13 +1307,13 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state, ui
             }
 
 #if ((RVE_E_ZCB == 1) && (RVE_E_C == 1))
-            if ((funct6_funct2 >> 2) == FUNCT6_ZCB) {
-                if ((funct6_funct2 & 0b11) == FUNCT2_ZCB_GROUP) {
+            if (funct6 == FUNCT6_ZCB) {
+                if (funct2 == FUNCT2_ZCB_GROUP) {
                     RiscvEmulatorC_RdOperation(state, (uint8_t)rdnum, rd, state->instruction.catype.rs2p);
                     break;
                 }
 
-                if ((funct6_funct2 & 0b11) == FUNCT2_ZCB_MUL) {
+                if (funct2 == FUNCT2_ZCB_MUL) {
 #if (RVE_E_ZMMUL == 1)
                     RiscvEmulatorC_MUL(state, (uint8_t)rdnum, rd, (uint8_t)rs2num, rs2);
 #else
