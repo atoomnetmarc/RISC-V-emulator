@@ -89,6 +89,8 @@
 #define RVE_CSR_PMPADDR15      0x3BF
 #define RVE_CSR_MSTATEEN0      0x30C
 #define RVE_CSR_MSTATEEN3      0x30F
+#define RVE_CSR_MSTATEEN0H     0x31C
+#define RVE_CSR_MSTATEEN3H     0x31F
 
 /**
  * CSR address privilege encoding: csr[9:8] is the lowest privilege level.

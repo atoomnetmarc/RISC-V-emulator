@@ -486,6 +486,7 @@ static inline void *RiscvEmulatorGetCSRAddress(RiscvEmulatorState_t *state, cons
                 ((csr >= RVE_CSR_PMPCFG1) && (csr <= RVE_CSR_PMPCFG3)) ||
                 ((csr >= RVE_CSR_PMPADDR1) && (csr <= RVE_CSR_PMPADDR15)) ||
                 ((csr >= RVE_CSR_MSTATEEN0) && (csr <= RVE_CSR_MSTATEEN3)) ||
+                ((csr >= RVE_CSR_MSTATEEN0H) && (csr <= RVE_CSR_MSTATEEN3H)) ||
                 ((csr >= RVE_CSR_MEDELEGH) && (csr <= RVE_CSR_MIEH)) ||
                 ((csr >= RVE_CSR_MVIENH) && (csr <= RVE_CSR_MVIPH))) {
                 csrflags = RVE_CSR_F_ZERO;
