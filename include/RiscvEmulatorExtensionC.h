@@ -15,6 +15,7 @@
 #include <stdint.h>
 
 #include "RiscvEmulatorDefine.h"
+#include "RiscvEmulatorExtensionSv32.h"
 #include "RiscvEmulatorExtensionZcb.h"
 #include "RiscvEmulatorExtensionZcmop.h"
 #include "RiscvEmulatorHook.h"
@@ -110,9 +111,7 @@ static inline void RiscvEmulatorC_LW(
     }
 #endif
 
-    if (!RiscvEmulatorLoad(memorylocation, rd, length)) {
-        RiscvEmulatorRaiseException(state,
-            MCAUSE_EXCEPTION_CODE_LOAD_ACCESS_FAULT, memorylocation);
+    if (!RiscvEmulatorLoadVirtual(state, memorylocation, rd, length, RVE_SV32_ACCESS_LOAD)) {
         return;
     }
 
@@ -170,9 +169,7 @@ static inline void RiscvEmulatorC_SW(
     }
 #endif
 
-    if (!RiscvEmulatorStore(memorylocation, rs2, length)) {
-        RiscvEmulatorRaiseException(state,
-            MCAUSE_EXCEPTION_CODE_STORE_ACCESS_FAULT, memorylocation);
+    if (!RiscvEmulatorStoreVirtual(state, memorylocation, rs2, length, RVE_SV32_ACCESS_STORE)) {
         return;
     }
 
@@ -883,9 +880,7 @@ static inline void RiscvEmulatorC_LWSP(
         return;
     }
 
-    if (!RiscvEmulatorLoad(memorylocation, rd, sizeof(uint32_t))) {
-        RiscvEmulatorRaiseException(state,
-            MCAUSE_EXCEPTION_CODE_LOAD_ACCESS_FAULT, memorylocation);
+    if (!RiscvEmulatorLoadVirtual(state, memorylocation, rd, sizeof(uint32_t), RVE_SV32_ACCESS_LOAD)) {
         return;
     }
 
@@ -962,7 +957,7 @@ static inline void RiscvEmulatorC_EBREAK(RiscvEmulatorState_t *state) {
 
 #if (RVE_E_ZICSR == 1)
     RiscvEmulatorRaiseException(state,
-        MCAUSE_EXCEPTION_CODE_BREAKPOINT, state->programcounter);
+                                MCAUSE_EXCEPTION_CODE_BREAKPOINT, state->programcounter);
 #endif
 
     RiscvEmulatorHandleEBREAK(state);
@@ -1044,9 +1039,7 @@ static inline void RiscvEmulatorC_SWSP(
 #endif
 #endif
 
-    if (!RiscvEmulatorStore(memorylocation, rs2, sizeof(uint32_t))) {
-        RiscvEmulatorRaiseException(state,
-            MCAUSE_EXCEPTION_CODE_STORE_ACCESS_FAULT, memorylocation);
+    if (!RiscvEmulatorStoreVirtual(state, memorylocation, rs2, sizeof(uint32_t), RVE_SV32_ACCESS_STORE)) {
         return;
     }
 
@@ -1064,10 +1057,11 @@ static inline void RiscvEmulatorC_SWSP(
  */
 static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state, uint8_t op, uint8_t funct3) {
 #if ((RVE_E_ZCMOP == 1) && (RVE_E_C == 1))
-    // c.mop instructions are quadrant 1 instructions with funct3 3 and a
-    // fixed bit pattern. The n field selects the instruction variant but all
-    // variants behave the same.
-    if ((state->instruction.L & MASK_ZCMOP_CMOP) == PATTERN_ZCMOP_CMOP) {
+    // c.mop.n is encoded as c.lui xN, 0 with an odd N (1, 3, ..., 15). The
+    // mask matches the fixed bits; the rd field selects the variant and must
+    // be odd. All variants behave the same.
+    if (((state->instruction.L & MASK_ZCMOP_CMOP) == PATTERN_ZCMOP_CMOP) &&
+        ((state->instruction.cilui.rd & 1) != 0)) {
         RiscvEmulatorCMOP(state);
         return;
     }
@@ -1077,6 +1071,10 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state, ui
 
     uint8_t funct3_funct2 = 0;
     uint8_t funct6_funct2 = 0;
+#if ((RVE_E_ZCB == 1) && (RVE_E_C == 1))
+    uint8_t funct6 = 0;
+    uint8_t funct2 = 0;
+#endif
     int8_t rdnum = -1;
     int8_t rs1num = -1;
     int8_t rs2num = -1;
@@ -1122,6 +1120,10 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state, ui
             RiscvInstructionTypeCADecoderFunct6Funct2.funct6 = state->instruction.catype.funct6;
             RiscvInstructionTypeCADecoderFunct6Funct2.funct2 = state->instruction.catype.funct2;
             funct6_funct2 = RiscvInstructionTypeCADecoderFunct6Funct2.funct6_funct2;
+#if ((RVE_E_ZCB == 1) && (RVE_E_C == 1))
+            funct6 = RiscvInstructionTypeCADecoderFunct6Funct2.funct6;
+            funct2 = RiscvInstructionTypeCADecoderFunct6Funct2.funct2;
+#endif
 
             if (funct6_funct2 == FUNCT6_FUNCT2_SUB ||
                 funct6_funct2 == FUNCT6_FUNCT2_XOR ||
@@ -1133,7 +1135,7 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state, ui
             }
 
 #if ((RVE_E_ZCB == 1) && (RVE_E_C == 1))
-            if ((funct6_funct2 >> 2) == FUNCT6_ZCB) {
+            if (funct6 == FUNCT6_ZCB) {
                 rdnum = (int8_t)(state->instruction.catype.rdp + 8);
                 rs2num = (int8_t)(state->instruction.catype.rs2p + 8);
                 break;
@@ -1305,13 +1307,13 @@ static inline void RiscvEmulatorOpcodeCompressed(RiscvEmulatorState_t *state, ui
             }
 
 #if ((RVE_E_ZCB == 1) && (RVE_E_C == 1))
-            if ((funct6_funct2 >> 2) == FUNCT6_ZCB) {
-                if ((funct6_funct2 & 0b11) == FUNCT2_ZCB_GROUP) {
+            if (funct6 == FUNCT6_ZCB) {
+                if (funct2 == FUNCT2_ZCB_GROUP) {
                     RiscvEmulatorC_RdOperation(state, (uint8_t)rdnum, rd, state->instruction.catype.rs2p);
                     break;
                 }
 
-                if ((funct6_funct2 & 0b11) == FUNCT2_ZCB_MUL) {
+                if (funct2 == FUNCT2_ZCB_MUL) {
 #if (RVE_E_ZMMUL == 1)
                     RiscvEmulatorC_MUL(state, (uint8_t)rdnum, rd, (uint8_t)rs2num, rs2);
 #else

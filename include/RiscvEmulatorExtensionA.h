@@ -21,6 +21,7 @@
 #include "RiscvEmulatorType.h"
 
 #include "RiscvEmulatorExtensionI.h"
+#include "RiscvEmulatorExtensionSv32.h"
 
 /**
  * Atomic add: atomically load the word in rd and write back the sum of rd and rs2.
@@ -138,11 +139,29 @@ static inline void RiscvEmulatorLR_W(
     RiscvEmulatorState_t *state,
     void *rd,
     uint32_t address) {
-    if (!RiscvEmulatorLoad(address, rd, sizeof(uint32_t))) {
-        RiscvEmulatorRaiseException(state,
-            MCAUSE_EXCEPTION_CODE_LOAD_ACCESS_FAULT, address);
+#if (RVE_E_SV32 == 1)
+    // A misaligned LR raises a load access fault before translation.
+    if ((address & (sizeof(uint32_t) - 1)) != 0) {
+        RiscvEmulatorRaiseException(state, MCAUSE_EXCEPTION_CODE_LOAD_ACCESS_FAULT, address);
         return;
     }
+    uint32_t physicaladdress = 0;
+    if (!RiscvEmulatorTranslate(state, address, RVE_SV32_ACCESS_LOAD, &physicaladdress)) {
+        return;
+    }
+    if (!RiscvEmulatorLoad(physicaladdress, rd, sizeof(uint32_t))) {
+        RiscvEmulatorRaiseException(state, MCAUSE_EXCEPTION_CODE_LOAD_ACCESS_FAULT, address);
+        return;
+    }
+#else
+    if ((address & (sizeof(uint32_t) - 1)) != 0) {
+        RiscvEmulatorRaiseException(state, MCAUSE_EXCEPTION_CODE_LOAD_ACCESS_FAULT, address);
+        return;
+    }
+    if (!RiscvEmulatorLoad(address, rd, sizeof(uint32_t))) {
+        return;
+    }
+#endif
     state->reservationvalid = 1;
     state->reservationaddress = address;
 }
@@ -156,10 +175,21 @@ static inline void RiscvEmulatorSC_W(
     void *rd,
     const void *rs2,
     uint32_t address) {
+#if (RVE_E_SV32 == 1)
+    // A misaligned SC raises a store/AMO access fault before translation.
+    if ((address & (sizeof(uint32_t) - 1)) != 0) {
+        RiscvEmulatorRaiseException(state, MCAUSE_EXCEPTION_CODE_STORE_ACCESS_FAULT, address);
+        state->reservationvalid = 0;
+        return;
+    }
+    uint32_t physicaladdress = 0;
+    if (!RiscvEmulatorTranslate(state, address, RVE_SV32_ACCESS_STORE, &physicaladdress)) {
+        state->reservationvalid = 0;
+        return;
+    }
     if (state->reservationvalid == 1 && state->reservationaddress == address) {
-        if (!RiscvEmulatorStore(address, rs2, sizeof(uint32_t))) {
-            RiscvEmulatorRaiseException(state,
-                MCAUSE_EXCEPTION_CODE_STORE_ACCESS_FAULT, address);
+        if (!RiscvEmulatorStore(physicaladdress, rs2, sizeof(uint32_t))) {
+            RiscvEmulatorRaiseException(state, MCAUSE_EXCEPTION_CODE_STORE_ACCESS_FAULT, address);
             state->reservationvalid = 0;
             return;
         }
@@ -167,6 +197,22 @@ static inline void RiscvEmulatorSC_W(
     } else {
         *(uint32_t *)rd = 1; // Failure code 1: unspecified failure.
     }
+#else
+    if ((address & (sizeof(uint32_t) - 1)) != 0) {
+        RiscvEmulatorRaiseException(state, MCAUSE_EXCEPTION_CODE_STORE_ACCESS_FAULT, address);
+        state->reservationvalid = 0;
+        return;
+    }
+    if (state->reservationvalid == 1 && state->reservationaddress == address) {
+        if (!RiscvEmulatorStore(address, rs2, sizeof(uint32_t))) {
+            state->reservationvalid = 0;
+            return;
+        }
+        *(uint32_t *)rd = 0; // Success.
+    } else {
+        *(uint32_t *)rd = 1; // Failure code 1: unspecified failure.
+    }
+#endif
     // Regardless of success or failure, executing an SC invalidates any
     // reservation held by this hart.
     state->reservationvalid = 0;
@@ -255,15 +301,35 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(RiscvEmulatorState_t
     // Word AMOs operate on sizeof(uint32_t) bytes.
     uint8_t amolength = sizeof(uint32_t);
     uint32_t loadedvalue = 0;
-    if (!RiscvEmulatorLoad(originaladdressrs1, &loadedvalue, amolength)) {
-        RiscvEmulatorRaiseException(state,
-            MCAUSE_EXCEPTION_CODE_LOAD_ACCESS_FAULT, originaladdressrs1);
-        return;
-    }
-
-    if (rdnum != 0) {
-        // Place loaded value of original address in rd.
-        *(uint32_t *)rd = loadedvalue;
+#if (RVE_E_ZALRSC == 1)
+    uint8_t isamo = (funct5_3 != FUNCT5_FUNCT3_OPERATION_LR_W) && (funct5_3 != FUNCT5_FUNCT3_OPERATION_SC_W);
+#else
+    uint8_t isamo = 1;
+#endif
+#if (RVE_E_SV32 == 1)
+    uint32_t physicaladdress = 0;
+#endif
+    // LR and SC do their own load and store, so only an AMO loads here.
+    if (isamo) {
+#if (RVE_E_SV32 == 1)
+        // An AMO is one store/AMO access. Translate once as a store/AMO access,
+        // then do the physical load and store. A page fault is cause 15.
+        if (!RiscvEmulatorTranslate(state, originaladdressrs1, RVE_SV32_ACCESS_STORE, &physicaladdress)) {
+            return;
+        }
+        if (!RiscvEmulatorLoad(physicaladdress, &loadedvalue, amolength)) {
+            RiscvEmulatorRaiseException(state, MCAUSE_EXCEPTION_CODE_STORE_ACCESS_FAULT, originaladdressrs1);
+            return;
+        }
+#else
+        if (!RiscvEmulatorLoadVirtual(state, originaladdressrs1, &loadedvalue, amolength, RVE_SV32_ACCESS_LOAD)) {
+            return;
+        }
+#endif
+        if (rdnum != 0) {
+            // Place loaded value of original address in rd.
+            *(uint32_t *)rd = loadedvalue;
+        }
     }
 #endif
 
@@ -327,11 +393,16 @@ static inline void RiscvEmulatorOpcodeAtomicMemoryOperation(RiscvEmulatorState_t
 
 #if (RVE_E_ZAAMO == 1)
     if (skipstore == 0) {
-        if (!RiscvEmulatorStore(originaladdressrs1, &loadedvalue, amolength)) {
-            RiscvEmulatorRaiseException(state,
-                MCAUSE_EXCEPTION_CODE_STORE_ACCESS_FAULT, originaladdressrs1);
+#if (RVE_E_SV32 == 1)
+        if (!RiscvEmulatorStore(physicaladdress, &loadedvalue, amolength)) {
+            RiscvEmulatorRaiseException(state, MCAUSE_EXCEPTION_CODE_STORE_ACCESS_FAULT, originaladdressrs1);
             return;
         }
+#else
+        if (!RiscvEmulatorStoreVirtual(state, originaladdressrs1, &loadedvalue, amolength, RVE_SV32_ACCESS_STORE)) {
+            return;
+        }
+#endif
     }
 #else
     // Suppress unused-variable warning in Zalrsc-only builds.

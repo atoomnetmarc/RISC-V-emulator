@@ -20,10 +20,12 @@
  * Pending synchronous exception.
  *
  * Only one exception can be raised per instruction. The first raise wins;
- * later raises for the same instruction are ignored.
+ * later raises for the same instruction are ignored. The cause is kept apart
+ * from the pending flag because cause 0 is a valid exception code.
  */
 typedef struct {
-    uint8_t pending; // 0 = none, otherwise an mcause exception code.
+    uint8_t pending; // Nonzero when an exception is pending.
+    uint8_t cause;   // mcause exception code.
     uint32_t tval;   // Value for mtval.
 } RiscvEmulatorTrap_t;
 
@@ -37,6 +39,13 @@ typedef struct
     uint32_t programcounternext;
     RiscvInstruction_u instruction;
     RiscvRegister_u reg;
+
+    /**
+     * Nonzero when the loop fetched an instruction. Cleared at the start of
+     * each loop iteration and left zero on an idle WFI iteration or a fetch
+     * fault.
+     */
+    uint8_t instructionexecuted;
 
 #if (RVE_E_ZALRSC == 1)
     uint8_t reservationvalid;
@@ -53,6 +62,20 @@ typedef struct
      * (mip & mie) is pending. Cleared by RiscvEmulatorLoop().
      */
     uint8_t waiting;
+
+    /**
+     * Remaining idle iterations before a finite WFI returns. The platform
+     * declares WFI_FINITE, so the hart must resume without an interrupt.
+     */
+    uint8_t wfi_timeout;
+
+#if (RVE_E_ZICNTR == 1)
+    /**
+     * Set when the instruction writes mcycle or minstret. The write is the
+     * final counter value, so the end-of-instruction increment is skipped.
+     */
+    uint8_t counterwritten;
+#endif
 
     /**
      * Current privilege mode: 0 = U-mode, 3 = M-mode.

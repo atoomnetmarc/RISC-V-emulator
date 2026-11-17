@@ -19,7 +19,8 @@
  */
 static inline void RiscvEmulatorRaiseException(RiscvEmulatorState_t *state, uint8_t cause, uint32_t tval) {
     if (state->trap.pending == 0) {
-        state->trap.pending = cause;
+        state->trap.pending = 1;
+        state->trap.cause = cause;
         state->trap.tval = tval;
     }
 }

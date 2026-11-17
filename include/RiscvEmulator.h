@@ -46,6 +46,9 @@ static inline void RiscvEmulatorInit(RiscvEmulatorState_t *state, uint32_t ram_l
     // Initialize CSR.
     memset(&state->csr, 0, sizeof(state->csr));
 
+    // marchid reports the emulator's architecture ID.
+    state->csr.marchid = 1;
+
     // misa reports the maximum set of implemented extensions at reset.
     state->csr.misa.extensions = RVE_CSR_MISA_VALUE;
     state->csr.misa.mxl = 1; // RV32
@@ -53,6 +56,7 @@ static inline void RiscvEmulatorInit(RiscvEmulatorState_t *state, uint32_t ram_l
 
     // Initialize the pending trap.
     state->trap.pending = 0;
+    state->trap.cause = 0;
     state->trap.tval = 0;
 }
 
@@ -73,6 +77,8 @@ static inline uint8_t RiscvEmulatorIsWaiting(const RiscvEmulatorState_t *state) 
  */
 static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
 
+    state->instructionexecuted = 0;
+
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     // Detect if the executed instruction was handled by a hook or disassembly.
     state->instructionhandled = 0;
@@ -80,28 +86,68 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
 
     state->programcounter = state->programcounternext;
 
+#if (RVE_E_ZICNTR == 1)
+    state->counterwritten = 0;
+#endif
+
 #if (RVE_E_ZICSR == 1)
     // WFI wake-up. The spec requires resuming on a locally enabled pending
-    // interrupt regardless of mstatus.mie (machine.adoc:2718).
+    // interrupt regardless of mstatus.mie (machine.adoc:2718). The platform
+    // declares WFI_FINITE, so the hart also resumes after one idle iteration.
     if (state->waiting != 0) {
-        if ((state->csr.mip.mip & state->csr.mie.mie) == 0) {
+        if (((state->csr.mip.mip | state->csr.mip_platform | state->csr.mip_platform_software) & state->csr.mie.mie) == 0) {
+            if (state->wfi_timeout != 0) {
+                state->wfi_timeout--;
+                if (state->wfi_timeout == 0) {
+                    state->waiting = 0;
+#if (RVE_E_ZICNTR == 1)
+                    state->csr.cycle++;
+#endif
+                }
+            }
             return; // Hart is idle; no instruction retires.
         }
         state->waiting = 0;
     }
 
     // Take the highest-priority pending interrupt before fetching the next
-    // instruction. M-mode priority: MEI, MSI, MTI. M-mode interrupts are
-    // always globally enabled in a less-privileged mode.
-    if ((state->privilege < 3) || (state->csr.mstatus.mie != 0)) {
-        uint32_t pending = state->csr.mip.mip & state->csr.mie.mie;
+    // instruction. Interrupts to M-mode take priority over interrupts to
+    // S-mode (machine.adoc:1357, supervisor.adoc:396), so check the
+    // non-delegated interrupts first, then the delegated ones. Within a
+    // privilege mode the priority is MEI, MSI, MTI, SEI, SSI, STI. A
+    // delegated interrupt traps to S-mode only in S-mode with sstatus.SIE
+    // set, or in a less-privileged mode. It never traps to M-mode
+    // (supervisor.adoc:383).
+    {
+        uint32_t pending = (state->csr.mip.mip | state->csr.mip_platform | state->csr.mip_platform_software) & state->csr.mie.mie;
         uint32_t cause = 0;
-        if ((pending & (1u << 11)) != 0) {
-            cause = 11; // Machine external interrupt.
-        } else if ((pending & (1u << 3)) != 0) {
-            cause = 3; // Machine software interrupt.
-        } else if ((pending & (1u << 7)) != 0) {
-            cause = 7; // Machine timer interrupt.
+#if (RVE_E_SV32 == 1)
+        static const uint8_t causes[] = {11, 3, 7, 9, 1, 5};
+#else
+        static const uint8_t causes[] = {11, 3, 7};
+#endif
+        for (uint8_t pass = 0; (pass < 2) && (cause == 0); pass++) {
+            for (uint8_t i = 0; i < sizeof(causes); i++) {
+                uint32_t candidate = causes[i];
+                if ((pending & (UINT32_C(1) << candidate)) == 0) {
+                    continue;
+                }
+#if (RVE_E_SV32 == 1)
+                uint8_t delegated = (uint8_t)((state->csr.mideleg.interrupts >> candidate) & 1u);
+#else
+                uint8_t delegated = 0;
+#endif
+                if (delegated != pass) {
+                    continue;
+                }
+                uint8_t enabled = (delegated != 0)
+                                      ? ((state->privilege < 1) || ((state->privilege == 1) && (state->csr.mstatus.sie != 0)))
+                                      : ((state->privilege < 3) || (state->csr.mstatus.mie != 0));
+                if (enabled) {
+                    cause = candidate;
+                    break;
+                }
+            }
         }
         if (cause != 0) {
             RiscvEmulatorTrapEnter(state, cause, 1);
@@ -132,10 +178,12 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
 #if (RVE_E_C == 1)
     // Read 16 bits.
     state->instruction.H = 0;
-    if (!RiscvEmulatorLoad(
+    if (!RiscvEmulatorLoadVirtual(
+            state,
             state->programcounter,
             &state->instruction.L,
-            sizeof(state->instruction.L))) {
+            sizeof(state->instruction.L),
+            RVE_SV32_ACCESS_FETCH)) {
         RiscvEmulatorRaiseException(state,
                                     MCAUSE_EXCEPTION_CODE_INSTRUCTION_ACCESS_FAULT, state->programcounter);
         RiscvEmulatorTrap(state);
@@ -146,10 +194,12 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
 
     // Read another 16 bits when this is a 32-bit instruction.
     if (state->instruction.copcode.op == OPCODE16_QUADRANT_INVALID) {
-        if (!RiscvEmulatorLoad(
+        if (!RiscvEmulatorLoadVirtual(
+                state,
                 state->programcounternext,
                 &state->instruction.H,
-                sizeof(state->instruction.L))) {
+                sizeof(state->instruction.L),
+                RVE_SV32_ACCESS_FETCH)) {
             RiscvEmulatorRaiseException(state,
                                         MCAUSE_EXCEPTION_CODE_INSTRUCTION_ACCESS_FAULT, state->programcounternext);
             RiscvEmulatorTrap(state);
@@ -162,7 +212,7 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
     }
 #else
     // Read 32 bits.
-    if (!RiscvEmulatorLoad(state->programcounter, &state->instruction.value, sizeof(state->instruction.value))) {
+    if (!RiscvEmulatorLoadVirtual(state, state->programcounter, &state->instruction.value, sizeof(state->instruction.value), RVE_SV32_ACCESS_FETCH)) {
         RiscvEmulatorRaiseException(state,
                                     MCAUSE_EXCEPTION_CODE_INSTRUCTION_ACCESS_FAULT, state->programcounter);
         RiscvEmulatorTrap(state);
@@ -170,6 +220,8 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
     }
     state->programcounternext += sizeof(state->instruction.value);
 #endif
+
+    state->instructionexecuted = 1;
 
 #if (RVE_E_C == 1)
     if (instructionlength == 16) {
@@ -235,8 +287,13 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
 
 #if (RVE_E_ZICNTR == 1)
     // Update the counters. Zicntr implies Zicsr, so the CSR struct always
-    // exists when this extension is enabled.
-    state->csr.cycle++;
+    // exists when this extension is enabled. A write to mcycle or minstret
+    // is the final value, so the writing instruction does not increment the
+    // counter. A trapping instruction is not retired, so it does not
+    // increment minstret.
+    if (state->counterwritten == 0) {
+        state->csr.cycle++;
+    }
 #if defined(RVE_TIME_SOURCE)
     // time is a shadow of the platform clock (or CLINT mtime), not an
     // instruction counter (zicntr.adoc:116).
@@ -244,7 +301,9 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
 #else
     state->csr.time++;
 #endif
-    state->csr.instret++;
+    if ((state->counterwritten == 0) && (state->trap.pending == 0)) {
+        state->csr.instret++;
+    }
 #endif
 
     if (state->trap.pending != 0) {

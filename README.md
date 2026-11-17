@@ -152,6 +152,14 @@ address. The core turns that into an instruction, load or store access fault
 An unimplemented CSR is handled by the core as an illegal-instruction trap;
 there is no `RiscvEmulatorUnknownCSR` hook anymore.
 
+Every fetch, load and store goes through `RiscvEmulatorLoadVirtual()` or
+`RiscvEmulatorStoreVirtual()`. With `RVE_E_SV32=0` these are pass-through
+wrappers around `RiscvEmulatorLoad` and `RiscvEmulatorStore`. With
+`RVE_E_SV32=1` they translate the virtual address through Sv32, split a
+page-crossing access into two chunks, and raise a page fault or access fault
+when the translation fails. The board still provides only the physical
+`RiscvEmulatorLoad` and `RiscvEmulatorStore`.
+
 When `Zicntr` is enabled, the `time` CSR is a shadow of a platform time source.
 Define `RVE_TIME_SOURCE(state)` in your implementation-specific header to return
 a free-running counter, for example the host clock or CLINT `mtime`:

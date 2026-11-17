@@ -21,6 +21,8 @@
 #include "RiscvEmulatorTrapFlag.h"
 #include "RiscvEmulatorType.h"
 
+#include "RiscvEmulatorExtensionSv32.h"
+
 /**
  * Compressed load operation funnel: c.lbu, c.lhu and c.lh.
  * rd = zeroext(memory[rs1 + offset]) or rd = signext(memory[rs1 + offset])
@@ -97,9 +99,7 @@ static inline void RiscvEmulatorC_LoadOperation(
     // Load into a zeroed local first so the upper bytes of the 32-bit
     // register are cleared.
     uint32_t loadedvalue = 0;
-    if (!RiscvEmulatorLoad(memorylocation, &loadedvalue, length)) {
-        RiscvEmulatorRaiseException(state,
-            MCAUSE_EXCEPTION_CODE_LOAD_ACCESS_FAULT, memorylocation);
+    if (!RiscvEmulatorLoadVirtual(state, memorylocation, &loadedvalue, length, RVE_SV32_ACCESS_LOAD)) {
         return;
     }
 
@@ -194,9 +194,7 @@ static inline void RiscvEmulatorC_StoreOperation(
 #endif
 #endif
 
-    if (!RiscvEmulatorStore(memorylocation, rs2, length)) {
-        RiscvEmulatorRaiseException(state,
-            MCAUSE_EXCEPTION_CODE_STORE_ACCESS_FAULT, memorylocation);
+    if (!RiscvEmulatorStoreVirtual(state, memorylocation, rs2, length, RVE_SV32_ACCESS_STORE)) {
         return;
     }
 
