@@ -14,3 +14,4 @@ Rule files describing how code in this project is written and judged.
 - **[privilege.md](privilege.md)** — Privilege modes and supervisor CSRs: `mstatus`, delegation, S-mode CSRs, `SRET`, `SFENCE.VMA`, `WFI` and `ECALL`
 - **[sv32.md](sv32.md)** — Sv32 address translation: `satp`, the two-level walk, PTE bits, permissions, A/D and page-crossing accesses
 - **[interrupts.md](interrupts.md)** — Interrupts and delegation: `mip`/`mie`, the platform sources, delegation and priority
+- **[act-sv32.md](act-sv32.md)** — Sv32 ACT environments: the harness, the U-mode exclusion and the configuration-driven behaviour

@@ -2,7 +2,7 @@
 
 Emulator bugs and configuration gaps found while running the RISC-V
 Architectural Certification Tests. These are not Sv32-specific; the Sv32
-plan keeps only the Sv32 findings.
+findings are in [act-sv32.md](act-sv32.md).
 
 ## Zcmop encoding
 
