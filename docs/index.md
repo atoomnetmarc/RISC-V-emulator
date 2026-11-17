@@ -8,3 +8,9 @@ Rule files describing how code in this project is written and judged.
 - **[no-lookup-tables.md](no-lookup-tables.md)** — No lookup tables on AVR: `static const` costs RAM, use a `switch()` or `PROGMEM`
 - **[measure-once-cut-twice.md](measure-once-cut-twice.md)** — Measure once, cut twice: size changes are judged on a per-environment delta table, never a single build
 - **[noinline-cold-path.md](noinline-cold-path.md)** — Noinline on cold paths: when a function may be marked `__attribute__((noinline))`
+
+## Architecture
+
+- **[privilege.md](privilege.md)** — Privilege modes and supervisor CSRs: `mstatus`, delegation, S-mode CSRs, `SRET`, `SFENCE.VMA`, `WFI` and `ECALL`
+- **[sv32.md](sv32.md)** — Sv32 address translation: `satp`, the two-level walk, PTE bits, permissions, A/D and page-crossing accesses
+- **[interrupts.md](interrupts.md)** — Interrupts and delegation: `mip`/`mie`, the platform sources, delegation and priority
