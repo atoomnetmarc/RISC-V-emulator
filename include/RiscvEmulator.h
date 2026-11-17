@@ -77,6 +77,8 @@ static inline uint8_t RiscvEmulatorIsWaiting(const RiscvEmulatorState_t *state) 
  */
 static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
 
+    state->instructionexecuted = 0;
+
 #if (RVE_E_HOOK == 1 || RVE_E_DISASM == 1)
     // Detect if the executed instruction was handled by a hook or disassembly.
     state->instructionhandled = 0;
@@ -218,6 +220,8 @@ static inline void RiscvEmulatorLoop(RiscvEmulatorState_t *state) {
     }
     state->programcounternext += sizeof(state->instruction.value);
 #endif
+
+    state->instructionexecuted = 1;
 
 #if (RVE_E_C == 1)
     if (instructionlength == 16) {

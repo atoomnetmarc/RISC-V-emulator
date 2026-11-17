@@ -40,6 +40,13 @@ typedef struct
     RiscvInstruction_u instruction;
     RiscvRegister_u reg;
 
+    /**
+     * Nonzero when the loop fetched an instruction. Cleared at the start of
+     * each loop iteration and left zero on an idle WFI iteration or a fetch
+     * fault.
+     */
+    uint8_t instructionexecuted;
+
 #if (RVE_E_ZALRSC == 1)
     uint8_t reservationvalid;
     uint32_t reservationaddress;
